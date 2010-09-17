@@ -1,0 +1,7 @@
+This is a very simple example for cmake.  It will build a library, an executable,
+and install files into a directory ready to be tarred up as a relocateable ups product.
+Various CET conventions:
+1. Include files are of the form #include "MyProduct/MyHeader.h"
+2. Source code and headers live in the same directory
+3. 4 flavors are supported: 32bit and 64bit SL4 and SL5
+

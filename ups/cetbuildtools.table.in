@@ -1,0 +1,12 @@
+File=Table
+Product=cetbuildtools
+
+Group:
+Flavor=ANY
+Qualifiers=
+
+Common:
+   Action=setup
+      proddir()
+      setupenv()
+End:
