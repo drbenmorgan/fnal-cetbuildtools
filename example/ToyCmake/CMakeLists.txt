@@ -16,6 +16,7 @@ cmake_minimum_required (VERSION 2.6)
 project(ToyCmake)
 set( version v0_0_0 )
 SET (qualifier a1)
+#  this has to get smarter
 SET (flavorqual sl5.x86_64.${qualifier})
 SET (flavorqual_dir ${version}/${flavorqual} )
 
@@ -31,13 +32,28 @@ if ( NOT GCC_VERSION )
   message(FATAL_ERROR "Can't locate GCC_VERSION, required for building ToyCmake")
 endif ()
 
-# include search path
-include_directories ("${PROJECT_BINARY_DIR}")
+# Use cmake directive include_directories to define include search path
+
+# We want to be able to #include "MyProduct/MyHeader.h" in source code,
+# generated code, and user code.
+# We achieve this by putting all headers into a MyProduct subdirectory  
+# instead of an include subdirectory.  
+# PROJECT_SOURCE_DIR is a cmake variable which points to the top of the
+# source code tree.
 include_directories ("${PROJECT_SOURCE_DIR}")
+
+# Generated code will be created in the build directory, 
+# so we also add PROJECT_BINARY_DIR to the include search path.
+# This step may be omitted if there are no generated headers.
+include_directories ("${PROJECT_BINARY_DIR}")
+
+# add external packages to the include search path
 # add PRODUCT_INC for each dependent product here
 # notice use of ENV to invoke an external variable
 #include_directories ( $ENV{BOOST_INC} )
 #include_directories ( $ENV{FHICLCPP_INC} )
+
+# let cmake define variables for external libraries and executables
 
 # define ROOT libraries
 #find_library( REFLEX NAMES Reflex PATHS $ENV{ROOTSYS}/lib )
@@ -48,10 +64,17 @@ include_directories ("${PROJECT_SOURCE_DIR}")
 # define FHICLCPP
 #find_library( FHICLCPP NAMES fhiclcpp PATHS $ENV{FHICLCPP_LIB} )
 
-#build all libraries in a single directory to enable testing
+# Building  all libraries and binaries in a single lib and bin directory 
+# is useful for a complex product like art.  
+# You may not want to do this for smaller products.
+
+#build all libraries in a single directory
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+
 #build all executables in a single directory
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
+# The environment has been established, now generate the Makefiles.
 
 # source
 subdirs (ToyCmake)
