@@ -14,11 +14,28 @@
 cmake_minimum_required (VERSION 2.6)
 # project name
 project(ToyCmake)
+# the ups convention is that product names are all lower case, but this is a choices
+set( product toycmake )
 set( version v0_0_0 )
 SET (qualifier a1)
-#  this has to get smarter
-SET (flavorqual sl5.x86_64.${qualifier})
-SET (flavorqual_dir ${version}/${flavorqual} )
+
+# sl5 is 2.6.18
+# sl4 is 2.6.9
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
+   if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^2.6.9.*" )
+       SET( SLTYPE sl4 )
+   endif ()
+   if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^2.6.18.*" )
+       SET( SLTYPE sl5 )
+   endif ()
+   message(STATUS "Building on Linux ${SLTYPE} ${CMAKE_SYSTEM_PROCESSOR}" )
+endif ()
+# require SLTYPE
+if ( NOT SLTYPE )
+  message(FATAL_ERROR "Can't determine system type")
+endif ()
+SET (flavorqual ${SLTYPE}.${CMAKE_SYSTEM_PROCESSOR}.${qualifier})
+SET (flavorqual_dir ${product}/${version}/${flavorqual} )
 
 # because we want to move these libraries about,
 # do not embed full path in shared libraries or executables

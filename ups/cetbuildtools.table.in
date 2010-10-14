@@ -4,9 +4,39 @@ Product=cetbuildtools
 Group:
 Flavor=ANY
 Qualifiers=
+       prodDir()
+       exeActionRequired("setup__")
+
+Flavor=ANY
+Qualifiers = "@qualifier@"
+  Action = setup
+       prodDir()
+       exeActionRequired("setup__")
+
 
 Common:
-   Action=setup
-      proddir()
-      setupenv()
+  Action = setup__
+    setupEnv()
+    envSet(${UPS_PROD_NAME_UC}_VERSION, @version@)
+ 
+    # define PROD_DIR_INC if there is an appropriate include subdirectory
+    if    ( sh -c 'for dd in include;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+        prodDir( _INC, ""`sh -c 'for dd in include;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;echo .'`"" )
+    else ()
+	execute( true, NO_UPS_ENV )
+    endif ( sh -c 'for dd in include;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+
+    # add the bin directory to the path if it exists
+    if    ( sh -c 'for dd in bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+        prodDir( _BIN, ""`sh -c 'for dd in bin;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;echo .'`"" )
+        pathPrepend(PATH, ${${UPS_PROD_NAME_UC}_BIN} )
+	envunset( ${${UPS_PROD_NAME_UC}_BIN} )
+    else ()
+	execute( true, NO_UPS_ENV )
+    endif ( sh -c 'for dd in bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+	    
+    # uncomment or add to this list as relevant
+    # we add gcc here because it is used when building the toy example
+    setupRequired(gcc @GCC_VERSION@ @GCC_QUAL@)
+
 End:

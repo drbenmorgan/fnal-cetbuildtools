@@ -7,15 +7,15 @@ ToyCmake/ups/ToyCmake.table.in
 ToyCmake/ups/ToyCmake.version.in )
 
 INSTALL (FILES ToyCmake/CMakeLists.txt ToyCmake/README
-         DESTINATION ${version}/example/ToyCmake )
+         DESTINATION ${product}/${version}/example/ToyCmake )
 
 INSTALL (FILES ToyCmake/ToyCmake/CMakeLists.txt ToyCmake/ToyCmake/DoMath.cc
                ToyCmake/ToyCmake/DoMath.h ToyCmake/ToyCmake/SquareIt.cpp
-         DESTINATION ${version}/example/ToyCmake/ToyCmake )
+         DESTINATION ${product}/${version}/example/ToyCmake/ToyCmake )
 
 INSTALL (FILES ToyCmake/test/CMakeLists.txt ToyCmake/test/ToyCmakeTest.cc
-         DESTINATION ${version}/example/ToyCmake/test )
+         DESTINATION ${product}/${version}/example/ToyCmake/test )
 
 INSTALL (FILES ${installFiles}
-         DESTINATION ${version}/example/ToyCmake/ups )
+         DESTINATION ${product}/${version}/example/ToyCmake/ups )
 

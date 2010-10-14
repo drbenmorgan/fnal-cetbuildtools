@@ -9,7 +9,7 @@ CONFIGURE_FILE ( ${cetbuildtools_SOURCE_DIR}/ups/cetbuildtools.version.in
                  ${cetbuildtools_BINARY_DIR}/ups/${version}.version @ONLY )
 
 INSTALL (FILES ${cetbuildtools_BINARY_DIR}/ups/cetbuildtools.table
-         DESTINATION ${version}/ups)
+         DESTINATION ${product}/${version}/ups)
 INSTALL (FILES ${cetbuildtools_BINARY_DIR}/ups/${version}.version
-         DESTINATION ${CMAKE_INSTALL_PREFIX} )
+         DESTINATION ${product} )
 

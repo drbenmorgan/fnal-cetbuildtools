@@ -12,7 +12,7 @@ target_link_libraries( SquareIt ToyCmake )
 
 install ( TARGETS ToyCmake DESTINATION ${flavorqual_dir}/lib )
 install(FILES DoMath.h
-        DESTINATION ${version}/include/ToyCmake )
+        DESTINATION ${product}/${version}/include/ToyCmake )
 install ( TARGETS SquareIt   DESTINATION ${flavorqual_dir}/bin )
 
 

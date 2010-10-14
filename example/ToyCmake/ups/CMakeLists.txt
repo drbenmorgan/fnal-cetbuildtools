@@ -18,7 +18,7 @@ install (FILES ${ToyCmake_BINARY_DIR}/ups/ToyCmake-config.cmake
          DESTINATION ${flavorqual_dir}/lib/ToyCmake-${version} )
 
 INSTALL (FILES ${ToyCmake_BINARY_DIR}/ups/ToyCmake.table
-         DESTINATION ${version}/ups)
+         DESTINATION ${product}/${version}/ups)
 INSTALL (FILES ${ToyCmake_BINARY_DIR}/ups/${version}.version
-         DESTINATION ${CMAKE_INSTALL_PREFIX} )
+         DESTINATION ${product} )
 

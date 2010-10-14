@@ -1,5 +1,5 @@
 File    = table
-Product = XXX
+Product = @product@
 #*************************************************
 # Starting Group definition
 Group:
