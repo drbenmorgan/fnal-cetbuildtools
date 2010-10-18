@@ -1,42 +1,52 @@
-File=Table
-Product=cetbuildtools
-
+File    = table
+Product = @product@
+#*************************************************
+# Starting Group definition
 Group:
-Flavor=ANY
-Qualifiers=
-       prodDir()
-       exeActionRequired("setup__")
-
-Flavor=ANY
-Qualifiers = "@qualifier@"
+Flavor     = ANY
+Qualifiers = ""
   Action = setup
        prodDir()
        exeActionRequired("setup__")
 
+Flavor     = NULL
+Qualifiers = "@qualifier@"
+  Action = setup
+       prodDir()
+       fileTest( ${UPS_PROD_DIR}/noarch.@qualifier@, -d, "${UPS_PROD_DIR}/noarch.@qualifier@ directory not found: SETUP ABORTED")
+       envSet( ${UPS_PROD_NAME_UC}_FQ, noarch.@qualifier@ )
+       exeActionRequired("setup__")
 
 Common:
   Action = setup__
     setupEnv()
     envSet(${UPS_PROD_NAME_UC}_VERSION, @version@)
- 
+    prodDir( _FQ_DIR, ${${UPS_PROD_NAME_UC}_FQ} )
+
     # define PROD_DIR_INC if there is an appropriate include subdirectory
-    if    ( sh -c 'for dd in include;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-        prodDir( _INC, ""`sh -c 'for dd in include;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;echo .'`"" )
+    if    ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/include include;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+        prodDir( _INC, ""`sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/include include;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;echo .'`"" )
     else ()
 	execute( true, NO_UPS_ENV )
-    endif ( sh -c 'for dd in include;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+    endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/include include;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+
+    # define PROD_DIR_LIB if there is an appropriate lib subdirectory
+    if    ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/lib lib;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+        prodDir( _LIB, ""`sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/lib lib;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;echo .'`"" )
+        pathAppend(LD_LIBRARY_PATH, ${${UPS_PROD_NAME_UC}_LIB})
+    else ()
+	execute( true, NO_UPS_ENV )
+    endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/lib lib;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
 
     # add the bin directory to the path if it exists
-    if    ( sh -c 'for dd in bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-        prodDir( _BIN, ""`sh -c 'for dd in bin;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;echo .'`"" )
+    if    ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+        prodDir( _BIN, ""`sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;echo .'`"" )
         pathPrepend(PATH, ${${UPS_PROD_NAME_UC}_BIN} )
 	envunset( ${${UPS_PROD_NAME_UC}_BIN} )
     else ()
 	execute( true, NO_UPS_ENV )
-    endif ( sh -c 'for dd in bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-	    
-    # uncomment or add to this list as relevant
-    # we add gcc here because it is used when building the toy example
-    setupRequired(gcc @GCC_VERSION@ @GCC_QUAL@)
+    endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
 
 End:
+# End Group definition
+#*************************************************

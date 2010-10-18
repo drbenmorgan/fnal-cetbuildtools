@@ -12,15 +12,6 @@ PROJECT (cetbuildtools)
 set (product cetbuildtools)
 SET (version v1_2_0)
 
-# make sure gcc has been set
-# we aren't going to compile - just need this when building ToyCmake
-# note that gcc has no qualifier
-SET ( GCC_VERSION $ENV{GCC_VERSION} )
-IF (NOT GCC_VERSION)
-    MESSAGE (FATAL_ERROR "gcc has not been setup")
-ENDIF()
-message(STATUS "GCC version is ${GCC_VERSION} " )
-
 # cetbuildtools has no architecture dependence
 
 # source code
