@@ -13,7 +13,8 @@ Flavor     = NULL
 Qualifiers = "@qualifier@"
   Action = setup
        prodDir()
-       fileTest( ${UPS_PROD_DIR}/noarch.@qualifier@, -d, "${UPS_PROD_DIR}/noarch.@qualifier@ directory not found: SETUP ABORTED")
+       ## we aren't putting anything in a noarch subdirectory, but we keep this in case we need it later
+       ##fileTest( ${UPS_PROD_DIR}/noarch.@qualifier@, -d, "${UPS_PROD_DIR}/noarch.@qualifier@ directory not found: SETUP ABORTED")
        envSet( ${UPS_PROD_NAME_UC}_FQ, noarch.@qualifier@ )
        exeActionRequired("setup__")
 
@@ -39,13 +40,13 @@ Common:
     endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/lib lib;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
 
     # add the bin directory to the path if it exists
-    if    ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-        prodDir( _BIN, ""`sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;echo .'`"" )
+    if    ( sh -c 'for dd in  ${UPS_PROD_NAME_UC}_FQ_DIR/bin ${UPS_PROD_DIR}/bin;do [ -d $dd ] && exit;done;exit 1' )
+        envSet( ${UPS_PROD_NAME_UC}_BIN, ""`sh -c 'for dd in ${UPS_PROD_NAME_UC}_FQ_DIR/bin ${UPS_PROD_DIR}/bin;do [ -d $dd ] && echo $dd && exit;done;echo .'`"" )
         pathPrepend(PATH, ${${UPS_PROD_NAME_UC}_BIN} )
-	envunset( ${${UPS_PROD_NAME_UC}_BIN} )
+	envunset( ${UPS_PROD_NAME_UC}_BIN )
     else ()
 	execute( true, NO_UPS_ENV )
-    endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+    endif ( sh -c 'for dd in  ${UPS_PROD_NAME_UC}_FQ_DIR/bin ${UPS_PROD_DIR}/bin;do [ -d $dd ] && exit;done;exit 1' )
 
 End:
 # End Group definition
