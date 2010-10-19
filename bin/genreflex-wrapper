@@ -1,0 +1,11 @@
+#!/bin/sh
+
+#  This is a wrapper for genreflex in root
+
+if [ ! -e ${ROOTSYS}/bin/genreflex ]
+then
+    echo "ERROR: genreflex-wrapper cannot find genreflex"
+    exit 1
+fi
+
+${ROOTSYS}/bin/genreflex
