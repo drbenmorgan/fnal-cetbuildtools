@@ -1,7 +1,7 @@
 # define the environment for a ups product
 #
 # find_ups_product( PRODUCTNAME version )
-#  PRODUCTNAME - product name in UPPER CASE
+#  PRODUCTNAME - product name 
 #  version - minimum version required
 
 # since variables are passed, this is implemented as a macro
