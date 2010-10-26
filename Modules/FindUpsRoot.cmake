@@ -1,13 +1,11 @@
 # ROOT is a special case
 #
-# find_ups_root( PRODUCTNAME version )
-#  PRODUCTNAME - product name in UPPER CASE
+# find_ups_root(  version )
 #  version - minimum version required
 
 # since variables are passed, this is implemented as a macro
 
 macro( find_ups_root version )
-
 
 # require ROOTSYS
 set( ROOTSYS $ENV{ROOTSYS} )

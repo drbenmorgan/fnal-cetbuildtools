@@ -1,6 +1,6 @@
 # This is shamelessly cribbed from Ron Rechenmacher's ups bootstrap "setup"
 # 
-# REPLACE all occurances of TOYCMAKE with your product name in upper case
+# REPLACE all occurances of XXX with your product name in upper case
 #
 # This script sets up the environment for a developer working on framework.
 # It is not intended for any other purpose, and may cause problems in other environments.
@@ -11,9 +11,9 @@
 #    set fw_db=/some/path; source /some/path/this_file
 # or  fw_db=/some/path; . /some/path/this_file
 #
-# If TOYCMAKE_BUILD is undefined, it is set to whatever directory 
+# If XXX_BUILD is undefined, it is set to whatever directory 
 # you are in when this script is invoked.
-# $TOYCMAKE_BUILD/lib is added to LD_LIBRARY_PATH
+# $XXX_BUILD/lib is added to LD_LIBRARY_PATH
 
 test $?shell = 1 && set ss=csh || ss=sh
 #echo Shell type is $ss.
@@ -34,8 +34,17 @@ tnotnull UPS_DIR || echo "$msg2"
 # note that we do not test for them first...
 # use setup -j to avoid pulling dependencies
 setup cmake
-setup cetbuildtools v1_3_2
-#setup -j boost v1_44_0 -q a1
+setup cetbuildtools v1_3_0
+setup -j cppunit v1_12_1 -q a1 
+setup -j gccxml v0_9 -q a1 
+setup -j libsigcpp v2_2_7 -q a1 
+setup -j clhep v2_1_0_0 -q a1 
+setup -j root v5_26_00d -q GCC_4_5_1
+setup -j messagefacility v1_5_0 -q a1
+setup -j fhiclcpp v2_1_0 -q a1
+setup -j cpp0x v0_0_0 -q a1
+setup -j cetlib v0_1_1 -q a1
+setup -j boost v1_44_0 -q a1
 setup gcc v4_5_1
 
 test $?shell = 1 && set ss=csh || ss=sh
@@ -56,19 +65,19 @@ test -z "$db" -a "$ss" = csh && set me=`history 1|sed 's/^[ 	0-9:]*//'` && test 
     && set db=`sh -c "cd $me >/dev/null 2>&1 && pwd"` && vecho_ 'setting db via interactive history'
 
 test -z "$db" && echo "$msg" || vecho_ "db=$db"
-test -n "$db" && setenv TOYCMAKE_SOURCE `dirname $db`
+test -n "$db" && setenv XXX_SOURCE `dirname $db`
 #echo This script lives in $db
 
-tnotnull TOYCMAKE_BUILD && set_ thisdir=$TOYCMAKE_BUILD || set_ thisdir=`pwd`
-test -n "$thisdir" && setenv TOYCMAKE_BUILD $thisdir
+tnotnull XXX_BUILD && set_ thisdir=$XXX_BUILD || set_ thisdir=`pwd`
+test -n "$thisdir" && setenv XXX_BUILD $thisdir
 test -d "$thisdir/lib" || mkdir -p $thisdir/lib
 echo The workng build directory is $thisdir
 
-tnotnull TOYCMAKE_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${TOYCMAKE_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`; setenv LD_LIBRARY_PATH ${TOYCMAKE_BUILD}/lib:${LD_LIBRARY_PATH}
+tnotnull XXX_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${XXX_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`; setenv LD_LIBRARY_PATH ${XXX_BUILD}/lib:${LD_LIBRARY_PATH}
 
 echo
-echo TOYCMAKE_SOURCE=$TOYCMAKE_SOURCE
-echo TOYCMAKE_BUILD=$TOYCMAKE_BUILD
+echo XXX_SOURCE=$XXX_SOURCE
+echo XXX_BUILD=$XXX_BUILD
 echo $thisdir/lib has been added to LD_LIBRARY_PATH
 echo
 echo LD_LIBRARY_PATH is now ${LD_LIBRARY_PATH}

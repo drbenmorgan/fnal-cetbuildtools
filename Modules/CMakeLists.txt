@@ -4,6 +4,7 @@ INSTALL ( FILES BuildPlugins.cmake
 		FindUpsBoost.cmake
                 FindUpsRoot.cmake
 		ParseUpsVersion.cmake
+		SetFlavorQual.cmake
                 UseCPack.cmake
           DESTINATION ${product}/${version}/Modules )
 
