@@ -1,7 +1,8 @@
 
 INSTALL ( FILES BuildPlugins.cmake
-                FindUpsPackage.cmake
+                FindCompilerVersion.cmake
 		FindUpsBoost.cmake
+                FindUpsPackage.cmake
                 FindUpsRoot.cmake
 		ParseUpsVersion.cmake
 		SetFlavorQual.cmake
