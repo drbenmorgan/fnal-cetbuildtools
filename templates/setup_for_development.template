@@ -34,7 +34,7 @@ tnotnull UPS_DIR || echo "$msg2"
 # note that we do not test for them first...
 # use setup -j to avoid pulling dependencies
 setup cmake
-setup cetbuildtools v1_3_0
+setup cetbuildtools v1_4_0
 setup -j cppunit v1_12_1 -q a1 
 setup -j gccxml v0_9 -q a1 
 setup -j libsigcpp v2_2_7 -q a1 
