@@ -1,5 +1,5 @@
-This is a very simple example for cmake.  It will build a library, an executable,
-and install files into a directory ready to be tarred up as a relocateable ups product.
+This is a very simple example for cmake.  
+It builds two libraries and an executable.
 
 To use this example:
 mkdir <my-empty-directory>
@@ -9,11 +9,12 @@ mkdir build install
 cd build (this is your working directory)
 source ../ToyCmake/ups/setup_for_development
    This will setup cmake and gcc v4_5_1
-   This will also define TOY_CODE and TOY_WORKDIR
-cmake -DCMAKE_INSTALL_PREFIX=../install $TOY_CODE
+   This will also define TOYCMAKE_SOURCE and TOYCMAKE_BUILD
+cmake -DCMAKE_INSTALL_PREFIX=../install $TOYCMAKE_SOURCE
 make
 make test
 make install
+make package (create a distribution tarball)
 
 See READMEs and comments in the various files for specific information
 about customizing for your package.

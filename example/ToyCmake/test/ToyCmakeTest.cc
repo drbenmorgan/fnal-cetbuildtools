@@ -1,6 +1,6 @@
 #include <iostream>
 #include <assert.h>
-#include "ToyCmake/DoMath.h"
+#include "ToyCmake/Math/DoMath.h"
 
 int main()
 {
