@@ -1,5 +1,6 @@
 
-INSTALL ( FILES BuildPlugins.cmake
+INSTALL ( FILES BuildDictionary.cmake
+                BuildPlugins.cmake
                 FindCompilerVersion.cmake
 		FindUpsBoost.cmake
                 FindUpsPackage.cmake
