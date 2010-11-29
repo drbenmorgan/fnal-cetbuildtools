@@ -11,17 +11,10 @@ set( GENREFLEX_FLAGS --deep
 		     -DGNU_GCC
 		     -DPROJECT_NAME="CMSSW"
 		     -DPROJECT_VERSION="CMSSW_3_0_0_pre2" )
-set( GENREFLEX_INCLUDES -I ${CPPUNIT_INC}
-			-I $ENV{CLHEP_DIR}/include
-			-I $ENV{ROOT_DIR}/include
-			-I $ENV{ROOT_DIR}/cintex/inc
+set( GENREFLEX_INCLUDES -I $ENV{ROOTSYS}/include
+			-I $ENV{ROOTSYS}/cintex/inc
 			-I $ENV{BOOST_INC}
-			-I $ENV{CPP0X_INC}
-			-I $ENV{CETLIB_INC}
-			-I $ENV{FHICLCPP_INC}
-			-I $ENV{MESSAGEFACILITY_INC}
-			-I $ENV{LIBSIGCPP_DIR}/include/sigc++-2.0
-			-I $ENV{LIBSIGCPP_DIR}/lib/sigc++-2.0/include )
+			-I $ENV{CPP0X_INC} )
 macro (build_dictionary dictname )
   add_library(${dictname}_dict SHARED ${dictname}_dict.cpp )
   add_library(${dictname}_map SHARED ${dictname}_map.cpp )
@@ -35,7 +28,6 @@ macro (build_dictionary dictname )
      COMMAND ${GENREFLEX}  ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
         	 -s  ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
-		 -I ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}
 		 ${GENREFLEX_INCLUDES}
         	 -o ${dictname}_dict.cpp
 		 ${GENREFLEX_FLAGS} || { rm -f ${dictname}_dict.cpp\; /bin/false\; }
