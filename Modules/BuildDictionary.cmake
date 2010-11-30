@@ -1,7 +1,7 @@
 # macros for building plugin libraries
 #
 # this is how we do the genreflex step
-# define some variables for genreflex
+# define flags for genreflex
 set( GENREFLEX_FLAGS --deep
                      --fail_on_warnings
 		     --capabilities=classes_ids.cc
@@ -11,13 +11,13 @@ set( GENREFLEX_FLAGS --deep
 		     -DGNU_GCC
 		     -DPROJECT_NAME="CMSSW"
 		     -DPROJECT_VERSION="CMSSW_3_0_0_pre2" )
-set( GENREFLEX_INCLUDES -I $ENV{ROOTSYS}/include
-			-I $ENV{ROOTSYS}/cintex/inc
-			-I $ENV{BOOST_INC}
-			-I $ENV{CPP0X_INC} )
-macro (build_dictionary dictname )
+macro (build_dictionary dictname  )
   add_library(${dictname}_dict SHARED ${dictname}_dict.cpp )
   add_library(${dictname}_map SHARED ${dictname}_map.cpp )
+  get_directory_property( geninc INCLUDE_DIRECTORIES )
+  foreach( inc ${geninc} )
+      set( GENINCLUDES -I ${inc} ${GENINCLUDES} )
+  endforeach(inc)
   set(dictionary_liblist "${ARGN}")
   if( dictionary_liblist )
     target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
@@ -28,7 +28,7 @@ macro (build_dictionary dictname )
      COMMAND ${GENREFLEX}  ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
         	 -s  ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
-		 ${GENREFLEX_INCLUDES}
+		 ${GENINCLUDES}
         	 -o ${dictname}_dict.cpp
 		 ${GENREFLEX_FLAGS} || { rm -f ${dictname}_dict.cpp\; /bin/false\; }
      DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
