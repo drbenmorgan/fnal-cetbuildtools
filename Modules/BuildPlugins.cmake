@@ -2,7 +2,7 @@
 #
 # this is how we do the genreflex step
 # define some variables for genreflex
-set( GENREFLEX_FLAGS --deep
+set( GENFLAGS --deep
                      --fail_on_warnings
 		     --capabilities=classes_ids.cc
                      -DCMS_DICT_IMPL
@@ -11,7 +11,7 @@ set( GENREFLEX_FLAGS --deep
 		     -DGNU_GCC
 		     -DPROJECT_NAME="CMSSW"
 		     -DPROJECT_VERSION="CMSSW_3_0_0_pre2" )
-set( GENREFLEX_INCLUDES -I ${CPPUNIT_INC}
+set( GENINC -I ${CPPUNIT_INC}
 			-I $ENV{CLHEP_DIR}/include
 			-I $ENV{ROOT_DIR}/include
 			-I $ENV{ROOT_DIR}/cintex/inc
@@ -38,7 +38,7 @@ macro (build_art_dictionary maindir subdir)
 		 -I ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}
 		 ${GENREFLEX_INCLUDES}
         	 -o ${maindir}${subdir}_dict.cpp
-		 ${GENREFLEX_FLAGS} || { rm -f ${maindir}${subdir}_dict.cpp\; /bin/false\; }
+		 ${GENFLAGS} || { rm -f ${maindir}${subdir}_dict.cpp\; /bin/false\; }
      DEPENDS ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes.h
              ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes_def.xml
   )
