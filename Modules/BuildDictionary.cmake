@@ -11,7 +11,9 @@ set( GENREFLEX_FLAGS --deep
 		     -DGNU_GCC
 		     -DPROJECT_NAME="${PROJECT_NAME}"
 		     -DPROJECT_VERSION="${version}" )
-macro (build_dictionary dictname  )
+
+# a generic build for use outside of art
+macro (build_simple_dictionary dictname  )
   get_directory_property( geninc INCLUDE_DIRECTORIES )
   foreach( inc ${geninc} )
       set( GENINCLUDES -I ${inc} ${GENINCLUDES} )
@@ -41,4 +43,36 @@ macro (build_dictionary dictname  )
                                           ${REFLEX} )
   install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
   install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )
-endmacro (build_dictionary maindir subdir)
+endmacro (build_simple_dictionary)
+
+# dictionaries are build in art with this
+macro (build_dictionary maindir subdir)
+  get_directory_property( genpath INCLUDE_DIRECTORIES )
+  foreach( inc ${genpath} )
+      set( GENREFLEX_INCLUDES -I ${inc} ${GENREFLEX_INCLUDES} )
+  endforeach(inc)
+  set(dictionary_liblist "${ARGN}" ${REFLEX} )
+  set(dictname "${maindir}${subdir}" )
+  add_custom_command(
+     OUTPUT ${dictname}_dict.cpp classes_ids.cc
+     COMMAND ${GENREFLEX} ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes.h
+        	 -s ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes_def.xml
+		 -I ${CMAKE_SOURCE_DIR}
+		 -I ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}
+		 ${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
+        	 -o ${dictname}_dict.cpp || { rm -f ${dictname}_dict.cpp\; rm -f classes_ids.cc\; /bin/false\; }
+     DEPENDS ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes.h
+             ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes_def.xml
+  )
+  add_custom_command(
+     OUTPUT ${dictname}_map.cpp
+     DEPENDS ${dictname}_dict.cpp
+     COMMAND mv classes_ids.cc ${dictname}_map.cpp
+  )
+  add_library(${dictname}_dict SHARED ${dictname}_dict.cpp )
+  add_library(${dictname}_map SHARED ${dictname}_map.cpp )
+  target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
+  target_link_libraries( ${dictname}_map  ${dictionary_liblist} )
+  install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
+  install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )
+endmacro (build_dictionary)
