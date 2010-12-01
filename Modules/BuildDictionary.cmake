@@ -9,20 +9,14 @@ set( GENREFLEX_FLAGS --deep
 		     -D_REENTRANT
 		     -DGNU_SOURCE
 		     -DGNU_GCC
-		     -DPROJECT_NAME="CMSSW"
-		     -DPROJECT_VERSION="CMSSW_3_0_0_pre2" )
+		     -DPROJECT_NAME="${PROJECT_NAME}"
+		     -DPROJECT_VERSION="${version}" )
 macro (build_dictionary dictname  )
-  add_library(${dictname}_dict SHARED ${dictname}_dict.cpp )
-  add_library(${dictname}_map SHARED ${dictname}_map.cpp )
   get_directory_property( geninc INCLUDE_DIRECTORIES )
   foreach( inc ${geninc} )
       set( GENINCLUDES -I ${inc} ${GENINCLUDES} )
   endforeach(inc)
   set(dictionary_liblist "${ARGN}")
-  if( dictionary_liblist )
-    target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
-    target_link_libraries( ${dictname}_map ${dictionary_liblist} )
-  endif( dictionary_liblist )
   add_custom_command(
      OUTPUT ${dictname}_dict.cpp
      COMMAND ${GENREFLEX}  ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
@@ -39,6 +33,12 @@ macro (build_dictionary dictname  )
      DEPENDS ${dictname}_dict.cpp
      COMMAND mv classes_ids.cc ${dictname}_map.cpp
   )
+  add_library(${dictname}_dict SHARED ${dictname}_dict.cpp )
+  add_library(${dictname}_map SHARED ${dictname}_map.cpp )
+  target_link_libraries( ${dictname}_dict ${dictionary_liblist} 
+                                          ${REFLEX} )
+  target_link_libraries( ${dictname}_map ${dictionary_liblist} 
+                                          ${REFLEX} )
   install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
   install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )
 endmacro (build_dictionary maindir subdir)
