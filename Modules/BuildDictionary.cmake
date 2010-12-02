@@ -45,7 +45,7 @@ macro (build_simple_dictionary dictname  )
   install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )
 endmacro (build_simple_dictionary)
 
-# dictionaries are build in art with this
+# dictionaries are built in art with this
 macro (build_dictionary maindir subdir)
   get_directory_property( genpath INCLUDE_DIRECTORIES )
   foreach( inc ${genpath} )
@@ -55,14 +55,14 @@ macro (build_dictionary maindir subdir)
   set(dictname "${maindir}${subdir}" )
   add_custom_command(
      OUTPUT ${dictname}_dict.cpp classes_ids.cc
-     COMMAND ${GENREFLEX} ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes.h
-        	 -s ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes_def.xml
+     COMMAND ${GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
+        	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
-		 -I ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}
+		 -I ${CMAKE_CURRENT_SOURCE_DIR}
 		 ${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
         	 -o ${dictname}_dict.cpp || { rm -f ${dictname}_dict.cpp\; rm -f classes_ids.cc\; /bin/false\; }
-     DEPENDS ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes.h
-             ${CMAKE_SOURCE_DIR}/art/${maindir}/${subdir}/classes_def.xml
+     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
+             ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
   )
   add_custom_command(
      OUTPUT ${dictname}_map.cpp
