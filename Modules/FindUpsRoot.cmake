@@ -18,8 +18,7 @@ STRING( REGEX REPLACE "^[r][o][o][t][ ]+([^ ]+).*" "\\1" ROOT_VERSION "${ROOT_ST
 message(STATUS "ROOT version and qualifier are ${ROOT_VERSION} ${ROOT_QUAL}" )
 
 # add include directory to include path if it exists
-include_directories ( $ENV{ROOT_DIR}/include )
-include_directories ( $ENV{ROOT_DIR}/cintex/inc )
+include_directories ( $ENV{ROOT_INC} )
 
 # define ROOT libraries
 find_library( REFLEX NAMES Reflex PATHS $ENV{ROOTSYS}/lib )
