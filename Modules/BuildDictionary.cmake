@@ -12,13 +12,12 @@ set( GENREFLEX_FLAGS --deep
 		     -DPROJECT_NAME="${PROJECT_NAME}"
 		     -DPROJECT_VERSION="${version}" )
 
-# dictionaries are built in art with this
-macro (build_dictionary maindir subdir)
+# just the code generation step
+macro (generate_dictionary maindir subdir)
   get_directory_property( genpath INCLUDE_DIRECTORIES )
   foreach( inc ${genpath} )
       set( GENREFLEX_INCLUDES -I ${inc} ${GENREFLEX_INCLUDES} )
   endforeach(inc)
-  set(dictionary_liblist "${ARGN}" ${REFLEX} )
   set(dictname "${maindir}${subdir}" )
   add_custom_command(
      OUTPUT ${PROJECT_BINARY_DIR}/${dictname}_dict.cpp  
@@ -40,6 +39,15 @@ macro (build_dictionary maindir subdir)
      COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
      DEPENDS ${PROJECT_BINARY_DIR}/${dictname}_dict.cpp  
   )
+  SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/${dictname}_map.cpp
+                              PROPERTIES GENERATED 1)
+endmacro (generate_dictionary)
+
+# dictionaries are built in art with this
+macro (build_dictionary maindir subdir)
+  set(dictionary_liblist "${ARGN}" ${REFLEX} )
+  set(dictname "${maindir}${subdir}" )
+  generate_dictionary( ${maindir} ${subdir} )
   add_library(${dictname}_dict SHARED ${PROJECT_BINARY_DIR}/${dictname}_dict.cpp )
   add_library(${dictname}_map  SHARED ${PROJECT_BINARY_DIR}/${dictname}_map.cpp )
   SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/${dictname}_dict.cpp 
