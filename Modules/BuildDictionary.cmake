@@ -21,8 +21,7 @@ macro (build_dictionary maindir subdir)
   set(dictionary_liblist "${ARGN}" ${REFLEX} )
   set(dictname "${maindir}${subdir}" )
   add_custom_command(
-     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp  
-            ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp
+     OUTPUT ${PROJECT_BINARY_DIR}/${dictname}_dict.cpp  
      COMMAND ${GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
         	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
@@ -32,13 +31,20 @@ macro (build_dictionary maindir subdir)
 		 { ${CMAKE_COMMAND} -E remove -f ${dictname}_dict.cpp\; 
 	           ${CMAKE_COMMAND} -E remove -f classes_ids.cc\; 
 		   /bin/false\; }
-     COMMAND ${CMAKE_COMMAND} -E copy classes_ids.cc ${dictname}_map.cpp
-     COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
              ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
   )
-  add_library(${dictname}_dict SHARED ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp )
-  add_library(${dictname}_map  SHARED ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp )
+  add_custom_command(
+     OUTPUT ${PROJECT_BINARY_DIR}/${dictname}_map.cpp
+     COMMAND ${CMAKE_COMMAND} -E copy classes_ids.cc ${dictname}_map.cpp
+     COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
+     DEPENDS ${PROJECT_BINARY_DIR}/${dictname}_dict.cpp  
+  )
+  add_library(${dictname}_dict SHARED ${PROJECT_BINARY_DIR}/${dictname}_dict.cpp )
+  add_library(${dictname}_map  SHARED ${PROJECT_BINARY_DIR}/${dictname}_map.cpp )
+  SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/${dictname}_dict.cpp 
+                              ${PROJECT_BINARY_DIR}/${dictname}_map.cpp
+                              PROPERTIES GENERATED 1)
   target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
   target_link_libraries( ${dictname}_map  ${dictionary_liblist} )
   install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
