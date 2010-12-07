@@ -12,12 +12,11 @@ set( GENREFLEX_FLAGS --deep
 		     -DPROJECT_VERSION="${version}" )
 
 # just the code generation step
-macro (generate_dictionary maindir subdir)
+macro (generate_dictionary dictname )
   get_directory_property( genpath INCLUDE_DIRECTORIES )
   foreach( inc ${genpath} )
       set( GENREFLEX_INCLUDES -I ${inc} ${GENREFLEX_INCLUDES} )
   endforeach(inc)
-  set(dictname "${maindir}${subdir}" )
   add_custom_command(
      OUTPUT ${PROJECT_BINARY_DIR}/dict/${dictname}_dict.cpp  
             ${PROJECT_BINARY_DIR}/dict/${dictname}_map.cpp 
@@ -37,10 +36,26 @@ macro (generate_dictionary maindir subdir)
                              ${PROJECT_BINARY_DIR}/dict/${dictname}_map.cpp )
 endmacro (generate_dictionary)
 
+macro (build_dictionary_sequester)
+  set(build_dictionary_usage "build_simple_dictionary(<dictionary name> [DICTIONARY_LIBRARIES <library list>])")
+  if(${ARGC} GREATER 1)
+     if(${ARGC} EQUAL 3)
+        if("${ARGV1}" STREQUAL "DICTIONARY_LIBRARIES")
+          set(dictionary_liblist "${ARGV2}" ${REFLEX} )
+	else()
+           message(SEND_ERROR ${build_dictionary_usage})
+	endif()
+     else()
+        message(SEND_ERROR ${build_dictionary_usage})
+     endif()
+  endif()
+  message(STATUS "build_simple_dictionary: library list: ${dictionary_liblist}")
+endmacro (build_dictionary_sequester)
+
 # dictionaries are built in art with this
-macro (build_dictionary maindir subdir)
+macro (build_dictionary dictname )
+  add_subdirectory(dict)
   set(dictionary_liblist "${ARGN}" ${REFLEX} )
-  set(dictname "${maindir}${subdir}" )
   add_library(${dictname}_dict SHARED ${PROJECT_BINARY_DIR}/dict/${dictname}_dict.cpp )
   add_library(${dictname}_map  SHARED ${PROJECT_BINARY_DIR}/dict/${dictname}_map.cpp )
   SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/dict/${dictname}_dict.cpp 
