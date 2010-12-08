@@ -1,6 +1,21 @@
-# macros for building plugin libraries
+# macros for building ROOT dictionaries
+# In order to allow proper dependency matching, 
+# the dictionary input files need to be in their own subdirectory.
+# .../somedir/CMakeLists.txt should invoke build_dictionary()
+# .../somedir/dict/CMakeLists.txt should invoke generate_dictionary()
+# You may use any name for the dictionary subdirectory, 
+# but "dict" is the default.
 #
-# this is how we do the genreflex step
+# USAGE:
+# generate_dictionary( [dictionary_name] [subdir] )
+# build_dictionary( [dictionary_name] [subdir]  [DICTIONARY_LIBRARIES <library list>])
+#        dictionary_name defaults to ${PROJECT_NAME}
+#        subdir defaults to "dict"
+#        ${REFLEX} is always appended to the library list (even if it is empty)
+#
+#  any other macros or functions in this file are for internal use only
+#
+
 # define flags for genreflex
 set( GENREFLEX_FLAGS --deep
                      --fail_on_warnings
@@ -12,14 +27,30 @@ set( GENREFLEX_FLAGS --deep
 		     -DPROJECT_VERSION="${version}" )
 
 # just the code generation step
-macro (generate_dictionary dictname )
+macro (generate_dictionary  )
+  set(generate_dictionary_usage "generate_dictionary( [dictionary_name] [subdir] )")
+  #message(STATUS "calling generate_dictionary with ${ARGC} arguments: ${ARGV}")
+  if(${ARGC} EQUAL 0)
+     set(dictname ${PROJECT_NAME} )
+     set(subdir "dict" )
+  elseif(${ARGC} EQUAL 1)
+     set(dictname  "${ARGV0}")
+     set(subdir "dict" )
+  elseif(${ARGC} EQUAL 2)
+     set(dictname  "${ARGV0}")
+     set(subdir "${ARGV1}" )
+  else()
+     message("GENERATE_DICTIONARY: Too many arguments. ${ARGV}")
+     message(SEND_ERROR  ${generate_dictionary_usage})
+  endif()
+  message(STATUS "GENERATE_DICTIONARY: generate dictionary source code for ${dictname} in ${subdir} ")
   get_directory_property( genpath INCLUDE_DIRECTORIES )
   foreach( inc ${genpath} )
       set( GENREFLEX_INCLUDES -I ${inc} ${GENREFLEX_INCLUDES} )
   endforeach(inc)
   add_custom_command(
-     OUTPUT ${PROJECT_BINARY_DIR}/dict/${dictname}_dict.cpp  
-            ${PROJECT_BINARY_DIR}/dict/${dictname}_map.cpp 
+     OUTPUT ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp  
+            ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp 
      COMMAND ${GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
         	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
@@ -30,36 +61,92 @@ macro (generate_dictionary dictname )
      COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
              ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/${subdir}
   )
   add_custom_target( ${dictname}_generated 
-                     DEPENDS ${PROJECT_BINARY_DIR}/dict/${dictname}_dict.cpp 
-                             ${PROJECT_BINARY_DIR}/dict/${dictname}_map.cpp )
+                     DEPENDS ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp 
+                             ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
 endmacro (generate_dictionary)
 
-macro (build_dictionary_sequester)
-  set(build_dictionary_usage "build_simple_dictionary(<dictionary name> [DICTIONARY_LIBRARIES <library list>])")
-  if(${ARGC} GREATER 1)
-     if(${ARGC} EQUAL 3)
-        if("${ARGV1}" STREQUAL "DICTIONARY_LIBRARIES")
-          set(dictionary_liblist "${ARGV2}" ${REFLEX} )
-	else()
-           message(SEND_ERROR ${build_dictionary_usage})
-	endif()
+function( _parse_dictionary_arguments )
+  set(build_dictionary_usage "USAGE: build_dictionary( [dictionary_name] [local_subdir] [DICTIONARY_LIBRARIES <library list>] )")
+  message(STATUS "PARSE: called with ${ARGC} arguments: ${ARGV}")
+  set(start_dict -1)
+  if(${ARGC} EQUAL 0)
+     message(SEND_ERROR "PARSE: No arguments. This should not happen.")
+  elseif(${ARGC} EQUAL 1)
+     if("${ARGV0}" STREQUAL "DICTIONARY_LIBRARIES")
+       set(local_dictname "${PROJECT_NAME}" )
+       set(local_subdir "dict" )
      else()
-        message(SEND_ERROR ${build_dictionary_usage})
+       set(local_dictname  "${ARGV0}")
+       set(local_subdir "dict" )
+     endif()
+  elseif(${ARGC} EQUAL 2)
+     if("${ARGV0}" STREQUAL "DICTIONARY_LIBRARIES")
+       set(local_dictname "${PROJECT_NAME}" )
+       set(local_subdir "dict" )
+       set(start_dict 1)
+     elseif("${ARGV1}" STREQUAL "DICTIONARY_LIBRARIES")
+       set(local_dictname  "${ARGV0}")
+       set(local_subdir "dict" )
+     else()
+       set(local_dictname  "${ARGV0}")
+       set(local_subdir "${ARGV1}" )
+     endif()
+  else()
+     if("${ARGV0}" STREQUAL "DICTIONARY_LIBRARIES")
+       set(local_dictname "${PROJECT_NAME}" )
+       set(local_subdir "dict" )
+       set(start_dict 1)
+     elseif("${ARGV1}" STREQUAL "DICTIONARY_LIBRARIES")
+       set(local_dictname  "${ARGV0}")
+       set(local_subdir "dict" )
+       set(start_dict 2)
+     elseif("${ARGV2}" STREQUAL "DICTIONARY_LIBRARIES")
+       set(local_dictname  "${ARGV0}")
+       set(local_subdir "${ARGV1}" )
+       set(start_dict 3)
+     else()
+	message("BUILD_DICTIONARY: Too many arguments. ${ARGV}")
+	message(SEND_ERROR  ${build_dictionary_usage})
      endif()
   endif()
-  message(STATUS "build_simple_dictionary: library list: ${dictionary_liblist}")
-endmacro (build_dictionary_sequester)
+  if( ${start_dict} GREATER 0)
+     set(use_arg FALSE)
+     foreach( lib ${ARGV} )
+	if("${lib}" STREQUAL "DICTIONARY_LIBRARIES")
+	   set(use_arg TRUE)
+	elseif(use_arg)
+	    list(APPEND local_dictionary_liblist ${lib})
+	endif()
+     endforeach( lib )
+  endif()
+  set(dictname ${local_dictname} PARENT_SCOPE )
+  set(subdir ${local_subdir} PARENT_SCOPE )
+  set(dictionary_liblist "${local_dictionary_liblist}" ${REFLEX} PARENT_SCOPE )
+  message(STATUS "PARSE: find dictionary source code for ${local_dictname} in ${local_subdir} ")
+  message(STATUS "PARSE: link dictionary ${local_dictname} with ${local_dictionary_liblist} ")
+endfunction( _parse_dictionary_arguments )
 
 # dictionaries are built in art with this
-macro (build_dictionary dictname )
-  add_subdirectory(dict)
-  set(dictionary_liblist "${ARGN}" ${REFLEX} )
-  add_library(${dictname}_dict SHARED ${PROJECT_BINARY_DIR}/dict/${dictname}_dict.cpp )
-  add_library(${dictname}_map  SHARED ${PROJECT_BINARY_DIR}/dict/${dictname}_map.cpp )
-  SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/dict/${dictname}_dict.cpp 
-                              ${PROJECT_BINARY_DIR}/dict/${dictname}_map.cpp
+macro (build_dictionary )
+  message(STATUS "BUILD_DICTIONARY: calling build_dictionary with ${ARGC} arguments: ${ARGV}")
+  if(${ARGC} EQUAL 0)
+     set(dictname ${PROJECT_NAME} )
+     set(subdir "dict" )
+     set(dictionary_liblist ${REFLEX} )
+  else()
+     _parse_dictionary_arguments( ${ARGN} )
+  endif()
+  #set(dictionary_liblist "${ARGV}" ${REFLEX} )
+  message(STATUS "BUILD_DICTIONARY: find dictionary source code for ${dictname} in ${subdir} ")
+  message(STATUS "BUILD_DICTIONARY: link dictionary ${dictname} with ${dictionary_liblist} ")
+  add_subdirectory(${subdir})
+  add_library(${dictname}_dict SHARED ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp )
+  add_library(${dictname}_map  SHARED ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
+  SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp 
+                              ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp
                               PROPERTIES GENERATED 1)
   target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
   target_link_libraries( ${dictname}_map  ${dictionary_liblist} )
