@@ -3,8 +3,9 @@
 # find_ups_boost(  version [list of libraries] )
 #  version - minimum version required
 
-# since variables are passed, this is implemented as a macro
+include(CheckUpsVersion)
 
+# since variables are passed, this is implemented as a macro
 macro( find_ups_boost version  )
 
   set(boost_liblist "${ARGN}")

@@ -1,11 +1,12 @@
 # ROOT is a special case
 #
-# find_ups_root(  version )
-#  version - minimum version required
+# find_ups_root(  minimum )
+#  minimum - minimum version required
+
+include(CheckUpsVersion)
 
 # since variables are passed, this is implemented as a macro
-
-macro( find_ups_root version )
+macro( find_ups_root minimum )
 
 # require ROOTSYS
 set( ROOTSYS $ENV{ROOTSYS} )
@@ -15,16 +16,7 @@ endif ()
 SET ( ROOT_STRING $ENV{SETUP_ROOT} )
 STRING( REGEX REPLACE "^[r][o][o][t][ ]+([^ ]+).*" "\\1" ROOT_VERSION "${ROOT_STRING}" )
 
-# convert vx_y_z to x.y.z
-STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2" MINVER "${version}" )
-STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2.\\3" THISVER "${ROOT_VERSION}" )
-#message(STATUS "ROOT minimum version is ${MINVER} from ${version} " )
-#message(STATUS "ROOT  version is ${THISVER} from ${ROOT_VERSION} " )
-if(  ${THISVER} STRGREATER ${MINVER} )
-  message( STATUS "ROOT ${THISVER} meets minimum required version ${MINVER}")
-else()
-  message( FATAL_ERROR "ROOT ${THISVER} is less than minimum required version ${MINVER}")
-endif()
+_check_version( ROOT ${ROOT_VERSION} ${minimum} )
 
 STRING( REGEX MATCH "[-][q]" has_qual  "${ROOT_STRING}" )
 STRING( REGEX MATCH "[-][j]" has_j  "${ROOT_STRING}" )

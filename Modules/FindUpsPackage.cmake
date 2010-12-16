@@ -4,35 +4,9 @@
 #  PRODUCTNAME - product name 
 #  version - minimum version required
 
+include(CheckUpsVersion)
+
 # since variables are passed, this is implemented as a macro
-
-#internal macro
-macro( _check_version product version minimum )
-   # convert vx_y_z to x.y.z
-   # must also recognize vx_y
-   STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2" MINVER "${minimum}" )
-   STRING(REGEX MATCH [_] has_underscore ${MINVER})
-     if( has_underscore )
-       STRING( REGEX REPLACE "v(.*)_(.*)" "\\1.\\2" MINVER "${minimum}" )
-     endif( has_underscore )
-   STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2.\\3" THISVER "${version}" )
-   STRING(REGEX MATCH [_] has_underscore ${THISVER})
-     if( has_underscore )
-       STRING( REGEX REPLACE "v(.*)_(.*)" "\\1.\\2" THISVER "${version}" )
-     endif( has_underscore )
-   #message(STATUS "${product} minimum version is ${MINVER} from ${minimum} " )
-   #message(STATUS "${product}  version is ${THISVER} from ${version} " )
-   if(  ${THISVER} STRGREATER ${MINVER} )
-     message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
-   else()
-     if(  ${THISVER} EQUAL ${MINVER} )
-       message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
-     else()
-       message( FATAL_ERROR "${product} ${THISVER} is less than minimum required version ${MINVER}")
-     endif()
-   endif()
-endmacro( _check_version product version minimum )
-
 macro( find_ups_product PRODUCTNAME version )
 
 # get upper and lower case versions of the name
