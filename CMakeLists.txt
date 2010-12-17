@@ -1,7 +1,7 @@
 #
 #  cetbuildtools/CMakeLists.txt
 #
-#  CMake build file for cetbuildtools 
+#  CMake build file for cetbuildtools
 #  This simply copies files into an install directory - there is no build
 #
 #   cmake [-DCMAKE_INSTALL_PREFIX=/install/path] /path/to/source/code
@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
 
 PROJECT (cetbuildtools)
 set (product cetbuildtools)
-SET (version v1_6_1)
+SET (version v1_6_2)
 # we don't use a qualifier for a utility product
 ##SET (qualifier a1)
 
@@ -20,7 +20,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Modules)
 include(ParseUpsVersion)
 set_version_from_ups( ${version} )
 
-# This is a NULL flavored product, 
+# This is a NULL flavored product,
 # We don't use flavorqual_dir, but we could
 SET( SLTYPE noarch )
 SET (flavorqual ${SLTYPE}.${qualifier})

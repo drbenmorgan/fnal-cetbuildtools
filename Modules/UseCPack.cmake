@@ -1,5 +1,5 @@
 # define the environment for cpack
-# 
+#
 include(FindCompilerVersion)
 
 # note that parse_ups_version is used to define VERSION_MAJOR, etc.
@@ -9,7 +9,7 @@ set( CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH} )
 
 set( CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0 )
 set( CPACK_GENERATOR TGZ )
-   
+
 find_compiler()
 
 if ( ${SLTYPE} MATCHES "noarch" )

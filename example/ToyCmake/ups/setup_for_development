@@ -1,5 +1,5 @@
 # This is shamelessly cribbed from Ron Rechenmacher's ups bootstrap "setup"
-# 
+#
 # REPLACE all occurances of TOYCMAKE with your product name in upper case
 #
 # This script sets up the environment for a developer working on framework.
@@ -11,7 +11,7 @@
 #    set fw_db=/some/path; source /some/path/this_file
 # or  fw_db=/some/path; . /some/path/this_file
 #
-# If TOYCMAKE_BUILD is undefined, it is set to whatever directory 
+# If TOYCMAKE_BUILD is undefined, it is set to whatever directory
 # you are in when this script is invoked.
 # $TOYCMAKE_BUILD/lib is added to LD_LIBRARY_PATH
 
@@ -74,6 +74,6 @@ echo
 echo LD_LIBRARY_PATH is now ${LD_LIBRARY_PATH}
 
 # cleanup before exiting
-test "$ss" = csh && unalias tnotnull nullout set_ vecho_ 
+test "$ss" = csh && unalias tnotnull nullout set_ vecho_
 unset ss msg db me thisdir py_ver
 unset set_ setenv unsetenv tnotnull source nullout vecho_

@@ -66,13 +66,13 @@ set_flavor_qual(FindUpsRoot)
 
 # We want to be able to #include "MyProduct/MyHeader.h" in source code,
 # generated code, and user code.
-# We achieve this by putting all headers into a MyProduct subdirectory  
-# instead of an include subdirectory.  
+# We achieve this by putting all headers into a MyProduct subdirectory
+# instead of an include subdirectory.
 # PROJECT_SOURCE_DIR is a cmake variable which points to the top of the
 # source code tree.
 include_directories ("${PROJECT_SOURCE_DIR}")
 
-# Generated code will be created in the build directory, 
+# Generated code will be created in the build directory,
 # so we also add PROJECT_BINARY_DIR to the include search path.
 # This step may be omitted if there are no generated headers.
 include_directories ("${PROJECT_BINARY_DIR}")
@@ -90,8 +90,8 @@ include_directories ("${PROJECT_BINARY_DIR}")
 # define FHICLCPP
 #find_library( FHICLCPP NAMES fhiclcpp PATHS $ENV{FHICLCPP_LIB} )
 
-# Building  all libraries and binaries in a single lib and bin directory 
-# is useful for a complex product like art.  
+# Building  all libraries and binaries in a single lib and bin directory
+# is useful for a complex product like art.
 # You may not want to do this for smaller products.
 
 #build all libraries in a single directory

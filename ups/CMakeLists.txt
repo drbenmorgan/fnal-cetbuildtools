@@ -1,6 +1,6 @@
 
-execute_process( COMMAND date 
-                 OUTPUT_VARIABLE datime 
+execute_process( COMMAND date
+                 OUTPUT_VARIABLE datime
                  OUTPUT_STRIP_TRAILING_WHITESPACE )
 
 CONFIGURE_FILE ( ${cetbuildtools_SOURCE_DIR}/ups/cetbuildtools.table.in

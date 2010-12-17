@@ -22,7 +22,7 @@ ENDFUNCTION()
 
 #
 # End functions/macros
-#  
+#
 #-------------------------------------------------------------------------------
 
 
@@ -48,8 +48,8 @@ macro( find_compiler )
       SET (CPack_COMPILER_STRING "-vc6") # yes, this is correct
     elseif (BORLAND)
       SET (CPack_COMPILER_STRING "-bcb")
-    elseif("${CMAKE_CXX_COMPILER}" MATCHES "icl" 
-        OR "${CMAKE_CXX_COMPILER}" MATCHES "icpc") 
+    elseif("${CMAKE_CXX_COMPILER}" MATCHES "icl"
+        OR "${CMAKE_CXX_COMPILER}" MATCHES "icpc")
       if(WIN32)
         set (CPack_COMPILER_STRING "-iw")
       else()

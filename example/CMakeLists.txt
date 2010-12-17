@@ -25,7 +25,7 @@ set( installSquareFiles ToyCmake/ToyCmake/Square/CMakeLists.txt
 INSTALL (FILES ToyCmake/CMakeLists.txt ToyCmake/README
          DESTINATION ${product}/${version}/example/ToyCmake )
 
-INSTALL (FILES ToyCmake/ToyCmake/CMakeLists.txt 
+INSTALL (FILES ToyCmake/ToyCmake/CMakeLists.txt
          DESTINATION ${product}/${version}/example/ToyCmake/ToyCmake )
 
 INSTALL (FILES ${installMathFiles}

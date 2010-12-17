@@ -1,7 +1,7 @@
 # define the environment for a ups product
 #
 # find_ups_product( PRODUCTNAME version )
-#  PRODUCTNAME - product name 
+#  PRODUCTNAME - product name
 #  version - minimum version required
 
 include(CheckUpsVersion)

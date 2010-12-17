@@ -3,7 +3,7 @@
 # set_dot_version ( PRODUCTNAME UPS_VERSION )
 # set_version_from_ups( UPS_VERSION )
 # parse_ups_version( UPS_VERSION )
-#  PRODUCTNAME - product name 
+#  PRODUCTNAME - product name
 #  UPS_VERSION - ups version of the form vx_y_z
 
 macro( parse_ups_version UPS_VERSION )

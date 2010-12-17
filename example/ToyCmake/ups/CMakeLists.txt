@@ -1,6 +1,6 @@
 
-execute_process( COMMAND date 
-                 OUTPUT_VARIABLE datime 
+execute_process( COMMAND date
+                 OUTPUT_VARIABLE datime
                  OUTPUT_STRIP_TRAILING_WHITESPACE )
 
 configure_file ( ${ToyCmake_SOURCE_DIR}/ups/ToyCmake-config.cmake.in

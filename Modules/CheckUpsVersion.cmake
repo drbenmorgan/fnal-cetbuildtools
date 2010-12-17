@@ -41,17 +41,21 @@ macro( _check_version product version minimum )
    set( THISCHAR ${patchchar} )
    #message(STATUS "${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} from ${minimum} " )
    #message(STATUS "${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} from ${version} " )
-   if(  ${THISMAJOR} LESS ${MINMAJOR} )
-       message( FATAL_ERROR "Bad Major Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
-   endif()
-   if(  ${THISMINOR} LESS ${MINMINOR} )
-       message( FATAL_ERROR "Bad Minor Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
-   endif()
-   if(  ${THISPATCH} LESS ${MINPATCH} )
-       message( FATAL_ERROR "Bad Patch Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
-   endif()
-   if(  ${THISCHAR} STRLESS ${MINCHAR} )
-       message( FATAL_ERROR "Bad Patch Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
-   endif()
-   message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
+  if( ${THISMAJOR} LESS ${MINMAJOR} )
+    message( FATAL_ERROR "Bad Major Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
+  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+      AND ${THISMINOR} LESS ${MINMINOR} )
+    message( FATAL_ERROR "Bad Minor Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
+  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+      AND ${THISMINOR} EQUAL ${MINMINOR}
+      AND ${THISPATCH} LESS ${MINPATCH} )
+    message( FATAL_ERROR "Bad Patch Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
+  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+      AND ${THISMINOR} EQUAL ${MINMINOR}
+      AND ${THISPATCH} EQUAL ${MINPATCH}
+      AND ${THISCHAR} STRLESS ${MINCHAR} )
+    message( FATAL_ERROR "Bad Patch Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
+  endif()
+
+  message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
 endmacro( _check_version product version minimum )

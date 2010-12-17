@@ -9,7 +9,7 @@
 #    set fw_db=/some/path; source /some/path/this_file
 # or  fw_db=/some/path; . /some/path/this_file
 #
-# If CETBUILDTOOLS_BUILD is undefined, it is set to whatever directory 
+# If CETBUILDTOOLS_BUILD is undefined, it is set to whatever directory
 # you are in when this script is invoked.
 
 test $?shell = 1 && set ss=csh || ss=sh
@@ -63,6 +63,6 @@ echo CETBUILDTOOLS_BUILD=$CETBUILDTOOLS_BUILD
 echo
 
 # cleanup before exiting
-test "$ss" = csh && unalias tnotnull nullout set_ vecho_ 
+test "$ss" = csh && unalias tnotnull nullout set_ vecho_
 unset ss msg db me thisdir py_ver
 unset set_ setenv unsetenv tnotnull source nullout vecho_

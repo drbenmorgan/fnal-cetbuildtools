@@ -1,22 +1,22 @@
-This directory contains ups templates for cmake.   
+This directory contains ups templates for cmake.
 These templates support 32bit and 64bit SL4 and SL5.
 They will need modification to support other flavors.
-Writing version and table files for NULL flavored products is left as an exercise 
+Writing version and table files for NULL flavored products is left as an exercise
 for the developer, but you can consider cetbuildtools itself an example.
 
 To use the templates in this directory,  where XXX is the product name:
 1. cp generic.table.in <your-source-code>/ups/XXX.table.in
 2. cp generic.version.in <your-source-code>/ups/XXX.version.in
 3. cp setup_for_development.template <your-source-code>/ups/setup_for_development
-3. Make sure that <your-source-code>/CMakeLists.txt defines 
-   "product", "version", and "qualifier".  
+3. Make sure that <your-source-code>/CMakeLists.txt defines
+   "product", "version", and "qualifier".
    See example/ToyCmake/CMakeLists.txt
    The ups convention is that product names will be all lower case.
-4. Edit the list of required products in XXX.table.in 
+4. Edit the list of required products in XXX.table.in
 5. Edit setup_for_development:
    Edit the list of required products.
    Replace all occurances of XXX with your product name in upper case.
 
 See example/ToyCmake for a complete example which uses cmake to build hello world
-and create a relocateable ups tarball.  
+and create a relocateable ups tarball.
 

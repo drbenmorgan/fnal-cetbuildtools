@@ -1,9 +1,9 @@
 # macros for building ROOT dictionaries
-# In order to allow proper dependency matching, 
+# In order to allow proper dependency matching,
 # the dictionary input files need to be in their own subdirectory.
 # .../somedir/CMakeLists.txt should invoke build_dictionary()
 # .../somedir/dict/CMakeLists.txt should invoke generate_dictionary()
-# You may use any name for the dictionary subdirectory, 
+# You may use any name for the dictionary subdirectory,
 # but "dict" is the default.
 #
 # USAGE:
@@ -22,7 +22,7 @@ set( GENREFLEX_FLAGS --deep
 		     --capabilities=classes_ids.cc
 		     -D_REENTRANT
 		     -DGNU_SOURCE
-		     -DGNU_GCC 
+		     -DGNU_GCC
 		     -DPROJECT_NAME="${PROJECT_NAME}"
 		     -DPROJECT_VERSION="${version}" )
 
@@ -49,22 +49,22 @@ macro (generate_dictionary  )
       set( GENREFLEX_INCLUDES -I ${inc} ${GENREFLEX_INCLUDES} )
   endforeach(inc)
   add_custom_command(
-     OUTPUT ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp  
-            ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp 
+     OUTPUT ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp
+            ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp
      COMMAND ${GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
         	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
 		 -I ${CMAKE_CURRENT_SOURCE_DIR}
 		 ${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
-        	 -o ${dictname}_dict.cpp 
+        	 -o ${dictname}_dict.cpp
      COMMAND ${CMAKE_COMMAND} -E copy classes_ids.cc ${dictname}_map.cpp
      COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
              ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/${subdir}
   )
-  add_custom_target( ${dictname}_generated 
-                     DEPENDS ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp 
+  add_custom_target( ${dictname}_generated
+                     DEPENDS ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp
                              ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
 endmacro (generate_dictionary)
 
@@ -146,7 +146,7 @@ macro (build_dictionary )
   add_subdirectory(${subdir})
   add_library(${dictname}_dict SHARED ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp )
   add_library(${dictname}_map  SHARED ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
-  SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp 
+  SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp
                               ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp
                               PROPERTIES GENERATED 1)
   target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
