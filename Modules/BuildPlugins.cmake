@@ -1,6 +1,7 @@
 # macros for building plugin libraries
 #
-# Plugin type must be service, source, or module
+# The plugin type is expected to be service, source, or module, 
+# but we do not enforce this.
 
 # simple plugin libraries
 macro (simple_plugin name type)
@@ -18,36 +19,3 @@ macro (simple_plugin name type)
   endif( simple_plugin_liblist )
   install( TARGETS ${plugin_name}  DESTINATION ${flavorqual_dir}/lib )
 endmacro (simple_plugin name)
-
-macro (old_simple_plugin name)
-  set(plugin_name "${PROJECT_NAME}_${name}_plugin")
-  set(codename "${name}_plugin.cc")
-  STRING(REGEX MATCH [_] has_underscore ${name})
-  if( has_underscore )
-     message(SEND_ERROR  "found underscore in plugin name: ${name}" )
-  endif( has_underscore )
-  #message(STATUS "SIMPLE_PLUGIN: generating ${plugin_name}")
-  add_library(${plugin_name} SHARED ${codename} )
-  set(simple_plugin_liblist "${ARGN}")
-  if( simple_plugin_liblist )
-    target_link_libraries( ${plugin_name} ${simple_plugin_liblist} )
-  endif( simple_plugin_liblist )
-  install( TARGETS ${plugin_name}  DESTINATION ${flavorqual_dir}/lib )
-endmacro (old_simple_plugin name)
-
-# simple service libraries
-macro (simple_service name)
-  set(service_name "${PROJECT_NAME}_${name}_service")
-  set(codename "${name}_service.cc")
-  STRING(REGEX MATCH [_] has_underscore ${name})
-  if( has_underscore )
-     message(SEND_ERROR  "found underscore in service name: ${name}" )
-  endif( has_underscore )
-  #message(STATUS "SIMPLE_SERVICE: generating ${service_name}")
-  add_library(${service_name} SHARED ${codename} )
-  set(simple_service_liblist "${ARGN}")
-  if( simple_service_liblist )
-    target_link_libraries( ${service_name} ${simple_service_liblist} )
-  endif( simple_service_liblist )
-  install( TARGETS ${service_name}  DESTINATION ${flavorqual_dir}/lib )
-endmacro (simple_service name)
