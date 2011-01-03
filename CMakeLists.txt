@@ -4,13 +4,18 @@
 #  CMake build file for cetbuildtools
 #  This simply copies files into an install directory - there is no build
 #
-#   cmake [-DCMAKE_INSTALL_PREFIX=/install/path] /path/to/source/code
+#  install steps:
+#  cd /path/to/build/directory
+#  source /path/to/cetbuildtools/ups/setup_for_development 
+#  cmake [-DCMAKE_INSTALL_PREFIX=/install/path] $CETBUILDTOOLS_SOURCE
+#  make install
+#  make package (tar file for ups)
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
 
 PROJECT (cetbuildtools)
 set (product cetbuildtools)
-SET (version v1_6_3)
+SET (version v1_6_4)
 # we don't use a qualifier for a utility product
 ##SET (qualifier a1)
 
