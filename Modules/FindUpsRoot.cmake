@@ -46,6 +46,7 @@ find_library( GRAF   NAMES Graf   PATHS $ENV{ROOTSYS}/lib )
 find_library( RIO    NAMES RIO    PATHS $ENV{ROOTSYS}/lib )
 find_library( NET    NAMES Net    PATHS $ENV{ROOTSYS}/lib )
 find_library( MATRIX NAMES Matrix PATHS $ENV{ROOTSYS}/lib )
+find_Library( THREAD NAMES Thread PATHS $ENV{ROOTSYS}/lib )
 # define genreflex executable
 find_program( GENREFLEX NAMES genreflex PATHS $ENV{ROOTSYS}/bin )
 
