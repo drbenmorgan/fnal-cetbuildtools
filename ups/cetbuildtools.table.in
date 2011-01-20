@@ -39,14 +39,8 @@ Common:
 	execute( true, NO_UPS_ENV )
     endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/lib lib;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
 
-    # add the bin directory to the path if it exists
-    if    ( sh -c 'for dd in  ${UPS_PROD_NAME_UC}_FQ_DIR/bin ${UPS_PROD_DIR}/bin;do [ -d $dd ] && exit;done;exit 1' )
-        envSet( ${UPS_PROD_NAME_UC}_BIN, ""`sh -c 'for dd in ${UPS_PROD_NAME_UC}_FQ_DIR/bin ${UPS_PROD_DIR}/bin;do [ -d $dd ] && echo $dd && exit;done;echo .'`"" )
-        pathPrepend(PATH, ${${UPS_PROD_NAME_UC}_BIN} )
-	envunset( ${UPS_PROD_NAME_UC}_BIN )
-    else ()
-	execute( true, NO_UPS_ENV )
-    endif ( sh -c 'for dd in  ${UPS_PROD_NAME_UC}_FQ_DIR/bin ${UPS_PROD_DIR}/bin;do [ -d $dd ] && exit;done;exit 1' )
+    # add the bin directory to the path
+    pathPrepend(PATH, ${UPS_PROD_DIR}/bin )
 
 End:
 # End Group definition
