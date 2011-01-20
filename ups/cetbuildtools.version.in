@@ -2,7 +2,7 @@ FILE = version
 PRODUCT = cetbuildtools
 VERSION = @version@
 
-FLAVOR = NULL
+FLAVOR = @UPSFLAVOR@
 QUALIFIERS = @qualifier@
   DECLARER = CET
   DECLARED = @datime@
