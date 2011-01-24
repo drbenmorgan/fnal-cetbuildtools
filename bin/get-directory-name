@@ -1,0 +1,49 @@
+#!/bin/bash
+
+
+result=${1}
+qual=${2}
+
+OS1=`uname`
+plat=`uname -p`
+
+if [ ${OS1} = "Darwin" ]
+then
+   OSnum=`uname -r | cut -f1 -d"."`
+   OS=${OS1}${OSnum}
+   subdir=d${OSnum}.${plat}.${qual}
+else
+   OSnum=`lsb_release -r | cut -f2 | cut -f1 -d"."`
+   OS=${OS1}${OSnum}
+   subdir=${OS1}${OSnum}.${plat}.${qual}
+   if [ `lsb_release -d | cut  -f3 -d" "` = "SLF" ]
+   then
+      OS=slf${OSnum}
+      subdir=slf${OSnum}.${plat}.${qual}
+   fi
+   if [ `lsb_release -d | cut  -f4 -d" "` = "SLC" ]
+   then
+      OS=slc${OSnum}
+      subdir=slc${OSnum}.${plat}.${qual}
+   fi
+   if [ `lsb_release -d | cut  -f4 -d" "` = "LTS" ]
+   then
+      OS=slf${OSnum}
+      subdir=slf${OSnum}.${plat}.${qual}
+   fi
+fi
+
+if [ "${result}" = "os" ]
+then
+    echo ${OS}
+fi
+if [ "${result}" = "platform" ]
+then
+    echo ${plat}
+fi
+if [ "${result}" = "subdir" ]
+then
+    echo ${subdir}
+fi
+
+exit 0
