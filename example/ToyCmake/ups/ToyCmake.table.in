@@ -3,43 +3,24 @@ Product = ToyCmake
 #*************************************************
 # Starting Group definition
 Group:
+
 Flavor     = ANY
 Qualifiers = ""
   Action = setup
        prodDir()
+       setupRequired(cetbuildtools @CETBUILDTOOLS_VERSION@ @CETBUILDTOOLS_QUAL@)
+       execute( "get-directory-name subdir @qualifier@", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
+       fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
        exeActionRequired("setup__")
 
-Flavor     = Linux64bit+2.6-2.5
+Flavor     = ANY
 Qualifiers = "@qualifier@"
   Action = setup
        prodDir()
-       fileTest( ${UPS_PROD_DIR}/sl5.x86_64.@qualifier@, -d, "${UPS_PROD_DIR}/sl5.x86_64.@qualifier@ directory not found: SETUP ABORTED")
-       envSet( ${UPS_PROD_NAME_UC}_FQ, sl5.x86_64.@qualifier@ )
+       setupRequired(cetbuildtools @CETBUILDTOOLS_VERSION@ @CETBUILDTOOLS_QUAL@)
+       execute( "get-directory-name subdir @qualifier@", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
+       fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
        exeActionRequired("setup__")
-
-Flavor     = Linux+2.6-2.5
-Qualifiers = "@qualifier@"
-  Action = setup
-       prodDir()
-       fileTest( ${UPS_PROD_DIR}/sl5.i686.@qualifier@, -d, "${UPS_PROD_DIR}/sl5.i686.@qualifier@ directory not found: SETUP ABORTED")
-       envSet( ${UPS_PROD_NAME_UC}_FQ, sl5.i686.@qualifier@ )
-       exeActionRequired("setup__")
-
-Flavor     = Linux64bit+2.6-2.3.4
-Qualifiers = "@qualifier@"
-  Action = setup
-       prodDir()
-       fileTest( ${UPS_PROD_DIR}/sl4.x86_64.@qualifier@, -d, "${UPS_PROD_DIR}/sl4.x86_64.@qualifier@ directory not found: SETUP ABORTED")
-       envSet( ${UPS_PROD_NAME_UC}_FQ, sl4.x86_64.@qualifier@ )
-       exeActionRequired("setup__")
-
-Flavor     = Linux+2.6-2.3.4
-Qualifiers = "@qualifier@"
-  Action = setup
-      prodDir()
-      fileTest( ${UPS_PROD_DIR}/sl4.i686.@qualifier@, -d, "${UPS_PROD_DIR}/sl4.i686.@qualifier@ directory not found: SETUP ABORTED")
-      envSet( ${UPS_PROD_NAME_UC}_FQ, sl4.i686.@qualifier@ )
-      exeActionRequired("setup__")
 
 Common:
   Action = setup__
