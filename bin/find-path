@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ ${#} -lt 2 ]
+then
+    # fail silently so this message isn't attached to some variable
+    #echo "Usage: `basename ${0}` subdir <list of possible paths>"
+    exit 1
+fi
+
+subdir=${1}
+shift
+for path in ${@}
+do
+    if [ -d ${path}/${subdir} ]
+    then
+        echo "${path}/${subdir}"
+        exit 0
+    fi
+done
+
+exit 0
+
