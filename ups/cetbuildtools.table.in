@@ -24,30 +24,8 @@ Common:
     envSet(${UPS_PROD_NAME_UC}_VERSION, @version@)
     prodDir( _FQ_DIR, ${${UPS_PROD_NAME_UC}_FQ} )
 
-    # define PROD_DIR_INC if there is an appropriate include subdirectory
-    if    ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/include include;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-        prodDir( _INC, "`sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/include include;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;exit 1'`" )
-    else ()
-        execute( true, NO_UPS_ENV )
-    endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/include include;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-
-    # define PROD_DIR_LIB if there is an appropriate lib subdirectory
-    if    ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/lib lib;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-        prodDir( _LIB, "`sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/lib lib;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;exit 1'`" )
-        pathPrepend(LD_LIBRARY_PATH, ${${UPS_PROD_NAME_UC}_LIB})
-    else ()
-        execute( true, NO_UPS_ENV )
-    endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/lib lib;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-
-    # add the bin directory to the path if it exists
-       ## pathPrepend(PATH, ${${UPS_PROD_NAME_UC}_FQ_DIR}/bin )
-       ## pathPrepend(PATH, ${UPS_PROD_DIR}/bin )
-       ## Execute(dropit -E, NO_UPS_ENV, PATH)
-    if    ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
-        pathPrepend(PATH, ${UPS_PROD_DIR}/"`sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && echo $dd && exit;done;exit 1'`" )
-    else ()
-        execute( true, NO_UPS_ENV )
-    endif ( sh -c 'for dd in ${${UPS_PROD_NAME_UC}_FQ}/bin bin;do [ -d ${UPS_PROD_DIR}/$dd ] && exit;done;exit 1' )
+    # add the bin directory to the path
+    pathPrepend(PATH, ${UPS_PROD_DIR}/bin )
 
 End:
 # End Group definition
