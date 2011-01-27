@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# this small script finds the first $path/$subdir match and exits
 
 if [ ${#} -lt 2 ]
 then
