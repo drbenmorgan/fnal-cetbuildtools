@@ -3,9 +3,23 @@
 
 result=${1}
 qual=${2}
+flvr=${3}
 
 OS1=`uname`
 plat=`uname -p`
+# platform is driven by ups flavor at setup
+if [ -n "${flvr}" ]
+then
+    flvr0=`echo ${flvr} | cut -f1 -d"+"`
+    if [ "${flvr0}" = "Linux64bit" ]
+    then
+        plat="x86_64"
+    fi
+    if [ "${flvr0}" = "Linuxppc" ]
+    then
+        plat="ppc"
+    fi
+fi
 
 if [ ${OS1} = "Darwin" ]
 then
