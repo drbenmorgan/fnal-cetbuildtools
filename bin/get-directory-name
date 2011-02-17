@@ -26,6 +26,10 @@ then
    OSnum=`uname -r | cut -f1 -d"."`
    OS=${OS1}${OSnum}
    subdir=d${OSnum}.${plat}.${qual}
+elif [ "${flvr0}" = "Linuxppc" ]
+then
+   OS=slf5
+   subdir=${OS}.${plat}.${qual}
 else
    OSnum=`lsb_release -r | cut -f2 | cut -f1 -d"."`
    OS=${OS1}${OSnum}
