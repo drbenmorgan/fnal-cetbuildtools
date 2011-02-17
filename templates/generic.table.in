@@ -8,8 +8,9 @@ Flavor     = ANY
 Qualifiers = ""
   Action = setup
        prodDir()
+       setupEnv()
        setupRequired(cetbuildtools @CETBUILDTOOLS_VERSION@ @CETBUILDTOOLS_QUAL@)
-       execute( "get-directory-name subdir", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
+       execute( "get-directory-name subdir '' ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
        exeActionRequired("setup__")
 
@@ -17,14 +18,14 @@ Flavor     = ANY
 Qualifiers = "@qualifier@"
   Action = setup
        prodDir()
+       setupEnv()
        setupRequired(cetbuildtools @CETBUILDTOOLS_VERSION@ @CETBUILDTOOLS_QUAL@)
-       execute( "get-directory-name subdir @qualifier@", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
+       execute( "get-directory-name subdir @qualifier@ ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
        exeActionRequired("setup__")
 
 Common:
   Action = setup__
-    setupEnv()
     envSet(${UPS_PROD_NAME_UC}_VERSION, @version@)
     prodDir( _FQ_DIR, ${${UPS_PROD_NAME_UC}_FQ} )
 
@@ -39,6 +40,7 @@ Common:
     Execute(dropit -E, NO_UPS_ENV, PATH)
 
     # uncomment or add to this list as relevant
+    setupRequired(cmake)
     #setupRequired(boost @BOOST_VERS@ @BOOST_QUAL@)
     #setupRequired(gcc @GCC_VERSION@ @GCC_QUAL@)
 

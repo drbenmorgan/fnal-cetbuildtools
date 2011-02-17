@@ -7,22 +7,23 @@ Flavor     = ANY
 Qualifiers = ""
   Action = setup
        prodDir()
+       setupEnv()
        exeActionRequired("setup__")
 
 Flavor     = NULL
 Qualifiers = "@qualifier@"
   Action = setup
        prodDir()
+       setupEnv()
        ## we aren't putting anything in a noarch subdirectory, but we keep this in case we need it later
        ##fileTest( ${UPS_PROD_DIR}/noarch.@qualifier@, -d, "${UPS_PROD_DIR}/noarch.@qualifier@ directory not found: SETUP ABORTED")
-       envSet( ${UPS_PROD_NAME_UC}_FQ, noarch.@qualifier@ )
+       ##envSet( ${UPS_PROD_NAME_UC}_FQ, noarch.@qualifier@ )
        exeActionRequired("setup__")
 
 Common:
   Action = setup__
-    setupEnv()
     envSet(${UPS_PROD_NAME_UC}_VERSION, @version@)
-    prodDir( _FQ_DIR, ${${UPS_PROD_NAME_UC}_FQ} )
+    ##prodDir( _FQ_DIR, ${${UPS_PROD_NAME_UC}_FQ} )
 
     # add the bin directory to the path
     pathPrepend(PATH, ${UPS_PROD_DIR}/bin )
