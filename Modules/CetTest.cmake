@@ -94,7 +94,7 @@ MACRO(cet_test)
     ENDIF()
     # Check we only specified one.
     LIST(LENGTH CET_TEST_EXEC test_exec_length)
-    IF(test_exec_length > 1)
+    IF(test_exec_length GREATER 1)
       MESSAGE(FATAL_ERROR "cet_test: expected only one value for TEST_EXEC "
         "argument for target ${CET_TARGET}.")
     ENDIF()
