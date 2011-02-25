@@ -112,7 +112,7 @@ function check_exit() {
     check_command "$@"
     (( status = $? ))
     (( status == ${exit_code:-0} )) || \
-        { echo "${1} failed check: expected code ${exit_code}, got code ${status}." 1>&2; ${cet_tf_leave} ${status}; }
+        { echo "${1} failed check: expected code ${exit_code:-0}, got code ${status}." 1>&2; ${cet_tf_leave} ${status}; }
 }
 
 ####################################
