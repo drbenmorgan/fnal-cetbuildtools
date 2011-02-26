@@ -52,6 +52,10 @@
 #   The exec to run (if not the target). The HANDBUILT option must
 #    be specified in conjunction with this option.
 #
+# TEST_PROPERTIES
+#   Properties to be added to the test. See documentation of the cmake
+#   command, "set_tests_properties."
+#
 ########################################################################
 
 # Need argument parser.
@@ -76,17 +80,13 @@ ENDIF()
 
 ####################################
 # Main macro definition.
-MACRO(cet_test)
+MACRO(cet_test CET_TARGET)
   # Parse arguments
   CET_PARSE_ARGS(CET
-    "DATAFILES;DEPENDENCIES;LIBRARIES;SOURCES;TEST_ARGS;TEST_EXEC"
+    "DATAFILES;DEPENDENCIES;LIBRARIES;SOURCES;TEST_ARGS;TEST_EXEC;TEST_PROPERTIES"
     "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_EXAMPLE;INSTALL_SOURCE"
     ${ARGN}
     )
-  CET_CAR(CET_TARGET ${CET_DEFAULT_ARGS}) # Required non-option argument
-  IF(NOT CET_TARGET) # ERROR
-    MESSAGE(FATAL_ERROR "cet_test: missing required target name")
-  ENDIF()
   IF(CET_TEST_EXEC)
     IF(NOT CET_HANDBUILT)
       MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot specify "
@@ -101,10 +101,9 @@ MACRO(cet_test)
   ELSE()
     SET(CET_TEST_EXEC ${EXECUTABLE_OUTPUT_PATH}/${CET_TARGET})
   ENDIF()
-  # Assume any remaining unlabeled non-option arguments are date files.
-  CET_CDR(CET_EXTRA_DATAFILES ${CET_DEFAULT_ARGS})
-  IF(CET_EXTRA_DATAFILES)
-    SET(CET_DATAFILES ${CET_DATAFILES} ${CET_EXTRA_DATAFILES})
+  # Assume any remaining arguments are date files.
+  IF(CET_DEFAULT_ARGS)
+    SET(CET_DATAFILES ${CET_DATAFILES} ${CET_DEFAULT_ARGS})
   ENDIF()
   IF(CET_HANDBUILT AND CET_PREBUILT)
     # CET_HANDBUILT and CET_PREBUILT are mutually exclusive.
@@ -168,6 +167,9 @@ MACRO(cet_test)
   IF(NOT CET_NO_AUTO)
     # Add the test.
     ADD_TEST(${CET_TARGET} ${CET_TEST_EXEC} ${CET_TEST_ARGS})
+    IF(CET_TEST_PROPERTIES)
+      SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES ${CET_TEST_PROPERTIES})
+    ENDIF()
   ENDIF()
   IF(CET_INSTALL_EXAMPLE)
     # Install to examples directory of product.
