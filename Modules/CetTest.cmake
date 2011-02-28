@@ -144,8 +144,7 @@ MACRO(cet_test CET_TARGET)
   FOREACH(datafile ${CET_DATAFILES})
     # Name the target so that tests in different directories can use the same
     # data file.
-    STRING(SUBSTRING ${datafile} 0 1 abs)
-    IF(abs STREQUAL "/") # Absolute
+    IF(IS_ABSOLUTE ${datafile})
       STRING(REPLACE "/" "@" dtarget "${datafile}")
       SET(abs_datafile ${datafile})
     ELSE()
