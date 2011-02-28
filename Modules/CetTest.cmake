@@ -145,10 +145,10 @@ MACRO(cet_test CET_TARGET)
     # Name the target so that tests in different directories can use the same
     # data file.
     IF(IS_ABSOLUTE ${datafile})
-      STRING(REPLACE "/" "@" dtarget "${datafile}")
+      STRING(REPLACE "/" "!" dtarget "${datafile}")
       SET(abs_datafile ${datafile})
     ELSE()
-      STRING(REPLACE "/" "@" dtarget "${CMAKE_CURRENT_BINARY_DIR}/${datafile}")
+      STRING(REPLACE "/" "!" dtarget "${CMAKE_CURRENT_BINARY_DIR}/${datafile}")
       SET(abs_datafile ${CMAKE_CURRENT_SOURCE_DIR}/${datafile})
     ENDIF()
     IF (TARGET ${dtarget})
