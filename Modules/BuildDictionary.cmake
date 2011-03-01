@@ -59,8 +59,8 @@ macro (generate_dictionary  )
         	 -o ${dictname}_dict.cpp
      COMMAND ${CMAKE_COMMAND} -E copy classes_ids.cc ${dictname}_map.cpp
      COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
-     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
-             ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
+     IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
+     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/${subdir}
   )
   add_custom_target( ${dictname}_generated
