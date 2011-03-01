@@ -37,7 +37,9 @@
 #    the placement of the files in the argument list is unambiguous.
 #
 # DEPENDENCIES
-#   List of dependencies to consider for a PREBUILT target.
+#   List of top-level dependencies to consider for a PREBUILT
+#    target. Top-level implies a target (not file) created with ADD_EXECUTABLE,
+#    ADD_LIBRARY or ADD_CUSTOM_TARGET.
 #
 # LIBRARIES
 #   Extra libraries with which to link this target.
@@ -82,11 +84,26 @@ ENDIF()
 # Main macro definition.
 MACRO(cet_test CET_TARGET)
   # Parse arguments
+  IF(${CET_TARGET} MATCHES .*/.*)
+    MESSAGE(FATAL_ERROR "${CET_TARGET} shuld not be a path. Use a simple "
+      "target name with the HANDBUILT and TEST_EXEC options instead.")
+  ENDIF()
   CET_PARSE_ARGS(CET
     "DATAFILES;DEPENDENCIES;LIBRARIES;SOURCES;TEST_ARGS;TEST_EXEC;TEST_PROPERTIES"
     "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_EXAMPLE;INSTALL_SOURCE"
     ${ARGN}
     )
+  IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
+    # Set up to handle a per-tst work directory for parallel testing.
+    SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
+    STRING(REPLACE "/" "!" wdtarget ${CET_TEST_WORKDIR})
+    ADD_CUSTOM_TARGET(${wdtarget} ALL
+      COMMAND ${CMAKE_COMMAND} -E
+      make_directory "${CET_TEST_WORKDIR}"
+      )
+  ELSE()
+    SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}")
+  ENDIF()
   IF(CET_TEST_EXEC)
     IF(NOT CET_HANDBUILT)
       MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot specify "
@@ -112,13 +129,13 @@ MACRO(cet_test CET_TARGET)
   ELSEIF(CET_PREBUILT) # eg scripts.
     ADD_CUSTOM_TARGET(${CET_TARGET} ALL
       COMMAND ${CMAKE_COMMAND} -E
-      copy ${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}
-      ${EXECUTABLE_OUTPUT_PATH}/
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}
+      copy "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
+      "${EXECUTABLE_OUTPUT_PATH}/"
+      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
       )
-    FOREACH(dep ${CET_DEPENDENCIES})
-      ADD_DEPENDENCIES(${CET_TARGET} ${dep})
-    ENDFOREACH()
+    if(CET_DEPENDENCIES)
+      ADD_DEPENDENCIES(${CET_TARGET} ${CET_DEPENDENCIES})
+    ENDIF()
   ELSEIF(NOT CET_HANDBUILT) # Normal build.
     # Build the executable.
     IF(NOT CET_SOURCES) # Useful default.
@@ -148,7 +165,7 @@ MACRO(cet_test CET_TARGET)
       STRING(REPLACE "/" "!" dtarget "${datafile}")
       SET(abs_datafile ${datafile})
     ELSE()
-      STRING(REPLACE "/" "!" dtarget "${CMAKE_CURRENT_BINARY_DIR}/${datafile}")
+      STRING(REPLACE "/" "!" dtarget "${CET_TEST_WORKDIR}/${datafile}")
       SET(abs_datafile ${CMAKE_CURRENT_SOURCE_DIR}/${datafile})
     ENDIF()
     IF (TARGET ${dtarget})
@@ -158,14 +175,20 @@ MACRO(cet_test CET_TARGET)
       ADD_CUSTOM_TARGET(${dtarget} ALL
         COMMAND ${CMAKE_COMMAND} -E
         copy ${abs_datafile}
-        ${CMAKE_CURRENT_BINARY_DIR}/
+        ${CET_TEST_WORKDIR}/
         DEPENDS ${abs_datafile}
         )
+      IF(wdtarget)
+        ADD_DEPENDENCIES(${dtarget} ${wdtarget})
+      ENDIF()
     ENDIF()
   ENDFOREACH()
   IF(NOT CET_NO_AUTO)
     # Add the test.
     ADD_TEST(${CET_TARGET} ${CET_TEST_EXEC} ${CET_TEST_ARGS})
+    IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
+      SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES WORKING_DIRECTORY ${CET_TEST_WORKDIR})
+    ENDIF()
     IF(CET_TEST_PROPERTIES)
       SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES ${CET_TEST_PROPERTIES})
     ENDIF()
