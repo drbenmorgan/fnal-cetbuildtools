@@ -31,7 +31,7 @@ if( has_qual )
      STRING( REGEX REPLACE ".*([-][q]+ )(.*)" "-q \\2" ${PRODUCTNAME_UC}_QUAL "${${PRODUCTNAME_UC}_STRING}" )
   endif( )
 else( )
-  message(STATUS "${PRODUCTNAME_UC} has no qualifier")
+#  message(STATUS "${PRODUCTNAME_UC} has no qualifier")
 endif( )
 message(STATUS "${PRODUCTNAME_UC} version and qualifier are ${${PRODUCTNAME_UC}_VERSION} ${${PRODUCTNAME_UC}_QUAL}" )
 
