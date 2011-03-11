@@ -26,6 +26,9 @@ include( SetFlavorQual )
 include(ParseUpsVersion)
 include(EnsureOutOfSourceBuild)
 
+# make sure someone isn't typing cmake in the source code tree
+cet_ensure_out_of_source_build()
+
 set_version_from_ups( ${version} )
 
 # This is a NULL flavored product,
@@ -33,9 +36,6 @@ set_version_from_ups( ${version} )
 ##SET( SLTYPE noarch )
 ##SET (flavorqual ${SLTYPE}.${qualifier})
 ##SET (flavorqual_dir ${product}/${version}/${flavorqual} )
-
-# make sure someone isn't typing cmake in the source code tree
-ensure_out_of_source_build()
 
 # cetbuildtools has no architecture dependence
 
