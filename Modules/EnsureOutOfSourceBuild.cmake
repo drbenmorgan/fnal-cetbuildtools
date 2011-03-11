@@ -1,21 +1,20 @@
-# - ensure_out_of_source_build()
-# Ensures build directory is different from source directory
+# Throw a fatal error if cmake is invoked from within the source code directory tree
+# cet_ensure_out_of_source_build()
 #
-# If the build directory is the source directory then it will bump
-# an error message and stop the compilation processus
-#
-# Copyright (C) 2006  Alexander Neundorf <neundorf@kde.org>
-# Copyright (C) 2006-2007  Wengo
-#
-# Redistribution and use is allowed according to the terms of the BSD license.
-# For details see the accompanying COPYING file.
 
+macro (cet_ensure_out_of_source_build)
 
-macro (ensure_out_of_source_build)
+  string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" in_source)
+  string( REGEX MATCH "${CMAKE_SOURCE_DIR}" in_source_subdir "${CMAKE_BINARY_DIR}")
+  if (in_source OR in_source_subdir)
+  message(FATAL_ERROR "
+ERROR: In source builds of this project are not allowed.
+A separate build directory is required.
+Please create one and run cmake from the build directory.
+Also note that cmake has just added files to your source code directory.
+We suggest getting a new copy of the source code.
+Otherwise, delete `CMakeCache.txt' and the directory `CMakeFiles'.
+  ")
+  endif ()
 
-	string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" inSource)
-	if (inSource)
-		message(FATAL_ERROR "A separate build directory is required, please create one and run cmake from this directory")
-	endif (inSource)
-
-endmacro (ensure_out_of_source_build)
+endmacro (cet_ensure_out_of_source_build)
