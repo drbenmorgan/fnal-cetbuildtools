@@ -25,6 +25,8 @@ set( GENREFLEX_FLAGS --deep
 		     -DGNU_GCC
 		     -DPROJECT_NAME="${PROJECT_NAME}"
 		     -DPROJECT_VERSION="${version}" )
+# make sure we have install_dictionary_source()
+include(InstallSource)
 
 # just the code generation step
 macro (generate_dictionary  )
@@ -66,6 +68,8 @@ macro (generate_dictionary  )
   add_custom_target( ${dictname}_generated
                      DEPENDS ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp
                              ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
+  # set variable for install_source
+  install_dictionary_source(${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
 endmacro (generate_dictionary)
 
 function( _parse_dictionary_arguments )
