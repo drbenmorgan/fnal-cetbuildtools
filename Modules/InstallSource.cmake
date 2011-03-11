@@ -11,13 +11,17 @@ macro( install_source   )
   
   STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   set(source_install_dir ${product}/${version}/source/${product}${CURRENT_SUBDIR} )
-  FILE(GLOB src_files *.cc *.h *.cpp *.icc *.xml )
+  FILE(GLOB src_files 
+            *.cc *.h *.cpp *.icc *.xml *.C *.cxx *.hh *.H )
   INSTALL( FILES ${src_files} 
            DESTINATION ${source_install_dir} )
   message( STATUS "source code will be installed in is ${source_install_dir}" )
   if( ISRC_SUBDIRS )
      foreach( sub ${ISRC_SUBDIRS} )
-	FILE(GLOB src_files ${sub}/*.cc ${sub}/*.h ${sub}/*.cpp ${sub}/*.icc ${sub}/*.xml )
+	FILE(GLOB src_files 
+	         ${sub}/*.cc  ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx
+		 ${sub}/*.h ${sub}/*.icc  ${sub}/*.hh ${sub}/*.H
+		 ${sub}/*.xml  )
 	INSTALL( FILES ${src_files} 
         	 DESTINATION ${source_install_dir}/${sub} )
      endforeach(sub)
