@@ -37,7 +37,6 @@ macro( _cet_install_without_list   )
 endmacro( _cet_install_without_list )
 
 macro( _cet_install_from_list   )
-   message( STATUS "file list: ${ISRC_LIST}" )
    message( STATUS "source code will be installed in is ${source_install_dir}" )
    INSTALL( FILES ${ISRC_LIST} 
             DESTINATION ${source_install_dir} )
@@ -56,5 +55,4 @@ macro( install_source   )
   else()
       _cet_install_without_list()
   endif()
-
 endmacro( install_source )
