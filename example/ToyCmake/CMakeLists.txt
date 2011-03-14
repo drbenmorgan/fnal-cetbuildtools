@@ -57,6 +57,10 @@ include(FindUpsRoot)
 include(SetFlavorQual)
 include(ParseUpsVersion)
 include(InstallSource)
+include(EnsureOutOfSourceBuild)
+
+# make sure someone isn't typing cmake in the source code tree
+cet_ensure_out_of_source_build()
 
 #set package version from ups version
 set_version_from_ups( ${version} )
