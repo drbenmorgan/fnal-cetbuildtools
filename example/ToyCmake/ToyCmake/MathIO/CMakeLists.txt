@@ -15,4 +15,5 @@ install ( TARGETS ToyMathIO ToyMathIO_s DESTINATION ${flavorqual_dir}/lib )
 install(FILES writeResult.h
         DESTINATION ${product}/${version}/include/ToyCmake/MathIO )
 
+install_source()
 

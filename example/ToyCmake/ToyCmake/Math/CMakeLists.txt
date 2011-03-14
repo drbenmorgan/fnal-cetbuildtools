@@ -13,4 +13,4 @@ install ( TARGETS ToyMath DESTINATION ${flavorqual_dir}/lib )
 install(FILES DoMath.h
         DESTINATION ${product}/${version}/include/ToyCmake/Math )
 
-
+install_source()

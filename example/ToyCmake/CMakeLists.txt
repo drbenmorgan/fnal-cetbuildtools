@@ -56,6 +56,7 @@ include(FindUpsBoost)
 include(FindUpsRoot)
 include(SetFlavorQual)
 include(ParseUpsVersion)
+include(InstallSource)
 
 #set package version from ups version
 set_version_from_ups( ${version} )

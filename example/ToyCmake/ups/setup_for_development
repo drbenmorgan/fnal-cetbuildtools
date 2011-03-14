@@ -33,10 +33,10 @@ tnotnull UPS_DIR || echo "$msg2"
 # we setup dependent products here
 # note that we do not test for them first...
 # use setup -j to avoid pulling dependencies
-setup cmake
-setup cetbuildtools v1_6_4
+setup cetbuildtools v1_08_00
 #setup -j boost v1_45_0 -q gcc45
 setup gcc v4_5_1
+setup cmake
 
 test $?shell = 1 && set ss=csh || ss=sh
 test "$ss" = csh && alias set_ set && alias vecho_ 'if ($?vv == 1) echo \!*' || eval 'vecho_() { test -n "${vv-}" && echo "$@";}'

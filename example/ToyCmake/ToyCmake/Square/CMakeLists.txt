@@ -9,4 +9,4 @@ target_link_libraries( SquareIt ToyMath ToyMathIO )
 
 install ( TARGETS SquareIt   DESTINATION ${flavorqual_dir}/bin )
 
-
+install_source()
