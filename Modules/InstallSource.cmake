@@ -17,6 +17,7 @@
 include(CetParseArgs)
 
 macro( _cet_install_generated_code )
+  # search for .in files
   FILE(GLOB config_source_files *.in  )
   if( config_source_files )
      foreach( input_file ${config_source_files} )
@@ -27,6 +28,24 @@ macro( _cet_install_generated_code )
   endif( config_source_files )
 endmacro( _cet_install_generated_code )
 
+macro( _cet_install_generated_dictionary_code )
+  # check for dictionary code
+  if( cet_generated_code )
+     foreach( dict ${cet_generated_code} )
+	 STRING( REGEX REPLACE "^${CMAKE_CURRENT_BINARY_DIR}/(.*)$"  "\\1" dictname "${dict}")
+         # OK, this is hokey, but it works
+	 set( dummy dummy_${dictname} )
+	 add_custom_command( 
+	    OUTPUT ${dummy}
+	    COMMAND ${CMAKE_COMMAND} -E copy ${dict} ${dummy}
+	    DEPENDS ${dict}
+	 )
+	 INSTALL( FILES ${dict} 
+        	  DESTINATION ${source_install_dir} )
+     endforeach(dict)
+  endif( cet_generated_code )
+endmacro( _cet_install_generated_dictionary_code )
+
 macro( _cet_install_without_list   )
   message( STATUS "source code will be installed in ${source_install_dir}" )
   FILE(GLOB src_files 
@@ -35,6 +54,7 @@ macro( _cet_install_without_list   )
            DESTINATION ${source_install_dir} )
   # check for generated files
   _cet_install_generated_code()
+  _cet_install_generated_dictionary_code()
   # now check subdirectories
   if( ISRC_SUBDIRS )
      foreach( sub ${ISRC_SUBDIRS} )
@@ -69,14 +89,3 @@ macro( install_source   )
       _cet_install_without_list()
   endif()
 endmacro( install_source )
-
-# this macro is called by build_dictionary()
-macro( install_dictionary_source   )
-  STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-  set(dictionary_install_dir ${product}/${version}/source/${product}${CURRENT_SUBDIR} )
-  foreach( output_file ${ARGN} )
-     message( STATUS "installing ${output_file} ")
-     INSTALL( FILES ${output_file} 
-              DESTINATION ${dictionary_install_dir} )
-  endforeach(output_file)
-endmacro( install_dictionary_source   )
