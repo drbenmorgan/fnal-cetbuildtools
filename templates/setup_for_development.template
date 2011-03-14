@@ -33,17 +33,20 @@ tnotnull UPS_DIR || echo "$msg2"
 # we setup dependent products here
 # note that we do not test for them first...
 # use setup -j to avoid pulling dependencies
-setup -j cppunit v1_12_1 -q a1
-setup -j gccxml v0_9 -q a1
-setup -j libsigcpp v2_2_7 -q a1
-setup -j clhep v2_1_0_0 -q a1
-setup -j root v5_27_06 -q gcc45
-setup -j messagefacility v1_6_5 -q a1
-setup -j cetlib v0_2_9 -q a1
-setup -j cpp0x v1_0_4 -q a1
+
+# CET products
+setup -j cetbuildtools v1_08_00
+setup -j messagefacility v1_8_10 -q a2
+setup -j fhiclcpp v2_11_7 -q a2
+setup -j cetlib v0_4_11 -q a2
+setup -j cpp0x v1_0_13 -q a2
+# other external products
+setup -j clhep v2_1_0_1 -q gcc45
+setup -j root v5_28_00_p02 -q gcc45
 setup -j boost v1_45_0 -q gcc45
-setup -j fhiclcpp v2_3_9 -q a1
-setup cetbuildtools v1_6_4
+setup -j cppunit v1_12_1 -q gcc45
+setup -j gccxml v0_9_20101128 -q gcc45
+setup -j libsigcpp v2_2_7 -q gcc45
 setup gcc v4_5_1
 setup cmake
 
@@ -68,21 +71,34 @@ test -z "$db" && echo "$msg" || vecho_ "db=$db"
 test -n "$db" && setenv XXX_SOURCE `dirname $db`
 #echo This script lives in $db
 
-tnotnull XXX_BUILD && set_ thisdir=$XXX_BUILD || set_ thisdir=`pwd`
-test -n "$thisdir" && setenv XXX_BUILD $thisdir
-test -d "$thisdir/lib" || mkdir -p $thisdir/lib
-echo The workng build directory is $thisdir
+tnotnull XXX_BUILD && set_ fwdir=$XXX_BUILD || set_ fwdir=`pwd`
+test -n "$fwdir" && setenv XXX_BUILD $fwdir
+test -d "$fwdir/lib" || mkdir -p $fwdir/lib
+echo The workng build directory is $fwdir
 
-tnotnull XXX_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${XXX_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`; setenv LD_LIBRARY_PATH ${XXX_BUILD}/lib:${LD_LIBRARY_PATH}
+tnotnull XXX_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${XXX_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`
+tnotnull XXX_BUILD && setenv LD_LIBRARY_PATH ${XXX_BUILD}/lib:${LD_LIBRARY_PATH}
+setenv LD_LIBRARY_PATH `dropit -D -p "$LD_LIBRARY_PATH"`
+
+tnotnull XXX_BUILD && setenv PATH `echo :${PATH}: | sed -e "s|:${XXX_BUILD}/bin:|:|" -e 's|^:||;s|:$||'`
+tnotnull XXX_BUILD && setenv PATH ${XXX_BUILD}/bin:${PATH}
+setenv PATH `dropit -D`
+
+tnotnull FHICL_FILE_PATH || setenv FHICL_FILE_PATH '.'
 
 echo
 echo XXX_SOURCE=$XXX_SOURCE
 echo XXX_BUILD=$XXX_BUILD
-echo $thisdir/lib has been added to LD_LIBRARY_PATH
+echo $fwdir/lib has been added to LD_LIBRARY_PATH
+echo $fwdir/bin has been added to PATH
 echo
 echo LD_LIBRARY_PATH is now ${LD_LIBRARY_PATH}
+echo
+echo PATH is now ${PATH}
+echo
+echo FHICL_FILE_PATH is now ${FHICL_FILE_PATH}
 
 # cleanup before exiting
 test "$ss" = csh && unalias tnotnull nullout set_ vecho_
-unset ss msg db me thisdir py_ver
+unset ss msg db me fwdir py_ver
 unset set_ setenv unsetenv tnotnull source nullout vecho_
