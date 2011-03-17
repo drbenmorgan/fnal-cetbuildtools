@@ -15,7 +15,7 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
 
 PROJECT (cetbuildtools)
 set (product cetbuildtools)
-SET (version v1_08_02)
+SET (version v1_08_03)
 # we don't use a qualifier for a utility product
 ##SET (qualifier a1)
 
