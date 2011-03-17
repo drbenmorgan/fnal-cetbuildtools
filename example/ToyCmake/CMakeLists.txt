@@ -16,7 +16,7 @@ cmake_minimum_required (VERSION 2.6)
 project(ToyCmake)
 # the ups convention is that product names are all lower case, but this is a choices
 set( product toycmake )
-set( version v1_0_0 )
+set( version v1_01_00 )
 SET (qualifier a1)
 
 # cetbuildtools contains our cmake modules
