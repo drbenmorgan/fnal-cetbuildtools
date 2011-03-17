@@ -9,7 +9,7 @@
 # USAGE:
 # generate_dictionary( [dictionary_name] [subdir] )
 # build_dictionary( [dictionary_name] [subdir]  [DICTIONARY_LIBRARIES <library list>])
-#        dictionary_name defaults to ${PROJECT_NAME}
+#        dictionary_name defaults to a name based on the source code subdirectory
 #        subdir defaults to "dict"
 #        ${REFLEX} is always appended to the library list (even if it is empty)
 #
@@ -41,7 +41,9 @@ macro (generate_dictionary  )
   set(generate_dictionary_usage "generate_dictionary( [dictionary_name] [subdir] )")
   #message(STATUS "calling generate_dictionary with ${ARGC} arguments: ${ARGV}")
   if(${ARGC} EQUAL 0)
-     set(dictname ${PROJECT_NAME} )
+     _set_dictionary_name()
+     # remove extra subdirectory from name
+     STRING( REGEX REPLACE "(.*)_dict" "\\1" dictname "${_dictname}" )
      set(subdir "dict" )
   elseif(${ARGC} EQUAL 1)
      set(dictname  "${ARGV0}")
@@ -58,9 +60,10 @@ macro (generate_dictionary  )
   foreach( inc ${genpath} )
       set( GENREFLEX_INCLUDES -I ${inc} ${GENREFLEX_INCLUDES} )
   endforeach(inc)
+  #message(STATUS "GENERATE_DICTIONARY: using genreflex flags ${GENREFLEX_FLAGS} ")
   add_custom_command(
-     OUTPUT ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp
-            ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp
+     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
+            ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp
      COMMAND ${GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
         	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
@@ -71,14 +74,14 @@ macro (generate_dictionary  )
      COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
      IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
-     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/${subdir}
+     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   add_custom_target( ${dictname}_generated
-                     DEPENDS ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp
-                             ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
+                     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
+                             ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp )
   # set variable for install_source
-  set(cet_generated_code ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp 
-                         ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
+  set(cet_generated_code ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp 
+                         ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp )
 endmacro (generate_dictionary)
 
 function( _parse_dictionary_arguments )
@@ -138,10 +141,10 @@ macro (build_dictionary )
   #message(STATUS "BUILD_DICTIONARY: find dictionary source code for ${dictname} in ${subdir} ")
   #message(STATUS "BUILD_DICTIONARY: link dictionary ${dictname} with ${dictionary_liblist} ")
   add_subdirectory(${subdir})
-  add_library(${dictname}_dict SHARED ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp )
-  add_library(${dictname}_map  SHARED ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
-  SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp
-                              ${PROJECT_BINARY_DIR}/${subdir}/${dictname}_map.cpp
+  add_library(${dictname}_dict SHARED ${CMAKE_CURRENT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp )
+  add_library(${dictname}_map  SHARED ${CMAKE_CURRENT_BINARY_DIR}/${subdir}/${dictname}_map.cpp )
+  SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/${subdir}/${dictname}_dict.cpp
+                              ${CMAKE_CURRENT_BINARY_DIR}/${subdir}/${dictname}_map.cpp
                               PROPERTIES GENERATED 1)
   target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
   target_link_libraries( ${dictname}_map  ${dictionary_liblist} )
