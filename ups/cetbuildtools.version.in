@@ -1,14 +1,13 @@
 FILE = version
-PRODUCT = cetbuildtools
+PRODUCT = @product@
 VERSION = @version@
 
 FLAVOR = @UPSFLAVOR@
-QUALIFIERS = @qualifier@
+QUALIFIERS = @full_qualifier@
   DECLARER = CET
   DECLARED = @datime@
   MODIFIER = CET
   MODIFIED = @datime@
-  PROD_DIR = cetbuildtools/@version@
+  PROD_DIR = @product@/@version@
   UPS_DIR = ups
-  TABLE_FILE = cetbuildtools.table
-
+  TABLE_FILE = @product@.table
