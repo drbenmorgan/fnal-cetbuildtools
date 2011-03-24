@@ -47,7 +47,7 @@ macro( _cet_install_generated_dictionary_code )
 endmacro( _cet_install_generated_dictionary_code )
 
 macro( _cet_install_without_list   )
-  message( STATUS "source code will be installed in ${source_install_dir}" )
+  #message( STATUS "source code will be installed in ${source_install_dir}" )
   FILE(GLOB src_files 
             *.c *.cc *.h *.cpp *.icc *.xml *.C *.cxx *.hh *.H )
   INSTALL( FILES ${src_files} 
@@ -65,12 +65,12 @@ macro( _cet_install_without_list   )
 	INSTALL( FILES ${subdir_src_files} 
         	 DESTINATION ${source_install_dir}/${sub} )
      endforeach(sub)
-     message( STATUS "also installing in subdirs: ${ISRC_SUBDIRS}")
+     #message( STATUS "also installing in subdirs: ${ISRC_SUBDIRS}")
   endif( ISRC_SUBDIRS )
 endmacro( _cet_install_without_list )
 
 macro( _cet_install_from_list   )
-   message( STATUS "source code will be installed in ${source_install_dir}" )
+   #message( STATUS "source code will be installed in ${source_install_dir}" )
    INSTALL( FILES ${ISRC_LIST} 
             DESTINATION ${source_install_dir} )
 endmacro( _cet_install_from_list )
