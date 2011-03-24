@@ -3,6 +3,9 @@
 # set_flavor_qual( [arch] )
 # allow optional architecture declaration
 # noarch is recognized, others are used at your own discretion
+#
+# process_ups_files()
+#   the configure and install steps for ups version and table files
 
 macro( set_flavor_qual )
 
@@ -97,14 +100,44 @@ SET (flavorqual_dir ${product}/${version}/${flavorqual} )
 # check for extra qualifiers
 message(STATUS "set_flavor_qual: build type is ${CMAKE_BUILD_TYPE}")
 if( NOT  CMAKE_BUILD_TYPE )
-   SET( CMAKE_BUILD_TYPE_TOLOWER default )
+   SET( extra_qualifier "" )
+   set( full_qualifier ${qualifier} )
 else()
    #message(STATUS "set_flavor_qual: found build type ${CMAKE_BUILD_TYPE}" )
-   STRING(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_TOLOWER)
-   set( flavorqual_dir ${product}/${version}/${flavorqual}-debug )
+   STRING(TOLOWER ${CMAKE_BUILD_TYPE} extra_qualifier)
+   set( flavorqual_dir ${product}/${version}/${flavorqual}.${extra_qualifier} )
+    SET (flavorqual ${flavorqual}.${qualifier})
+   set( full_qualifier ${qualifier}:${extra_qualifier} )
 endif()
 message(STATUS "set_flavor_qual: flavorqual is ${flavorqual}" )
 message(STATUS "set_flavor_qual: ups flavor is ${UPSFLAVOR}" )
 message(STATUS "set_flavor_qual: flavorqual diredctory is ${flavorqual_dir}" )
 
 endmacro( set_flavor_qual )
+
+macro( process_ups_files )
+  if( NOT product )
+    message(FATAL_ERROR "product name is not defined")
+  endif()
+
+  # table file
+  configure_file( ${${product}_SOURCE_DIR}/ups/${product}.table.in
+                  ${${product}_BINARY_DIR}/ups/${product}.table @ONLY )
+  install( FILES ${${product}_BINARY_DIR}/ups/${product}.table
+           DESTINATION ${product}/${version}/ups )
+
+  # version file
+  if( extra_qualifier )
+     message(STATUS "extra qualifier ${extra_qualifier}")
+     configure_file( ${${product}_SOURCE_DIR}/ups/${product}.version.in
+                     ${${product}_BINARY_DIR}/ups/${UPSFLAVOR}_${qualifier}_${extra_qualifier}  @ONLY )
+     install( FILES ${${product}_BINARY_DIR}/ups/${UPSFLAVOR}_${qualifier}_${extra_qualifier} 
+              DESTINATION ${product}/${version}.version )
+  else()
+     configure_file( ${${product}_SOURCE_DIR}/ups/${product}.version.in
+                     ${${product}_BINARY_DIR}/ups/${UPSFLAVOR}_${qualifier}  @ONLY )
+     install( FILES ${${product}_BINARY_DIR}/ups/${UPSFLAVOR}_${qualifier} 
+              DESTINATION ${product}/${version}.version )
+  endif()
+
+endmacro( process_ups_files )
