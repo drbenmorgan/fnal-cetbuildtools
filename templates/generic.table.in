@@ -32,6 +32,20 @@ Qualifiers = "@qualifier@"
        # uncomment if needed
        #setupRequired(root      @ROOT_VERSION@ -q gcc45)
 
+Flavor     = ANY
+Qualifiers = "@qualifier@:debug"
+  Action = setup
+       prodDir()
+       setupEnv()
+       setupRequired(cetbuildtools @CETBUILDTOOLS_VERSION@ @CETBUILDTOOLS_QUAL@)
+       # faking out unsetup
+       envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
+       execute( "get-directory-name subdir @qualifier@.debug ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
+       fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
+       exeActionRequired("setup__")
+       # uncomment if needed
+       #setupRequired(root      @ROOT_VERSION@ -q gcc45)
+
 Common:
   Action = setup__
     envSet(${UPS_PROD_NAME_UC}_VERSION, @version@)
