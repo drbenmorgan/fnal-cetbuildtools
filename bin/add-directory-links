@@ -1,10 +1,12 @@
 #!/bin/bash
 #
-# This script creates symbolic links so a Scientific Linux Fermi build can be used 
+# This script creates symbolic links so a Scientific Linux Fermi build can be
 # used on a Scientific Linux or Scientific Linux CERN machine.
 # CAVEAT EMPTOR:  We do not guarantee binary compatibility
 #
-# This script must be called with the full path to the top of your externals directory:
+# This script must be called with the full path to the top of your 
+# externals directory
+#
 
 EXTERNALS=${1}
 
