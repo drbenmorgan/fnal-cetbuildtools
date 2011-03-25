@@ -121,22 +121,22 @@ macro( process_ups_files )
   endif()
 
   # table file
-  configure_file( ${${product}_SOURCE_DIR}/ups/${product}.table.in
-                  ${${product}_BINARY_DIR}/ups/${product}.table @ONLY )
-  install( FILES ${${product}_BINARY_DIR}/ups/${product}.table
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.table.in
+                  ${CMAKE_CURRENT_BINARY_DIR}/${product}.table @ONLY )
+  install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}.table
            DESTINATION ${product}/${version}/ups )
 
   # version file
   if( extra_qualifier )
      message(STATUS "extra qualifier ${extra_qualifier}")
-     configure_file( ${${product}_SOURCE_DIR}/ups/${product}.version.in
-                     ${${product}_BINARY_DIR}/ups/${UPSFLAVOR}_${qualifier}_${extra_qualifier}  @ONLY )
-     install( FILES ${${product}_BINARY_DIR}/ups/${UPSFLAVOR}_${qualifier}_${extra_qualifier} 
+     configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.version.in
+                     ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier}_${extra_qualifier}  @ONLY )
+     install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier}_${extra_qualifier} 
               DESTINATION ${product}/${version}.version )
   else()
-     configure_file( ${${product}_SOURCE_DIR}/ups/${product}.version.in
-                     ${${product}_BINARY_DIR}/ups/${UPSFLAVOR}_${qualifier}  @ONLY )
-     install( FILES ${${product}_BINARY_DIR}/ups/${UPSFLAVOR}_${qualifier} 
+     configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.version.in
+                     ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier}  @ONLY )
+     install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier} 
               DESTINATION ${product}/${version}.version )
   endif()
 
