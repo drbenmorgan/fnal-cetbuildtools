@@ -3,7 +3,7 @@
 # find_ups_art( minimum  [list of libraries] )
 #  version - minimum version required
 
-include(CheckUpsVersion)
+include(FindUpsPackage)
 
 macro( find_ups_art minimum  )
 
