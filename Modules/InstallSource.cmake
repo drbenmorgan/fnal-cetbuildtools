@@ -89,3 +89,12 @@ macro( install_source   )
       _cet_install_without_list()
   endif()
 endmacro( install_source )
+
+macro( install_headers   )
+  STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  set(header_install_dir ${product}/${version}/include${CURRENT_SUBDIR} )
+  message( STATUS "headers will be installed in ${header_install_dir}" )
+  FILE(GLOB headers *.h *.icc *.hh *.H )
+  INSTALL( FILES ${headers} 
+           DESTINATION ${header_install_dir} )
+endmacro( install_headers )
