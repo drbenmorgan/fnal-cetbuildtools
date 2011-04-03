@@ -5,6 +5,7 @@ INSTALL(FILES
 	BuildSubdirectories.cmake
 	CetParseArgs.cmake
 	CetTest.cmake
+	CetUtilities.cmake
 	CheckUpsVersion.cmake
 	EnsureOutOfSourceBuild.cmake
 	FindCompilerVersion.cmake
