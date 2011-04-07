@@ -12,8 +12,7 @@ set_target_properties(ToyMathIO   PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 set_target_properties(ToyMathIO_s PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 
 install ( TARGETS ToyMathIO ToyMathIO_s DESTINATION ${flavorqual_dir}/lib )
-install(FILES writeResult.h
-        DESTINATION ${product}/${version}/include/ToyCmake/MathIO )
 
+install_headers()
 install_source()
 

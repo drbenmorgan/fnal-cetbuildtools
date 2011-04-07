@@ -16,7 +16,7 @@ cmake_minimum_required (VERSION 2.6)
 project(ToyCmake)
 # the ups convention is that product names are all lower case, but this is a choices
 set( product toycmake )
-set( version v1_01_00 )
+set( version v1_02_00 )
 SET (qualifier a1)
 
 # cetbuildtools contains our cmake modules
@@ -58,6 +58,7 @@ include(SetFlavorQual)
 include(ParseUpsVersion)
 include(InstallSource)
 include(EnsureOutOfSourceBuild)
+include(CetUtilities)
 
 # make sure someone isn't typing cmake in the source code tree
 cet_ensure_out_of_source_build()
@@ -65,7 +66,7 @@ cet_ensure_out_of_source_build()
 #set package version from ups version
 set_version_from_ups( ${version} )
 #define flavorqual and flavorqual_dir
-set_flavor_qual(FindUpsRoot)
+set_flavor_qual()
 
 # Use cmake directive include_directories to define include search path
 
@@ -100,10 +101,14 @@ include_directories ("${PROJECT_BINARY_DIR}")
 # You may not want to do this for smaller products.
 
 #build all libraries in a single directory
+if( NOT LIBRARY_OUTPUT_PATH )
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+endif()
 
 #build all executables in a single directory
+if( NOT EXECUTABLE_OUTPUT_PATH )
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+endif()
 
 # The environment has been established, now generate the Makefiles.
 
