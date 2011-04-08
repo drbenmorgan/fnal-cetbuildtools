@@ -2,14 +2,16 @@
 #
 # Identify the files in the current source directory and deal with them appropriately
 # Users may opt to just include cet_make() in their CMakeLists.txt
-# This first implementation is intended to be called NO MORE THAN ONCE per subdirectory.
+# This implementation is intended to be called NO MORE THAN ONCE per subdirectory.
 #
-# cet_make( [LIBRARIES <library list>]  
+# cet_make( [LIBRARY_NAME <library name>]  
+#           [LIBRARIES <library list>]  
 #           [EXEC <exec source>] 
 #           [TEST <test source>] )
 #
 
 include(CetParseArgs)
+include(InstallSource)
 
 macro( _cet_exec name liblist )
   message(STATUS "debug: _cet_exec called with ${name} ${liblist}")
@@ -30,6 +32,12 @@ macro( _cet_test_exec name liblist )
   target_link_libraries( ${base_name} ${liblist} )
   ADD_TEST(${base_name} ${EXECUTABLE_OUTPUT_PATH}/${base_name})
 endmacro( _cet_test_exec )
+
+macro( _cet_simple_plugin file type liblist )
+    STRING( REGEX REPLACE "^${CMAKE_CURRENT_SOURCE_DIR}/(.*)_${type}.cc" "\\1" plugbase "${file}" )
+    message(STATUS "have ${type} plugin ${plugbase} from ${file}")
+    simple_plugin( ${plugbase} ${type} ${liblist} )
+endmacro( _cet_simple_plugin )
 
 macro( cet_make )
   set(cet_file_list "")
@@ -57,7 +65,13 @@ macro( cet_make )
   endif()
   # now look for other source files in this directory
   message(STATUS "known files ${cet_file_list}")
-  FILE(GLOB src_files *.c *.cc *.cpp *.C *.cxx )
+  FILE( GLOB src_files *.c *.cc *.cpp *.C *.cxx )
+  FILE( GLOB plugin_sources  *_source.cc )
+  FILE( GLOB plugin_services *_service.cc )
+  FILE( GLOB plugin_modules  *_module.cc )
+  if( plugin_sources OR plugin_services OR plugin_modules )
+    LIST( REMOVE_ITEM src_files ${plugin_sources} ${plugin_services} ${plugin_modules} )
+  endif()
   set(have_library FALSE)
   foreach( file ${src_files} )
       message(STATUS "checking ${file}")
@@ -78,8 +92,8 @@ macro( cet_make )
 
   # calculate base name
   STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-  STRING( REGEX REPLACE "/" "_" cetname2 "${CURRENT_SUBDIR}" )
-  set(cet_make_name "${cetname2}_${name}_${type}")
+  STRING( REGEX REPLACE "/" "_" cet_make_name "${CURRENT_SUBDIR}" )
+  #set(cet_make_name "${cetname2}_${name}_${type}")
 
   if( have_library )
     message( STATUS "cet_make debug: building library for ${CMAKE_CURRENT_SOURCE_DIR}")
@@ -98,6 +112,16 @@ macro( cet_make )
     message( STATUS "cet_make debug: no library for ${CMAKE_CURRENT_SOURCE_DIR}")
   endif( )
 
+  # process plugin lists
+  foreach( plugin_file ${plugin_sources} )
+    _cet_simple_plugin( ${plugin_file} "source" ${cet_liblist} )
+  endforeach( plugin_file )
+  foreach( plugin_file ${plugin_services} )
+    _cet_simple_plugin( ${plugin_file} "service" ${cet_liblist} )
+  endforeach( plugin_file )
+  foreach( plugin_file ${plugin_modules} )
+    _cet_simple_plugin( ${plugin_file} "module" ${cet_liblist} )
+  endforeach( plugin_file )
 
   # is there a dictionary?
   FILE(GLOB dictionary_header classes.h )
