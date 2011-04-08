@@ -58,7 +58,7 @@ include(SetFlavorQual)
 include(ParseUpsVersion)
 include(InstallSource)
 include(EnsureOutOfSourceBuild)
-include(CetUtilities)
+include(CetMake)
 
 # make sure someone isn't typing cmake in the source code tree
 cet_ensure_out_of_source_build()
