@@ -15,8 +15,8 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
 
 PROJECT (cetbuildtools)
 set (product cetbuildtools)
-SET (version v1_10_03)
-# we don't use a qualifier for a utility product
+SET (version v1_11_00)
+# we don't need a qualifier for a utility product
 ##SET (qualifier a1)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Modules)
@@ -31,15 +31,8 @@ cet_ensure_out_of_source_build()
 
 set_version_from_ups( ${version} )
 
-# This is a NULL flavored product,
-# We don't use flavorqual_dir, but we could
-##SET( SLTYPE noarch )
-##SET (flavorqual ${SLTYPE}.${qualifier})
-##SET (flavorqual_dir ${product}/${version}/${flavorqual} )
-
-# cetbuildtools has no architecture dependence
-
 #define flavorqual and flavorqual_dir
+# cetbuildtools has no architecture dependence
 set_flavor_qual(noarch)
 
 # source code
