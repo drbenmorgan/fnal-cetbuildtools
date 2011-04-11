@@ -50,8 +50,10 @@ macro( _cet_install_without_list   )
   #message( STATUS "source code will be installed in ${source_install_dir}" )
   FILE(GLOB src_files 
             *.c *.cc *.h *.cpp *.icc *.xml *.C *.cxx *.hh *.H )
-  INSTALL( FILES ${src_files} 
-           DESTINATION ${source_install_dir} )
+  if( src_files )
+    INSTALL( FILES ${src_files} 
+             DESTINATION ${source_install_dir} )
+  endif( src_files )
   # check for generated files
   _cet_install_generated_code()
   _cet_install_generated_dictionary_code()
@@ -62,8 +64,10 @@ macro( _cet_install_without_list   )
 	         ${sub}/*.cc ${sub}/*.c ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx
 		 ${sub}/*.h ${sub}/*.icc  ${sub}/*.hh ${sub}/*.H
 		 ${sub}/*.xml  )
-	INSTALL( FILES ${subdir_src_files} 
-        	 DESTINATION ${source_install_dir}/${sub} )
+        if( subdir_src_files )
+	  INSTALL( FILES ${subdir_src_files} 
+        	   DESTINATION ${source_install_dir}/${sub} )
+        endif( subdir_src_files )
      endforeach(sub)
      #message( STATUS "also installing in subdirs: ${ISRC_SUBDIRS}")
   endif( ISRC_SUBDIRS )
@@ -74,6 +78,38 @@ macro( _cet_install_from_list   )
    INSTALL( FILES ${ISRC_LIST} 
             DESTINATION ${source_install_dir} )
 endmacro( _cet_install_from_list )
+
+macro( _cet_install_header_without_list   )
+  #message( STATUS "headers will be installed in ${header_install_dir}" )
+  FILE(GLOB headers *.h *.icc *.hh *.H )
+  FILE(GLOB dict_headers classes.h )
+  if( dict_headers )
+    #message(STATUS "install_headers debug: removing ${dict_headers} from header list")
+    LIST(REMOVE_ITEM headers ${dict_headers} )
+  endif( dict_headers)
+  if( headers )
+    INSTALL( FILES ${headers} 
+             DESTINATION ${header_install_dir} )
+  endif( headers )
+  # now check subdirectories
+  if( IHDR_SUBDIRS )
+     foreach( sub ${IHDR_SUBDIRS} )
+	FILE(GLOB subdir_headers 
+		 ${sub}/*.h ${sub}/*.icc  ${sub}/*.hh ${sub}/*.H  )
+        if( subdir_headers )
+	  INSTALL( FILES ${subdir_headers} 
+        	   DESTINATION ${header_install_dir}/${sub} )
+        endif( subdir_headers )
+     endforeach(sub)
+     #message( STATUS "also installing in subdirs: ${IHDR_SUBDIRS}")
+  endif( IHDR_SUBDIRS )
+endmacro( _cet_install_header_without_list )
+
+macro( _cet_install_header_from_list   )
+   #message( STATUS "headers will be installed in ${header_install_dir}" )
+   INSTALL( FILES ${IHDR_LIST} 
+            DESTINATION ${header_install_dir} )
+endmacro( _cet_install_header_from_list )
 
 macro( install_source   )
   cet_parse_args( ISRC "SUBDIRS;LIST" "" ${ARGN})
@@ -91,14 +127,16 @@ macro( install_source   )
 endmacro( install_source )
 
 macro( install_headers   )
+  cet_parse_args( IHDR "SUBDIRS;LIST" "" ${ARGN})
   STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   set(header_install_dir ${product}/${version}/include${CURRENT_SUBDIR} )
-  FILE(GLOB headers *.h *.icc *.hh *.H )
-  FILE(GLOB dict_headers classes.h )
-  if( dict_headers )
-    #message(STATUS "install_headers debug: removing ${dict_headers} from header list")
-    LIST(REMOVE_ITEM headers ${dict_headers} )
-  endif( dict_headers)
-  INSTALL( FILES ${headers} 
-           DESTINATION ${header_install_dir} )
+  if( IHDR_LIST )
+     if( IHDR_SUBDIRS )
+        message( FATAL_ERROR 
+	         "ERROR: call install_headers with EITHER LIST or SUBDIRS but not both")
+     endif( IHDR_SUBDIRS )
+     _cet_install_header_from_list()
+  else()
+      _cet_install_header_without_list()
+  endif()
 endmacro( install_headers )
