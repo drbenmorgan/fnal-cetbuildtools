@@ -1,18 +1,27 @@
-# Use this macro to install source code for debugging
+# install_source() 
+# install_headers()
+#
+# Use the install_source macro to install source code for debugging
 # The default implementation will pick up the following file extensions:
-#         .c .cc .cpp .C .cxx .h .icc .hh .H .xml
-# For other files, use the LIST option
+#      .cc .c .cpp .C .cxx .h .hh .H .hpp .icc .xml
+# For other files, use the EXTRAS option
+#
+# The SUBDIRS option allows you to search subdirectories (e.g. a detail subdirectory)
+# The EXTRAS option is intended to allow you to pick up extra files not otherwise found.
+# You cannot pick up files in subdirectories with EXTRAS.
+# The LIST option allows you to install from a list.  
+# When LIST is used, we do not search for other files to install.
 # Note that the LIST and SUBDIRS options are mutually exclusive
-# The LIST option is intended to allow you to pick up extra files not otherwise found.
-# You cannot pick up files in subdirectories with LIST.
+# Subdirectories will NOT be searched for files in the EXTRAS list.
+# If you need that level of complexity, then subdirectory should have 
+# its own CMakeLists.txt file.
 #
 # Recommended use:
-# install_source( [SUBDIRS subdirectory_list ] )
-# install_source( LIST extra_file_list )
+# install_source( [SUBDIRS subdirectory_list] [EXTRAS extra_file_list] )
+# install_source( LIST file_list )
 #
-# install_source()
-# install_source( SUBDIRS subdirectory_list )
-# install_source( LIST extra_file_list )
+# install_headers( [SUBDIRS subdirectory_list] [EXTRAS extra_file_list] )
+# install_headers( LIST file_list )
 
 include(CetParseArgs)
 
@@ -49,7 +58,7 @@ endmacro( _cet_install_generated_dictionary_code )
 macro( _cet_install_without_list   )
   #message( STATUS "source code will be installed in ${source_install_dir}" )
   FILE(GLOB src_files 
-            *.c *.cc *.h *.cpp *.icc *.xml *.C *.cxx *.hh *.H )
+            *.cc *.c *.cpp *.C *.cxx *.h *.hh *.H *.hpp *.icc *.xml )
   if( src_files )
     INSTALL( FILES ${src_files} 
              DESTINATION ${source_install_dir} )
@@ -62,7 +71,7 @@ macro( _cet_install_without_list   )
      foreach( sub ${ISRC_SUBDIRS} )
 	FILE(GLOB subdir_src_files 
 	         ${sub}/*.cc ${sub}/*.c ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx
-		 ${sub}/*.h ${sub}/*.icc  ${sub}/*.hh ${sub}/*.H
+		 ${sub}/*.h ${sub}/*.hh ${sub}/*.H ${sub}/*.hpp ${sub}/*.icc
 		 ${sub}/*.xml  )
         if( subdir_src_files )
 	  INSTALL( FILES ${subdir_src_files} 
@@ -73,15 +82,16 @@ macro( _cet_install_without_list   )
   endif( ISRC_SUBDIRS )
 endmacro( _cet_install_without_list )
 
-macro( _cet_install_from_list   )
-   #message( STATUS "source code will be installed in ${source_install_dir}" )
-   INSTALL( FILES ${ISRC_LIST} 
+macro( _cet_install_from_list  source_files  )
+   #message( STATUS "_cet_install_from_list debug: source code list will be installed in ${source_install_dir}" )
+   #message( STATUS "_cet_install_from_list debug: install list is ${source_files}")
+   INSTALL( FILES ${source_files} 
             DESTINATION ${source_install_dir} )
 endmacro( _cet_install_from_list )
 
 macro( _cet_install_header_without_list   )
   #message( STATUS "headers will be installed in ${header_install_dir}" )
-  FILE(GLOB headers *.h *.icc *.hh *.H )
+  FILE(GLOB headers *.h *.hh *.H *.hpp *.icc )
   FILE(GLOB dict_headers classes.h )
   if( dict_headers )
     #message(STATUS "install_headers debug: removing ${dict_headers} from header list")
@@ -95,7 +105,7 @@ macro( _cet_install_header_without_list   )
   if( IHDR_SUBDIRS )
      foreach( sub ${IHDR_SUBDIRS} )
 	FILE(GLOB subdir_headers 
-		 ${sub}/*.h ${sub}/*.icc  ${sub}/*.hh ${sub}/*.H  )
+		 ${sub}/*.h ${sub}/*.hh ${sub}/*.H ${sub}/*.hpp ${sub}/*.icc  )
         if( subdir_headers )
 	  INSTALL( FILES ${subdir_headers} 
         	   DESTINATION ${header_install_dir}/${sub} )
@@ -105,14 +115,14 @@ macro( _cet_install_header_without_list   )
   endif( IHDR_SUBDIRS )
 endmacro( _cet_install_header_without_list )
 
-macro( _cet_install_header_from_list   )
+macro( _cet_install_header_from_list header_list  )
    #message( STATUS "headers will be installed in ${header_install_dir}" )
-   INSTALL( FILES ${IHDR_LIST} 
+   INSTALL( FILES ${header_list} 
             DESTINATION ${header_install_dir} )
 endmacro( _cet_install_header_from_list )
 
 macro( install_source   )
-  cet_parse_args( ISRC "SUBDIRS;LIST" "" ${ARGN})
+  cet_parse_args( ISRC "SUBDIRS;LIST;EXTRAS" "" ${ARGN})
   STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   set(source_install_dir ${product}/${version}/source/${product}${CURRENT_SUBDIR} )
   if( ISRC_LIST )
@@ -120,14 +130,17 @@ macro( install_source   )
         message( FATAL_ERROR 
 	         "ERROR: call install_source with EITHER LIST or SUBDIRS but not both")
      endif( ISRC_SUBDIRS )
-     _cet_install_from_list()
+     _cet_install_from_list("${ISRC_LIST}")
   else()
-      _cet_install_without_list()
+     if( ISRC_EXTRAS )
+        _cet_install_from_list("${ISRC_EXTRAS}")
+     endif( ISRC_EXTRAS )
+     _cet_install_without_list()
   endif()
 endmacro( install_source )
 
 macro( install_headers   )
-  cet_parse_args( IHDR "SUBDIRS;LIST" "" ${ARGN})
+  cet_parse_args( IHDR "SUBDIRS;LIST;EXTRAS" "" ${ARGN})
   STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   set(header_install_dir ${product}/${version}/include${CURRENT_SUBDIR} )
   if( IHDR_LIST )
@@ -135,8 +148,11 @@ macro( install_headers   )
         message( FATAL_ERROR 
 	         "ERROR: call install_headers with EITHER LIST or SUBDIRS but not both")
      endif( IHDR_SUBDIRS )
-     _cet_install_header_from_list()
+     _cet_install_header_from_list("${IHDR_LIST}")
   else()
-      _cet_install_header_without_list()
+     if( IHDR_EXTRAS )
+        _cet_install_header_from_list("${IHDR_EXTRAS}")
+     endif( IHDR_EXTRAS )
+     _cet_install_header_without_list()
   endif()
 endmacro( install_headers )
