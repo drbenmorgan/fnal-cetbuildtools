@@ -22,8 +22,15 @@
 #
 # install_headers( [SUBDIRS subdirectory_list] [EXTRAS extra_file_list] )
 # install_headers( LIST file_list )
+#
+# set_install_root() defines PACKAGE_TOP_DIRECTORY 
 
 include(CetParseArgs)
+
+macro( set_install_root )
+  set( PACKAGE_TOP_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  message( STATUS "set_install_root: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
+endmacro( set_install_root )
 
 macro( _cet_install_generated_code )
   # search for .in files
@@ -123,8 +130,14 @@ endmacro( _cet_install_header_from_list )
 
 macro( install_source   )
   cet_parse_args( ISRC "SUBDIRS;LIST;EXTRAS" "" ${ARGN})
-  STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  message( STATUS "install_source: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
+  if( PACKAGE_TOP_DIRECTORY )
+     STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  else()
+     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  endif()
   set(source_install_dir ${product}/${version}/source/${product}${CURRENT_SUBDIR} )
+  message( STATUS "install_source: source code will be installed in ${source_install_dir}" )
   if( ISRC_LIST )
      if( ISRC_SUBDIRS )
         message( FATAL_ERROR 
@@ -141,8 +154,13 @@ endmacro( install_source )
 
 macro( install_headers   )
   cet_parse_args( IHDR "SUBDIRS;LIST;EXTRAS" "" ${ARGN})
-  STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  if( PACKAGE_TOP_DIRECTORY )
+     STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  else()
+     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  endif()
   set(header_install_dir ${product}/${version}/include${CURRENT_SUBDIR} )
+  message( STATUS "install_headers: headers will be installed in ${header_install_dir}" )
   if( IHDR_LIST )
      if( IHDR_SUBDIRS )
         message( FATAL_ERROR 
