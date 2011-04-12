@@ -24,7 +24,11 @@ set( GENREFLEX_FLAGS --deep
 		     -DPROJECT_VERSION="${version}" )
 
 macro( _set_dictionary_name )
-   STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+   if( PACKAGE_TOP_DIRECTORY )
+      STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+   else()
+      STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+   endif()
    STRING( REGEX REPLACE "/" "_" dictname "${CURRENT_SUBDIR}" )
 endmacro( _set_dictionary_name )
 
