@@ -57,7 +57,7 @@ macro( _generate_dictionary )
 		 -I ${CMAKE_SOURCE_DIR}
 		 -I ${CMAKE_CURRENT_SOURCE_DIR}
 		 ${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
-        	 -o ${dictname}_dict.cpp
+        	 -o ${dictname}_dict.cpp || { rm -f ${dictname}_dict.cpp\; /bin/false\; }
      COMMAND ${CMAKE_COMMAND} -E copy classes_ids.cc ${dictname}_map.cpp
      COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
      IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
