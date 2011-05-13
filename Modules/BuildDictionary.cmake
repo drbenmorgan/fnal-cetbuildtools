@@ -46,8 +46,13 @@ macro( _generate_dictionary )
   #message(STATUS "_GENERATE_DICTIONARY: generate dictionary source code for ${dictname}")
   get_directory_property( genpath INCLUDE_DIRECTORIES )
   foreach( inc ${genpath} )
-      set( GENREFLEX_INCLUDES -I ${inc} ${GENREFLEX_INCLUDES} )
+      set( GENREFLEX_INCLUDES ${GENREFLEX_INCLUDES} -I ${inc} )
   endforeach(inc)
+  # add any local compile definitions
+  get_directory_property(compile_defs COMPILE_DEFINITIONS)
+  foreach( def ${compile_defs} )
+      set( GENREFLEX_FLAGS ${GENREFLEX_FLAGS} -D${def} )
+  endforeach(def)
   #message(STATUS "_GENERATE_DICTIONARY: using genreflex flags ${GENREFLEX_FLAGS} ")
   add_custom_command(
      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
