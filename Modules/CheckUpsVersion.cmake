@@ -59,42 +59,10 @@ macro(_parse_version version )
 endmacro(_parse_version)
 
 macro( _check_version product version minimum )
-   _parse_version( ${minimum}  )
-   set( MINVER ${dotver} )
-   set( MINMAJOR ${major} )
-   set( MINMINOR ${minor} )
-   set( MINPATCH ${patch} )
-   set( MINCHAR ${patchchar} )
-   set( MINMICRO ${micro} )
-   _parse_version( ${version}  )
-   set( THISVER ${dotver} )
-   set( THISMAJOR ${major} )
-   set( THISMINOR ${minor} )
-   set( THISPATCH ${patch} )
-   set( THISCHAR ${patchchar} )
-   set( THISMICRO ${micro} )
-   ##message(STATUS "${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
-   ##message(STATUS "${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
-  if( ${THISMAJOR} LESS ${MINMAJOR} )
-    message( FATAL_ERROR "Bad Major Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
-  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-      AND ${THISMINOR} LESS ${MINMINOR} )
-    message( FATAL_ERROR "Bad Minor Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
-  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-      AND ${THISMINOR} EQUAL ${MINMINOR}
-      AND ${THISPATCH} LESS ${MINPATCH} )
-    message( FATAL_ERROR "Bad Patch Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
-  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-      AND ${THISMINOR} EQUAL ${MINMINOR}
-      AND ${THISPATCH} EQUAL ${MINPATCH}
-      AND ${THISCHAR} STRLESS ${MINCHAR} )
-    message( FATAL_ERROR "Bad Patch Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
-  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-      AND ${THISMINOR} EQUAL ${MINMINOR}
-      AND ${THISPATCH} EQUAL ${MINPATCH}
-      AND ${THISCHAR} EQUAL ${MINCHAR} 
-      AND ${THISMICRO} STRLESS ${MINMICRO} )
-    message( FATAL_ERROR "Bad Micro Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
+
+  _check_if_version_greater( ${product} ${version} ${minimum} )
+  if( ${product_version_less} MATCHES "TRUE" )
+    message( FATAL_ERROR "Bad Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
   endif()
 
   message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
@@ -118,26 +86,26 @@ macro( _check_if_version_greater product version minimum )
    ##message(STATUS "${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
    ##message(STATUS "${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
   if( ${THISMAJOR} LESS ${MINMAJOR} )
-    set( product_version_greater FALSE )
+    set( product_version_less TRUE )
   elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
       AND ${THISMINOR} LESS ${MINMINOR} )
-    set( product_version_greater FALSE )
+    set( product_version_less TRUE )
   elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
       AND ${THISMINOR} EQUAL ${MINMINOR}
       AND ${THISPATCH} LESS ${MINPATCH} )
-    set( product_version_greater FALSE )
+    set( product_version_less TRUE )
   elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
       AND ${THISMINOR} EQUAL ${MINMINOR}
       AND ${THISPATCH} EQUAL ${MINPATCH}
       AND ${THISCHAR} STRLESS ${MINCHAR} )
-    set( product_version_greater FALSE )
+    set( product_version_less TRUE )
   elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
       AND ${THISMINOR} EQUAL ${MINMINOR}
       AND ${THISPATCH} EQUAL ${MINPATCH}
       AND ${THISCHAR} EQUAL ${MINCHAR} 
       AND ${THISMICRO} STRLESS ${MINMICRO} )
-    set( product_version_greater FALSE )
+    set( product_version_less TRUE )
   endif()
 
-  #message( STATUS "${product} ${THISVER} check if greater returns ${product_version_greater}")
+  #message( STATUS "${product} ${THISVER} check if greater returns ${product_version_less}")
 endmacro( _check_if_version_greater product version minimum )
