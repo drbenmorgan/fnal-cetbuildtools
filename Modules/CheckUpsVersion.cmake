@@ -99,3 +99,45 @@ macro( _check_version product version minimum )
 
   message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
 endmacro( _check_version product version minimum )
+
+macro( _check_if_version_greater product version minimum )
+   _parse_version( ${minimum}  )
+   set( MINVER ${dotver} )
+   set( MINMAJOR ${major} )
+   set( MINMINOR ${minor} )
+   set( MINPATCH ${patch} )
+   set( MINCHAR ${patchchar} )
+   set( MINMICRO ${micro} )
+   _parse_version( ${version}  )
+   set( THISVER ${dotver} )
+   set( THISMAJOR ${major} )
+   set( THISMINOR ${minor} )
+   set( THISPATCH ${patch} )
+   set( THISCHAR ${patchchar} )
+   set( THISMICRO ${micro} )
+   ##message(STATUS "${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
+   ##message(STATUS "${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
+  if( ${THISMAJOR} LESS ${MINMAJOR} )
+    set( product_version_greater FALSE )
+  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+      AND ${THISMINOR} LESS ${MINMINOR} )
+    set( product_version_greater FALSE )
+  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+      AND ${THISMINOR} EQUAL ${MINMINOR}
+      AND ${THISPATCH} LESS ${MINPATCH} )
+    set( product_version_greater FALSE )
+  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+      AND ${THISMINOR} EQUAL ${MINMINOR}
+      AND ${THISPATCH} EQUAL ${MINPATCH}
+      AND ${THISCHAR} STRLESS ${MINCHAR} )
+    set( product_version_greater FALSE )
+  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+      AND ${THISMINOR} EQUAL ${MINMINOR}
+      AND ${THISPATCH} EQUAL ${MINPATCH}
+      AND ${THISCHAR} EQUAL ${MINCHAR} 
+      AND ${THISMICRO} STRLESS ${MINMICRO} )
+    set( product_version_greater FALSE )
+  endif()
+
+  #message( STATUS "${product} ${THISVER} check if greater returns ${product_version_greater}")
+endmacro( _check_if_version_greater product version minimum )
