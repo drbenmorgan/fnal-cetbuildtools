@@ -17,6 +17,7 @@ SET ( ROOT_STRING $ENV{SETUP_ROOT} )
 STRING( REGEX REPLACE "^[r][o][o][t][ ]+([^ ]+).*" "\\1" ROOT_VERSION "${ROOT_STRING}" )
 
 _check_version( ROOT ${ROOT_VERSION} ${minimum} )
+set( ROOT_DOT_VERSION ${dotver} )
 
 STRING( REGEX MATCH "[-][q]" has_qual  "${ROOT_STRING}" )
 STRING( REGEX MATCH "[-][j]" has_j  "${ROOT_STRING}" )
@@ -50,5 +51,13 @@ find_library( MATRIX NAMES Matrix PATHS $ENV{ROOTSYS}/lib )
 find_Library( THREAD NAMES Thread PATHS $ENV{ROOTSYS}/lib )
 # define genreflex executable
 find_program( GENREFLEX NAMES genreflex PATHS $ENV{ROOTSYS}/bin )
+# check for the need to cleanup after genreflex
+_check_if_version_greater( ROOT ${ROOT_VERSION} v5_28_00d )
+   if ( NOT ${product_version_greater} )
+      set ( GENREFLEX_CLEANUP " || { rm -f ${dictname}_dict.cpp\; /bin/false\; } " )
+   else()
+      set ( GENREFLEX_CLEANUP " " )
+   endif()
+   message(STATUS "cleanup status: ${GENREFLEX_CLEANUP}")
 
 endmacro( find_ups_root )
