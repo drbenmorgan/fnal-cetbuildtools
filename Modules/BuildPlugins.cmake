@@ -15,7 +15,7 @@
 include(CetParseArgs)
 macro (simple_plugin name type)
   cet_parse_args(SP "" "ALLOW_UNDERSCORES;NOINSTALL" ${ARGN})
-  message( STATUS "simple_plugin: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
+  #message( STATUS "simple_plugin: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
   # base name on current subdirectory
   if( PACKAGE_TOP_DIRECTORY )
      STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
