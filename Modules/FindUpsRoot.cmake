@@ -53,7 +53,7 @@ find_Library( THREAD NAMES Thread PATHS $ENV{ROOTSYS}/lib )
 find_program( GENREFLEX NAMES genreflex PATHS $ENV{ROOTSYS}/bin )
 # check for the need to cleanup after genreflex
 _check_if_version_greater( ROOT ${ROOT_VERSION} v5_28_00d )
-   if ( NOT ${product_version_greater} )
+   if ( ${product_version_less} MATCHES "TRUE" )
       set ( GENREFLEX_CLEANUP TRUE )
    else()
       set ( GENREFLEX_CLEANUP FALSE )
