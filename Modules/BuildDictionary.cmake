@@ -55,6 +55,9 @@ macro( _generate_dictionary )
   endforeach(def)
   #message(STATUS "_GENERATE_DICTIONARY: using genreflex flags ${GENREFLEX_FLAGS} ")
   #message(STATUS "_GENERATE_DICTIONARY: using genreflex cleanup ${GENREFLEX_CLEANUP} ")
+  if( ${GENREFLEX_CLEANUP} MATCHES "TRUE" )
+      set ( GENREFLEX_CLEANUP_COMMAND " || { rm -f ${dictname}_dict.cpp\; /bin/false\; } " )
+  endif()
   add_custom_command(
      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
             ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp
@@ -63,7 +66,7 @@ macro( _generate_dictionary )
 		 -I ${CMAKE_SOURCE_DIR}
 		 -I ${CMAKE_CURRENT_SOURCE_DIR}
 		 ${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
-        	 -o ${dictname}_dict.cpp "${GENREFLEX_CLEANUP}"
+        	 -o ${dictname}_dict.cpp || { rm -f ${dictname}_dict.cpp\; /bin/false\; }
      COMMAND ${CMAKE_COMMAND} -E copy classes_ids.cc ${dictname}_map.cpp
      COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
      IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
