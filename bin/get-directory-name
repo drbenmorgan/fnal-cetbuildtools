@@ -30,6 +30,13 @@ elif [ "${flvr0}" = "Linuxppc" ]
 then
    OS=slf5
    subdir=${OS}.${plat}.${qual}
+elif [ `lsb_release -d | cut -f2 | cut  -f1 -d" "` = "Ubuntu" ]
+then
+   OS1=ub
+   OSnum=`lsb_release -r | cut -f2 | cut -f1 -d"."`
+   OS=${OS1}${OSnum}
+   plat=`uname -m`
+   subdir=${OS1}${OSnum}.${plat}.${qual}
 else
    OSnum=`lsb_release -r | cut -f2 | cut -f1 -d"."`
    OS=${OS1}${OSnum}
