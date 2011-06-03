@@ -1,7 +1,6 @@
 
 INSTALL(FILES
 	BuildDictionary.cmake
-	BuildPlugins.cmake
 	BuildSubdirectories.cmake
 	CetParseArgs.cmake
 	CetTest.cmake
