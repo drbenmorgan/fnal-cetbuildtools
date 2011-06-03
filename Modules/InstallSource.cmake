@@ -33,6 +33,8 @@ macro( set_install_root )
 endmacro( set_install_root )
 
 macro( _cet_install_generated_code )
+# _cet_install_generated_code is replaced by _cet_check_build_directory
+# leave in place for now in case we need it again
   # search for .in files
   FILE(GLOB config_source_files *.in  )
   if( config_source_files )
@@ -43,6 +45,25 @@ macro( _cet_install_generated_code )
      endforeach(input_file)
   endif( config_source_files )
 endmacro( _cet_install_generated_code )
+
+macro( _cet_check_build_directory )
+  FILE(GLOB build_directory_files   
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.cc 
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.c 
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.cpp 
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.C 
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.cxx
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.h 
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.hh 
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.H 
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.hpp 
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.icc
+	    ${CMAKE_CURRENT_BINARY_DIR}/*.xml  )
+  if( build_directory_files )
+    INSTALL( FILES ${build_directory_files} 
+             DESTINATION ${source_install_dir} )
+  endif( build_directory_files )
+endmacro( _cet_check_build_directory )
 
 macro( _cet_install_generated_dictionary_code )
   # check for dictionary code
@@ -71,7 +92,8 @@ macro( _cet_install_without_list   )
              DESTINATION ${source_install_dir} )
   endif( src_files )
   # check for generated files
-  _cet_install_generated_code()
+  #_cet_install_generated_code()
+  _cet_check_build_directory()
   _cet_install_generated_dictionary_code()
   # now check subdirectories
   if( ISRC_SUBDIRS )
