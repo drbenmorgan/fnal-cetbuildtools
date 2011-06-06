@@ -41,11 +41,19 @@ else
    OSnum=`lsb_release -r | cut -f2 | cut -f1 -d"."`
    OS=${OS1}${OSnum}
    subdir=${OS1}${OSnum}.${plat}.${qual}
+   # Scientific Linux - slf should work
+   if [ `lsb_release -d | cut  -f3 -d" "` = "SL" ]
+   then
+      OS=slf${OSnum}
+      subdir=slf${OSnum}.${plat}.${qual}
+   fi
+   # Scientific Linux Fermi
    if [ `lsb_release -d | cut  -f3 -d" "` = "SLF" ]
    then
       OS=slf${OSnum}
       subdir=slf${OSnum}.${plat}.${qual}
    fi
+   # Scientific Linux CERN
    if [ `lsb_release -d | cut  -f4 -d" "` = "SLC" ]
    then
       OS=slc${OSnum}
