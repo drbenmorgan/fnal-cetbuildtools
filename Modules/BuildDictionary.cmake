@@ -14,14 +14,16 @@
 include(CetParseArgs)
 
 # define flags for genreflex
-set( GENREFLEX_FLAGS --deep
-                     --fail_on_warnings
-		     --capabilities=classes_ids.cc
-		     -D_REENTRANT
-		     -DGNU_SOURCE
-		     -DGNU_GCC
-		     -DPROJECT_NAME="${PROJECT_NAME}"
-		     -DPROJECT_VERSION="${version}" )
+set( GENREFLEX_FLAGS
+  --deep
+  --iocomments
+  --fail_on_warnings
+  --capabilities=classes_ids.cc
+  -D_REENTRANT
+  -DGNU_SOURCE
+  -DGNU_GCC
+  -DPROJECT_NAME="${PROJECT_NAME}"
+  -DPROJECT_VERSION="${version}" )
 
 macro( _set_dictionary_name )
    if( PACKAGE_TOP_DIRECTORY )
