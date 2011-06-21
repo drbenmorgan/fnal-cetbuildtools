@@ -85,6 +85,8 @@ macro( _check_if_version_greater product version minimum )
    set( THISMICRO ${micro} )
    ##message(STATUS "${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
    ##message(STATUS "${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
+  # initialize product_version_less
+  set( product_version_less FALSE )
   if( ${THISMAJOR} LESS ${MINMAJOR} )
     set( product_version_less TRUE )
   elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
