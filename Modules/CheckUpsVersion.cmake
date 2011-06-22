@@ -11,7 +11,7 @@ macro(_parse_version version )
    # replace all underscores with dots
    STRING( REGEX REPLACE "_" "." dotver1 "${version}" )
    STRING( REGEX REPLACE "v(.*)" "\\1" dotver "${dotver1}" )
-   ##message( STATUS "_parse_version: ${version} becomes ${dotver}" )
+   #message( STATUS "_parse_version: ${version} becomes ${dotver}" )
    string(REGEX MATCHALL "_" nfound ${version} )
    ##message( STATUS "_parse_version: matchall returns ${nfound}" )
    list(LENGTH nfound nfound)
@@ -56,6 +56,8 @@ macro(_parse_version version )
    else( has_alpha )
       set( patchchar " ")
    endif( has_alpha )
+   set( basicdotver ${major}.${minor}.${patch} )
+   #message( STATUS "_parse_version: ${version} becomes ${dotver} ${basicdotver}" )
 endmacro(_parse_version)
 
 macro( _check_version product version minimum )
@@ -129,6 +131,7 @@ endmacro( _compare_root_micro microversion micromin )
 macro( _check_if_version_greater product version minimum )
    _parse_version( ${minimum}  )
    set( MINVER ${dotver} )
+   set( MINCVER ${basicdotver} )
    set( MINMAJOR ${major} )
    set( MINMINOR ${minor} )
    set( MINPATCH ${patch} )
@@ -136,6 +139,7 @@ macro( _check_if_version_greater product version minimum )
    set( MINMICRO ${micro} )
    _parse_version( ${version}  )
    set( THISVER ${dotver} )
+   set( THISCVER ${basicdotver} )
    set( THISMAJOR ${major} )
    set( THISMINOR ${minor} )
    set( THISPATCH ${patch} )
@@ -146,18 +150,9 @@ macro( _check_if_version_greater product version minimum )
   # initialize product_version_less
   set( product_version_less FALSE )
   if( ${product} MATCHES "ROOT" )
-     if( ${THISMAJOR} LESS ${MINMAJOR} )
-       set( product_version_less TRUE )
-     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-	 AND ${THISMINOR} LESS ${MINMINOR} )
-       set( product_version_less TRUE )
-     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-	 AND ${THISMINOR} EQUAL ${MINMINOR}
-	 AND ${THISPATCH} LESS ${MINPATCH} )
-       set( product_version_less TRUE )
-     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-	 AND ${THISMINOR} EQUAL ${MINMINOR}
-	 AND ${THISPATCH} EQUAL ${MINPATCH}
+     if( ${THISCVER} VERSION_LESS ${MINCVER} )
+        set( product_version_less TRUE )
+     elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
 	 AND ${THISCHAR} STRLESS ${MINCHAR} )
        set( product_version_less TRUE )
      endif()
@@ -166,23 +161,12 @@ macro( _check_if_version_greater product version minimum )
         _compare_root_micro( ${THISMICRO} ${MINMICRO} )
      endif( NOT  product_version_less )
   else()
-     if( ${THISMAJOR} LESS ${MINMAJOR} )
-       set( product_version_less TRUE )
-     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-	 AND ${THISMINOR} LESS ${MINMINOR} )
-       set( product_version_less TRUE )
-     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-	 AND ${THISMINOR} EQUAL ${MINMINOR}
-	 AND ${THISPATCH} LESS ${MINPATCH} )
-       set( product_version_less TRUE )
-     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-	 AND ${THISMINOR} EQUAL ${MINMINOR}
-	 AND ${THISPATCH} EQUAL ${MINPATCH}
+     if( ${THISCVER} VERSION_LESS ${MINCVER} )
+        set( product_version_less TRUE )
+     elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
 	 AND ${THISCHAR} STRLESS ${MINCHAR} )
        set( product_version_less TRUE )
-     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-	 AND ${THISMINOR} EQUAL ${MINMINOR}
-	 AND ${THISPATCH} EQUAL ${MINPATCH}
+     elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
 	 AND ${THISCHAR} STREQUAL ${MINCHAR} 
 	 AND ${THISMICRO} LESS ${MINMICRO} )
        set( product_version_less TRUE )
