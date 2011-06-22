@@ -25,17 +25,17 @@ macro(_parse_version version )
       STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1" major "${version}" )
       STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\2" minor "${version}" )
       STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\3" patch "${version}" )
-      set( micro " ")
+      set( micro "0")
    elseif( ${nfound} EQUAL 1 )
       STRING( REGEX REPLACE "v(.*)_(.*)" "\\1" major "${version}" )
       STRING( REGEX REPLACE "v(.*)_(.*)" "\\2" minor "${version}" )
       set( patch "0")
-      set( micro " ")
+      set( micro "0")
    elseif( ${nfound} EQUAL 0 )
       STRING( REGEX REPLACE "v(.*)" "\\1" major "${version}" )
       set( minor "0")
       set( patch "0")
-      set( micro " ")
+      set( micro "0")
    else()
       message( STATUS "_parse_version found extra underscores in ${version}" )
       STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\1" major "${version}" )
@@ -67,6 +67,64 @@ macro( _check_version product version minimum )
 
   message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
 endmacro( _check_version product version minimum )
+ 
+macro( _compare_root_micro microversion micromin )
+   # root release old numbering:
+   # 5.28.00.rc1 (release candidate)
+   # 5.28.00 (release)
+   # 5.28.00.p01 (fermi patch release)
+   # 5.28.00a (patch release)
+   # root release new numbering:
+   # 5.30.00.rc1 (release candidate)
+   # 5.30.00 (release)
+   # 5.30.00.p01 (fermi patch release)
+   # 5.30.01 (patch release)
+   # 5.30.01.p01 (fermi patch release)
+   ##message(STATUS "_compare_root_micro: check ${microversion} against ${micromin}")   
+   string(TOUPPER  ${microversion} VERUC )
+   STRING(REGEX MATCH [R][C] rcver ${VERUC})
+   if( rcver )
+      STRING(REGEX REPLACE "[R][C](.*)" "\\1" rcvnum  ${VERUC})
+      ##message(STATUS "_compare_root_micro: version is release candidate ${microversion} ${rcvnum}")
+   endif( rcver )
+   STRING(REGEX MATCH [P] fermipatch ${VERUC})
+   if( fermipatch )
+      STRING(REGEX REPLACE "[P](.*)" "\\1" pvnum  ${VERUC})
+      ##message(STATUS "_compare_root_micro: version is fermi patch ${microversion} ${pvnum}")
+   endif( fermipatch )
+   string(TOUPPER  ${micromin} MINUC )
+   STRING(REGEX MATCH [R][C] rcmin ${MINUC})
+   if( rcmin )
+      STRING(REGEX REPLACE "[R][C](.*)" "\\1" rcminnum  ${MINUC})
+   endif( rcmin )
+   STRING(REGEX MATCH [P] fermipatchmin ${MINUC})
+   if( fermipatchmin )
+      STRING(REGEX REPLACE "[P](.*)" "\\1" pminnum  ${MINUC})
+   endif( fermipatchmin )
+   
+   # is the minimum microversion a fermi patch?
+   # when comparing microversions, a fermi patch should trump everything else
+   if( fermipatchmin )
+      ##message(STATUS "_compare_root_micro: minimum is fermi patch ${micromin} ${pminnum}")
+      if( fermipatch )
+         if(  ${pvnum} LESS ${pminnum} )
+            set( product_version_less TRUE )
+	 endif()
+      else()
+        set( product_version_less TRUE )
+      endif()
+   endif( fermipatchmin )
+   # is the minimum microversion a release candidate?
+   # when comparing microversions, everything else is better than a release candidate
+   if( rcmin )
+      ##message(STATUS "_compare_root_micro: minimum is release candidate ${micromin} ${rcminnum}")
+      if( rcver )
+         if(  ${rcvnum} LESS ${rcminnum} )
+            set( product_version_less TRUE )
+	 endif()
+      endif()
+   endif( rcmin )
+endmacro( _compare_root_micro microversion micromin )
 
 macro( _check_if_version_greater product version minimum )
    _parse_version( ${minimum}  )
@@ -83,31 +141,52 @@ macro( _check_if_version_greater product version minimum )
    set( THISPATCH ${patch} )
    set( THISCHAR ${patchchar} )
    set( THISMICRO ${micro} )
-   ##message(STATUS "${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
-   ##message(STATUS "${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
+   #message(STATUS "_check_if_version_greater: ${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
+   #message(STATUS "_check_if_version_greater: ${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
   # initialize product_version_less
   set( product_version_less FALSE )
-  if( ${THISMAJOR} LESS ${MINMAJOR} )
-    set( product_version_less TRUE )
-  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-      AND ${THISMINOR} LESS ${MINMINOR} )
-    set( product_version_less TRUE )
-  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-      AND ${THISMINOR} EQUAL ${MINMINOR}
-      AND ${THISPATCH} LESS ${MINPATCH} )
-    set( product_version_less TRUE )
-  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-      AND ${THISMINOR} EQUAL ${MINMINOR}
-      AND ${THISPATCH} EQUAL ${MINPATCH}
-      AND ${THISCHAR} STRLESS ${MINCHAR} )
-    set( product_version_less TRUE )
-  elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
-      AND ${THISMINOR} EQUAL ${MINMINOR}
-      AND ${THISPATCH} EQUAL ${MINPATCH}
-      AND ${THISCHAR} EQUAL ${MINCHAR} 
-      AND ${THISMICRO} STRLESS ${MINMICRO} )
-    set( product_version_less TRUE )
+  if( ${product} MATCHES "ROOT" )
+     if( ${THISMAJOR} LESS ${MINMAJOR} )
+       set( product_version_less TRUE )
+     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+	 AND ${THISMINOR} LESS ${MINMINOR} )
+       set( product_version_less TRUE )
+     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+	 AND ${THISMINOR} EQUAL ${MINMINOR}
+	 AND ${THISPATCH} LESS ${MINPATCH} )
+       set( product_version_less TRUE )
+     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+	 AND ${THISMINOR} EQUAL ${MINMINOR}
+	 AND ${THISPATCH} EQUAL ${MINPATCH}
+	 AND ${THISCHAR} STRLESS ${MINCHAR} )
+       set( product_version_less TRUE )
+     endif()
+     # root micro versions require special handling
+     if( NOT  product_version_less )
+        _compare_root_micro( ${THISMICRO} ${MINMICRO} )
+     endif( NOT  product_version_less )
+  else()
+     if( ${THISMAJOR} LESS ${MINMAJOR} )
+       set( product_version_less TRUE )
+     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+	 AND ${THISMINOR} LESS ${MINMINOR} )
+       set( product_version_less TRUE )
+     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+	 AND ${THISMINOR} EQUAL ${MINMINOR}
+	 AND ${THISPATCH} LESS ${MINPATCH} )
+       set( product_version_less TRUE )
+     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+	 AND ${THISMINOR} EQUAL ${MINMINOR}
+	 AND ${THISPATCH} EQUAL ${MINPATCH}
+	 AND ${THISCHAR} STRLESS ${MINCHAR} )
+       set( product_version_less TRUE )
+     elseif( ${THISMAJOR} EQUAL ${MINMAJOR}
+	 AND ${THISMINOR} EQUAL ${MINMINOR}
+	 AND ${THISPATCH} EQUAL ${MINPATCH}
+	 AND ${THISCHAR} STREQUAL ${MINCHAR} 
+	 AND ${THISMICRO} LESS ${MINMICRO} )
+       set( product_version_less TRUE )
+     endif()
   endif()
-
-  #message( STATUS "${product} ${THISVER} check if greater returns ${product_version_less}")
+  #message( STATUS "_check_if_version_greater: ${product} ${THISVER} check if greater returns ${product_version_less}")
 endmacro( _check_if_version_greater product version minimum )
