@@ -151,15 +151,16 @@ macro( _check_if_version_greater product version minimum )
   set( product_version_less FALSE )
   if( ${product} MATCHES "ROOT" )
      if( ${THISCVER} VERSION_LESS ${MINCVER} )
-        set( product_version_less TRUE )
+       set( product_version_less TRUE )
      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
 	 AND ${THISCHAR} STRLESS ${MINCHAR} )
        set( product_version_less TRUE )
+     elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	 AND ${THISCHAR} STREQUAL ${MINCHAR} )
+       # root micro versions require special handling
+       #message(STATUS "root versions match so far, compare  ${THISMICRO} to ${MINMICRO}")
+       _compare_root_micro( ${THISMICRO} ${MINMICRO} )
      endif()
-     # root micro versions require special handling
-     if( NOT  product_version_less )
-        _compare_root_micro( ${THISMICRO} ${MINMICRO} )
-     endif( NOT  product_version_less )
   else()
      if( ${THISCVER} VERSION_LESS ${MINCVER} )
         set( product_version_less TRUE )
