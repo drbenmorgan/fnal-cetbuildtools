@@ -13,6 +13,7 @@ INSTALL(FILES
 	FindUpsRoot.cmake
 	InstallSource.cmake
 	ParseUpsVersion.cmake
+	SetCompilerFlags.cmake
 	SetFlavorQual.cmake
 	UseCPack.cmake
   DESTINATION ${product}/${version}/Modules
