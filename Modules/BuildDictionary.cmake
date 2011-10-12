@@ -61,7 +61,7 @@ macro( _generate_dictionary )
   add_custom_command(
      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
             ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp
-     COMMAND ${GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
+     COMMAND ${ROOT_GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
         	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
 		 -I ${CMAKE_CURRENT_SOURCE_DIR}
@@ -77,7 +77,7 @@ macro( _generate_dictionary )
   add_custom_command(
      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
             ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp
-     COMMAND ${GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
+     COMMAND ${ROOT_GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
         	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		 -I ${CMAKE_SOURCE_DIR}
 		 -I ${CMAKE_CURRENT_SOURCE_DIR}
