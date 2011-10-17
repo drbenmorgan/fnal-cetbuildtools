@@ -48,21 +48,33 @@ endmacro( _cet_install_generated_code )
 
 macro( _cet_check_build_directory )
   FILE(GLOB build_directory_files   
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.cc 
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.c 
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.cpp 
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.C 
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.cxx
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.h 
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.hh 
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.H 
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.hpp 
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.icc
-	    ${CMAKE_CURRENT_BINARY_DIR}/*.xml  )
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.cc 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.c 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.cpp 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.C 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.cxx
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.h 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.hh 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.H 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.hpp 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.icc
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.xml  )
+  FILE(GLOB build_directory_headers  
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.h 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.hh 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.H 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.hpp 
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.icc  )
   if( build_directory_files )
+    #message( STATUS "installing ${build_directory_files} in ${source_install_dir}")
     INSTALL( FILES ${build_directory_files} 
              DESTINATION ${source_install_dir} )
   endif( build_directory_files )
+  if( build_directory_headers )
+    #message( STATUS "installing ${build_directory_headers} in ${source_install_dir}")
+    INSTALL( FILES ${build_directory_headers} 
+             DESTINATION ${header_install_dir} )
+  endif( build_directory_headers )
 endmacro( _cet_check_build_directory )
 
 macro( _cet_install_generated_dictionary_code )
@@ -86,7 +98,9 @@ endmacro( _cet_install_generated_dictionary_code )
 macro( _cet_install_without_list   )
   #message( STATUS "source code will be installed in ${source_install_dir}" )
   FILE(GLOB src_files 
-            *.cc *.c *.cpp *.C *.cxx *.h *.hh *.H *.hpp *.icc *.xml )
+            [^.]*.cc [^.]*.c [^.]*.cpp [^.]*.C [^.]*.cxx 
+	    [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc 
+	    [^.]*.xml )
   if( src_files )
     INSTALL( FILES ${src_files} 
              DESTINATION ${source_install_dir} )
@@ -99,9 +113,9 @@ macro( _cet_install_without_list   )
   if( ISRC_SUBDIRS )
      foreach( sub ${ISRC_SUBDIRS} )
 	FILE(GLOB subdir_src_files 
-	         ${sub}/*.cc ${sub}/*.c ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx
-		 ${sub}/*.h ${sub}/*.hh ${sub}/*.H ${sub}/*.hpp ${sub}/*.icc
-		 ${sub}/*.xml  )
+	         ${sub}/[^.]*.cc ${sub}/[^.]*.c ${sub}/[^.]*.cpp ${sub}/[^.]*.C ${sub}/[^.]*.cxx
+		 ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc
+		 ${sub}/[^.]*.xml  )
         if( subdir_src_files )
 	  INSTALL( FILES ${subdir_src_files} 
         	   DESTINATION ${source_install_dir}/${sub} )
@@ -135,7 +149,7 @@ macro( _cet_install_header_without_list   )
   if( IHDR_SUBDIRS )
      foreach( sub ${IHDR_SUBDIRS} )
 	FILE(GLOB subdir_headers 
-		 ${sub}/*.h ${sub}/*.hh ${sub}/*.H ${sub}/*.hpp ${sub}/*.icc  )
+		 ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc  )
         if( subdir_headers )
 	  INSTALL( FILES ${subdir_headers} 
         	   DESTINATION ${header_install_dir}/${sub} )
