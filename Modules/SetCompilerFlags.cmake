@@ -1,44 +1,97 @@
-#
+########################################################################
 # cet_set_compiler_flags( [extra flags] ) 
+#
 #    sets the default compiler flags
+#
+# default gcc/g++ flags:
+# DEBUG           -g
+# RELEASE         -O3 -DNDEBUG
+# MINSIZEREL      -Os -DNDEBUG
+# RELWITHDEBINFO  -O2 -g
+#
+# CET flags
+# (debug)   DEBUG           -g -O0
+# (prof)    MINSIZEREL      -O3 -g -DNDEBUG -fno-omit-frame-pointer
+# (opt)     RELEASE         -O3 -g -DNDEBUG
+# (default) RELWITHDEBINFO  unchanged
+#
+# Plus the diagnostic option set indicated by the DIAG option.
+#
+# Optional arguments
+#    DIAGS
+#      This option may be CAVALIER, CAUTIOUS, VIGILANT or PARANOID.
+#      Default is CAUTIOUS.
+#
+#    EXTRA_C_FLAGS
+#    EXTRA_CXX_FLAGS
+#    EXTRA_DEFINITIONS
+#      This list parameters will append tbe appropriate items.
+#
+####################################
 #
 # cet_query_system() just lists the values of various variables
 #
+########################################################################
+include(CMakeParseArguments)
 
 macro( cet_set_compiler_flags )
+  CMAKE_PARSE_ARGUMENTS(CSCF
+    ""
+    "DIAGS"
+    "EXTRA_C_FLAGS EXTRA_CXX_FLAGS EXTRA_DEFINITIONS"
+    ${ARGN}
+    )
 
-  # default gcc/g++ flags:
-  # DEBUG           -g
-  # RELEASE         -O3 -DNDEBUG
-  # MINSIZEREL      -Os -DNDEBUG
-  # RELWITHDEBINFO  -O2 -g
-  #
-  # CET flags
-  # (debug)   DEBUG           -g -O0
-  # (prof)    MINSIZEREL      -O3 -g -DNDEBUG -fno-omit-frame-pointer
-  # (opt)     RELEASE         -O3 -g -DNDEBUG
-  # (default) RELWITHDEBINFO  unchanged
+  if (CSCF_UNPARSED_ARGUMENTS)
+    message(FATAL "Unexpected extra arguments: ${CSCF_UNPARSED_ARGUMENTS}.\nConsider EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
+  endif()
 
-  set( CMAKE_CXX_FLAGS_DEBUG "-g -O0" )
-  set( CMAKE_CXX_FLAGS_MINSIZEREL "-O3 -g -DNDEBUG -fno-omit-frame-pointer" )
-  set( CMAKE_CXX_FLAGS_RELEASE "-O3 -g -DNDEBUG" )
+  set( DFLAGS_CAVALIER "" )
+  set( DXXFLAGS_CAVALIER "" )
+  set( DFLAGS_CAUTIOUS "-Wall -Werror=return-type" )
+  set( DXXFLAGS_CAUTIOUS "" )
+  set( DFLAGS_VIGILANT "${DFLAGS_CAUTIOUS} -Wextra -Wno-long-long -Winit-self" )
+  set( DXXFLAGS_VIGILANT "-Woverloaded-virtual" )
+  set( DFLAGS_PARANOID "${DFLAGS_VIGILANT} -pedantic -Wformat-y2k -Wswitch-default -Wsync-nand -Wtrampolines -Wlogical-op -Wshadow -Wcast-qual" )
+  set( DXXFLAGS_PARANOID "" )
+
+  if (NOT CSCF_DIAGS)
+    SET(CSCF_DIAGS "CAUTIOUS")
+  endif()
+
+  string(TOUPPER "${CSCF_DIAGS}" CSCF_DIAGS)
+  if (CSCF_DIAGS STREQUAL "CAVALIER" OR
+      CSCF_DIAGS STREQUAL "CAUTIOUS" OR
+      CSCF_DIAGS STREQUAL "VIGILANT" OR
+      CSCF_DIAGS STREQUAL "PARANOID")
+    message(STATUS "Selected diagnostics option ${CSCF_DIAGS}")
+  else()
+    message(FATAL "Unrecognized DIAGS option ${CSCF_DIAGS}")
+  endif()
+
+  set( CMAKE_C_FLAGS_DEBUG "-g -O0 ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g -O0 ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_C_FLAGS_MINSIZEREL "-O3 -g -fno-omit-frame-pointer ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g -fno-omit-frame-pointer ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
 
   if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "" FORCE)
   endif()
+
   message(STATUS "cmake build type set to ${CMAKE_BUILD_TYPE}")
 
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   if( ${BTYPE_UC} MATCHES "DEBUG")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG}")
   elseif( ${BTYPE_UC} MATCHES "RELEASE")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}")
+    add_definitions(-DNDEBUG)
   elseif( ${BTYPE_UC} MATCHES "MINSIZEREL")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_MINSIZEREL}")
+    add_definitions(-DNDEBUG)
   endif()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ARGN}")
+  add_definitions(${CSCF_EXTRA_DEFINITIONS})
   
-  message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS}")
+  message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
 
 endmacro( cet_set_compiler_flags )
 
@@ -60,7 +113,6 @@ macro( cet_query_system )
   message( STATUS "CMAKE_RANLIB is ${CMAKE_RANLIB}" )
   message( STATUS "CMAKE_CXX_COMPILER is ${CMAKE_CXX_COMPILER}")
   message( STATUS "CMAKE_CXX_OUTPUT_EXTENSION is ${CMAKE_CXX_OUTPUT_EXTENSION}" )
-  message( STATUS "CMAKE_CXX_FLAGS is ${CMAKE_CXX_FLAGS}" )
   message( STATUS "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}" )
   message( STATUS "CMAKE_CXX_FLAGS_RELEASE is ${CMAKE_CXX_FLAGS_RELEASE}" )
   message( STATUS "CMAKE_CXX_FLAGS_MINSIZEREL is ${CMAKE_CXX_FLAGS_MINSIZEREL}" )
