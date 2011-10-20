@@ -22,6 +22,7 @@
 #      This option may be CAVALIER, CAUTIOUS, VIGILANT or PARANOID.
 #      Default is CAUTIOUS.
 #
+#    EXTRA_FLAGS (applied to both C and CXX)
 #    EXTRA_C_FLAGS
 #    EXTRA_CXX_FLAGS
 #    EXTRA_DEFINITIONS
@@ -38,13 +39,18 @@ macro( cet_set_compiler_flags )
   CMAKE_PARSE_ARGUMENTS(CSCF
     ""
     "DIAGS"
-    "EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
+    "EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
     ${ARGN}
     )
 
   if (CSCF_UNPARSED_ARGUMENTS)
-    message(FATAL "Unexpected extra arguments: ${CSCF_UNPARSED_ARGUMENTS}.\nConsider EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
+    message(FATAL "Unexpected extra arguments: ${CSCF_UNPARSED_ARGUMENTS}.\nConsider EXTRA_FLAGS, EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
   endif()
+  
+  # turn a colon separated list into a space separated string
+  STRING( REGEX REPLACE ";" " " CSCF_EXTRA_CXX_FLAGS "${CSCF_EXTRA_CXX_FLAGS}")
+  STRING( REGEX REPLACE ";" " " CSCF_EXTRA_C_FLAGS "${CSCF_EXTRA_C_FLAGS}")
+  STRING( REGEX REPLACE ";" " " CSCF_EXTRA_FLAGS "${CSCF_EXTRA_FLAGS}")
 
   set( DFLAGS_CAVALIER "" )
   set( DXXFLAGS_CAVALIER "" )
@@ -69,12 +75,12 @@ macro( cet_set_compiler_flags )
     message(FATAL "Unrecognized DIAGS option ${CSCF_DIAGS}")
   endif()
 
-  set( CMAKE_C_FLAGS_DEBUG "-g -O0 ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g -O0 ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_C_FLAGS_MINSIZEREL "-O3 -g -fno-omit-frame-pointer ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g -fno-omit-frame-pointer ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_C_FLAGS_DEBUG "-g -O0 ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g -O0 ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_C_FLAGS_MINSIZEREL "-O3 -g -fno-omit-frame-pointer ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g -fno-omit-frame-pointer ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
 
   if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "" FORCE)
@@ -91,8 +97,10 @@ macro( cet_set_compiler_flags )
   endif()
   add_definitions(${CSCF_EXTRA_DEFINITIONS})
   
-  message( STATUS "compiling with ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
-  message( STATUS "               ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+  #message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS}")
+  
+  message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
+  message( STATUS "        and c flags ${CMAKE_C_FLAGS_${BTYPE_UC}}")
 
 endmacro( cet_set_compiler_flags )
 
