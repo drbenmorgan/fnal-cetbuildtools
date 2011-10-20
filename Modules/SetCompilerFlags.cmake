@@ -38,7 +38,7 @@ macro( cet_set_compiler_flags )
   CMAKE_PARSE_ARGUMENTS(CSCF
     ""
     "DIAGS"
-    "EXTRA_C_FLAGS EXTRA_CXX_FLAGS EXTRA_DEFINITIONS"
+    "EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
     ${ARGN}
     )
 
@@ -91,7 +91,8 @@ macro( cet_set_compiler_flags )
   endif()
   add_definitions(${CSCF_EXTRA_DEFINITIONS})
   
-  message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
+  message( STATUS "compiling with ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
+  message( STATUS "               ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS_${BTYPE_UC}}")
 
 endmacro( cet_set_compiler_flags )
 
