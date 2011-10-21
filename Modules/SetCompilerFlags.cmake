@@ -99,8 +99,8 @@ macro( cet_set_compiler_flags )
   
   #message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS}")
   
-  message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
-  message( STATUS "        and c flags ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+  message( STATUS "  C++ FLAGS: ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
+  message( STATUS "  C   FLAGS: ${CMAKE_C_FLAGS_${BTYPE_UC}}")
 
 endmacro( cet_set_compiler_flags )
 
