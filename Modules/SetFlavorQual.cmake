@@ -111,7 +111,7 @@ else()
 endif()
 message(STATUS "set_flavor_qual: flavorqual is ${flavorqual}" )
 message(STATUS "set_flavor_qual: ups flavor is ${UPSFLAVOR}" )
-message(STATUS "set_flavor_qual: flavorqual diredctory is ${flavorqual_dir}" )
+message(STATUS "set_flavor_qual: flavorqual directory is ${flavorqual_dir}" )
 
 endmacro( set_flavor_qual )
 
