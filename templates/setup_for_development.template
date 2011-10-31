@@ -34,21 +34,23 @@ tnotnull UPS_DIR || echo "$msg2"
 # note that we do not test for them first...
 # use setup -j to avoid pulling dependencies
 
-# CET products
-setup -j cetbuildtools v1_12_00
-setup -j messagefacility v1_8_10 -q a2
-setup -j fhiclcpp v2_11_7 -q a2
-setup -j cetlib v0_4_11 -q a2
-setup -j cpp0x v1_0_13 -q a2
-# other external products
-setup -j clhep v2_1_0_1 -q gcc45
-setup -j root v5_28_00_p02 -q gcc45
-setup -j boost v1_45_0 -q gcc45
-setup -j cppunit v1_12_1 -q gcc45
-setup -j gccxml v0_9_20101128 -q gcc45
-setup -j libsigcpp v2_2_7 -q gcc45
-setup gcc v4_5_1
+# set up external products
 setup cmake
+setup gcc v4_6_1
+setup -j boost v1_46_1 -q gcc46$extraqual
+setup -j clhep v2_1_1_0 -q gcc46$extraqual
+setup -j cppunit v1_12_1 -q gcc46$extraqual
+setup -j gccxml v0_9_20110907 -q gcc46$extraqual
+setup -j libsigcpp v2_2_10 -q gcc46$extraqual
+setup -j python v2_7_2 -q gcc46
+setup -j root v5_30_02 -q gcc46$extraqual
+# set up CET products
+setup -j cetbuildtools v1_13_02
+setup -j cpp0x v1_02_03 -q a4$extraqual
+setup -j cetlib v1_02_03 -q a4$extraqual
+setup -j fhiclcpp v2_15_03 -q a4$extraqual
+setup -j messagefacility v1_09_03 -q a4$extraqual
+setup -j sqlite v3_07_08_00 -q gcc46$extraqual
 
 test $?shell = 1 && set ss=csh || ss=sh
 test "$ss" = csh && alias set_ set && alias vecho_ 'if ($?vv == 1) echo \!*' || eval 'vecho_() { test -n "${vv-}" && echo "$@";}'
