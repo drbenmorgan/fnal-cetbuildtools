@@ -27,16 +27,19 @@ test "$ss" =  sh && eval 'setenv() { export $1;eval "$1=\"\${2-}\""; }' && eval 
 test "$ss" =  sh && eval 'tnotnull() { eval "test -n \"\${$1-}\""; }'                             && eval 'nullout() { "$@" >/dev/null 2>&1; }'
 test "$ss" = csh && alias tnotnull "eval '"'test $?'"\!* -eq 1' && eval '"'test -n "$'"\!*"'"'"'" && alias nullout "\!* >& /dev/null"
 
+test "$1" = "-d" && set_ extraqual=":debug" && echo "called with $1, using qualifier a4$extraqual"
+
 set_ msg2='You MUST setup ups'
 tnotnull UPS_DIR || echo "$msg2"
 
-# we setup dependent products here
-# note that we do not test for them first...
+# set up external products
 # use setup -j to avoid pulling dependencies
-setup cetbuildtools v1_13_02
 setup cmake
 setup gcc v4_6_1
 #setup -j boost v1_46_1 -q gcc46$extraqual
+# set up CET products
+setup cetbuildtools v1_13_02
+#setup -j cpp0x v1_02_02 -q a4$extraqual
 
 test $?shell = 1 && set ss=csh || ss=sh
 test "$ss" = csh && alias set_ set && alias vecho_ 'if ($?vv == 1) echo \!*' || eval 'vecho_() { test -n "${vv-}" && echo "$@";}'
@@ -62,9 +65,16 @@ test -n "$db" && setenv TOYCMAKE_SOURCE `dirname $db`
 tnotnull TOYCMAKE_BUILD && set_ thisdir=$TOYCMAKE_BUILD || set_ thisdir=`pwd`
 test -n "$thisdir" && setenv TOYCMAKE_BUILD $thisdir
 test -d "$thisdir/lib" || mkdir -p $thisdir/lib
+test -d "$thisdir/bin" || mkdir -p $thisdir/bin
 echo The workng build directory is $thisdir
 
-tnotnull TOYCMAKE_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${TOYCMAKE_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`; setenv LD_LIBRARY_PATH ${TOYCMAKE_BUILD}/lib:${LD_LIBRARY_PATH}
+tnotnull TOYCMAKE_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${TOYCMAKE_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`
+tnotnull TOYCMAKE_BUILD && setenv LD_LIBRARY_PATH ${TOYCMAKE_BUILD}/lib:${LD_LIBRARY_PATH}
+setenv LD_LIBRARY_PATH `dropit -D -p "$LD_LIBRARY_PATH"`
+
+tnotnull TOYCMAKE_BUILD && setenv PATH `echo :${PATH}: | sed -e "s|:${TOYCMAKE_BUILD}/bin:|:|" -e 's|^:||;s|:$||'`
+tnotnull TOYCMAKE_BUILD && setenv PATH ${TOYCMAKE_BUILD}/bin:${PATH}
+setenv PATH `dropit -D`
 
 echo
 echo TOYCMAKE_SOURCE=$TOYCMAKE_SOURCE
