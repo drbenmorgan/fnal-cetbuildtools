@@ -3,8 +3,6 @@
 
 set( installUPSfiles ToyCmake/ups/CMakeLists.txt
 		     ToyCmake/ups/setup_for_development
-		     ToyCmake/ups/ToyCmake-config-version.cmake.in
-		     ToyCmake/ups/ToyCmake-config.cmake.in
 		     ToyCmake/ups/toycmake.table.in
 		     ToyCmake/ups/toycmake.version.in )
 
