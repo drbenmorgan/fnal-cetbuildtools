@@ -38,11 +38,13 @@ if( has_qual )
   else( )
      STRING( REGEX REPLACE ".*([-][q]+ )(.*)" "-q \\2" BOOST_QUAL "${BOOST_STRING}" )
   endif( )
+  STRING( REGEX REPLACE "(.*)[:](.*)" "\\1" BOOST_BASE_QUAL "${BOOST_QUAL}" )
   #message(STATUS "Boost qualifier is ${BOOST_QUAL}")
 else( )
   message(STATUS "WARNING: Boost has no qualifier")
 endif( )
 message(STATUS "Boost version and qualifier are ${BOOST_VERS} ${BOOST_QUAL}" )
+message(STATUS "Boost base qualifier is ${BOOST_BASE_QUAL}" )
 
 include_directories ( $ENV{BOOST_INC} )
 

@@ -30,10 +30,12 @@ if( has_qual )
   else( )
      STRING( REGEX REPLACE ".*([-][q]+ )(.*)" "-q \\2" ${PRODUCTNAME_UC}_QUAL "${${PRODUCTNAME_UC}_STRING}" )
   endif( )
+  STRING( REGEX REPLACE "(.*)[:](.*)" "\\1" ${PRODUCTNAME_UC}_BASE_QUAL "${${PRODUCTNAME_UC}_QUAL}" )
 else( )
 #  message(STATUS "${PRODUCTNAME_UC} has no qualifier")
 endif( )
 message(STATUS "${PRODUCTNAME_UC} version and qualifier are ${${PRODUCTNAME_UC}_VERSION} ${${PRODUCTNAME_UC}_QUAL}" )
+message(STATUS "${PRODUCTNAME_UC} base qualifier is ${${PRODUCTNAME_UC}_BASE_QUAL}" )
 
 # add include directory to include path if it exists
 set( ${PRODUCTNAME_UC}_INC $ENV{${PRODUCTNAME_UC}_INC} )
