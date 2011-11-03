@@ -15,6 +15,7 @@ Qualifiers = ""
        execute( "get-directory-name subdir '' ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
        exeActionRequired("setup__")
+       #setupRequired(boost @BOOST_VERS@ @BOOST_QUAL@)
 
 Flavor     = ANY
 Qualifiers = "@qualifier@"
@@ -27,6 +28,7 @@ Qualifiers = "@qualifier@"
        execute( "get-directory-name subdir @qualifier@ ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
        exeActionRequired("setup__")
+       #setupRequired(boost @BOOST_VERS@ @BOOST_QUAL@)
 
 Flavor     = ANY
 Qualifiers = "@qualifier@:debug"
@@ -39,6 +41,7 @@ Qualifiers = "@qualifier@:debug"
        execute( "get-directory-name subdir @qualifier@.debug ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
        exeActionRequired("setup__")
+       #setupRequired(boost @BOOST_VERS@ @BOOST_QUAL@)
 
 Common:
   Action = setup__
@@ -61,7 +64,6 @@ Common:
 
     # uncomment or add to this list as relevant
     setupRequired(cmake)
-    #setupRequired(boost @BOOST_VERS@ @BOOST_QUAL@)
     setupRequired(gcc @GCC_VERSION@ @GCC_QUAL@)
 
 End:
