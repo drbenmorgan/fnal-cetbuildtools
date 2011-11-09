@@ -37,7 +37,7 @@ include(CMakeParseArguments)
 
 macro( cet_set_compiler_flags )
   CMAKE_PARSE_ARGUMENTS(CSCF
-    ""
+    "ENABLE_ASSERTS"
     "DIAGS"
     "EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
     ${ARGN}
@@ -86,14 +86,31 @@ macro( cet_set_compiler_flags )
     set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "" FORCE)
   endif()
 
-  message(STATUS "cmake build type set to ${CMAKE_BUILD_TYPE}")
+  if( PACKAGE_TOP_DIRECTORY )
+     STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+     if( CURRENT_SUBDIR STREQUAL PACKAGE_TOP_DIRECTORY)
+       SET ( CURRENT_SUBDIR "<top>" )
+     endif()
+  else()
+     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+     if( CURRENT_SUBDIR STREQUAL CMAKE_SOURCE_DIR )
+       SET ( CURRENT_SUBDIR "<top>" )
+     endif()
+  endif()
+
+  message(STATUS "cmake build type set to ${CMAKE_BUILD_TYPE} in directory " ${CURRENT_SUBDIR} " and below")
 
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  remove_definitions(-DNDEBUG)
   if( ${BTYPE_UC} MATCHES "DEBUG")
-  elseif( ${BTYPE_UC} MATCHES "RELEASE")
-    add_definitions(-DNDEBUG)
+  elseif( ${BTYPE_UC} MATCHES "RELEASE" )
+    if ( NOT CSCF_ENABLE_ASSERTS )
+      add_definitions(-DNDEBUG)
+    endif()
   elseif( ${BTYPE_UC} MATCHES "MINSIZEREL")
-    add_definitions(-DNDEBUG)
+    if ( NOT CSCF_ENABLE_ASSERTS )
+      add_definitions(-DNDEBUG)
+    endif()
   endif()
   add_definitions(${CSCF_EXTRA_DEFINITIONS})
   
@@ -101,6 +118,10 @@ macro( cet_set_compiler_flags )
   
   message( STATUS "  C++ FLAGS: ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
   message( STATUS "  C   FLAGS: ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+  get_directory_property( CSCF_CD COMPILE_DEFINITIONS )
+  if( CSCF_CD )
+    message( STATUS "  DEFINE:    ${CSCF_CD}")
+  endif()
 
 endmacro( cet_set_compiler_flags )
 
