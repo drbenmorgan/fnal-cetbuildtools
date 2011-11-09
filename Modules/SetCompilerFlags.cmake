@@ -116,11 +116,12 @@ macro( cet_set_compiler_flags )
   
   #message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS}")
   
-  message( STATUS "  C++ FLAGS: ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
-  message( STATUS "  C   FLAGS: ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+  message( STATUS "compiler flags for directory " ${CURRENT_SUBDIR} " and below")
+  message( STATUS "   C++ FLAGS:   ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
+  message( STATUS "   C   FLAGS:   ${CMAKE_C_FLAGS_${BTYPE_UC}}")
   get_directory_property( CSCF_CD COMPILE_DEFINITIONS )
   if( CSCF_CD )
-    message( STATUS "  DEFINE:    ${CSCF_CD}")
+    message( STATUS "   DEFINE (-D): ${CSCF_CD}")
   endif()
 
 endmacro( cet_set_compiler_flags )
