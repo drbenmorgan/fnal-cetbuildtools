@@ -35,6 +35,55 @@
 ########################################################################
 include(CMakeParseArguments)
 
+macro( _cet_add_build_types )
+  SET( CMAKE_CXX_FLAGS_OPT "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
+    "Flags used by the C++ compiler for optimized builds."
+    FORCE )
+  SET( CMAKE_C_FLAGS_OPT "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING
+    "Flags used by the C compiler for optimized builds."
+    FORCE )
+  SET( CMAKE_EXE_LINKER_FLAGS_OPT "${CMAKE_EXE_LINKER_FLAGS_RELEASE}"
+    CACHE STRING
+    "Flags used for linking binaries for optimized builds."
+    FORCE )
+  SET( CMAKE_SHARED_LINKER_FLAGS_OPT "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}"
+    CACHE STRING
+    "Flags used by the shared libraries linker for optimized builds."
+    FORCE )
+  MARK_AS_ADVANCED(
+    CMAKE_CXX_FLAGS_OPT
+    CMAKE_C_FLAGS_OPT
+    CMAKE_EXE_LINKER_FLAGS_OPT
+    CMAKE_SHARED_LINKER_FLAGS_OPT )
+
+  SET( CMAKE_CXX_FLAGS_PROF "${CMAKE_CXX_FLAGS_MINSIZEREL}" CACHE STRING
+    "Flags used by the C++ compiler for optimized builds."
+    FORCE )
+  SET( CMAKE_C_FLAGS_PROF "${CMAKE_C_FLAGS_MINSIZEREL}" CACHE STRING
+    "Flags used by the C compiler for optimized builds."
+    FORCE )
+  SET( CMAKE_EXE_LINKER_FLAGS_PROF "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}"
+    CACHE STRING
+    "Flags used for linking binaries for optimized builds."
+    FORCE )
+  SET( CMAKE_SHARED_LINKER_FLAGS_PROF "${CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL}"
+    CACHE STRING
+    "Flags used by the shared libraries linker for optimized builds."
+    FORCE )
+
+  MARK_AS_ADVANCED(
+    CMAKE_CXX_FLAGS_PROF
+    CMAKE_C_FLAGS_PROF
+    CMAKE_EXE_LINKER_FLAGS_PROF
+    CMAKE_SHARED_LINKER_FLAGS_PROF )
+
+  # Update the documentation string of CMAKE_BUILD_TYPE for GUIs
+  SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
+    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel Opt Prof."
+    FORCE )
+
+endmacro( _cet_add_build_types )
+
 macro( cet_set_compiler_flags )
   CMAKE_PARSE_ARGUMENTS(CSCF
     "ENABLE_ASSERTS"
@@ -81,6 +130,8 @@ macro( cet_set_compiler_flags )
   set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g -fno-omit-frame-pointer ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
   set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
   set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+
+ _cet_add_build_types() 
 
   if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "" FORCE)
