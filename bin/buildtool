@@ -1,0 +1,460 @@
+#!/bin/bash
+########################################################################
+# buildtool
+#
+# General purpose CMake / build script for packages using cetbuildtools.
+#
+# Chris Green <greenc@fnal.gov>
+#
+# 2011/11/10
+########################################################################
+
+# Basic safety checks.
+if [[ -z "$CETPKG_BUILD" ]] || [[ -z "$CETPKG_SOURCE" ]] || [[ -z "$CETPKG_TYPE" ]]; then
+  echo "ERROR: Expected CETPKG_BUILD and friends to be set." 1>&2
+  exit 1
+elif [[ ! -d "$CETPKG_BUILD" ]] || [[ ! -w "$CETPKG_BUILD" ]]; then
+  echo "ERROR: CETPKG_BUILD \"$CETPKG_BUILD\" does not exist, is not a directory or is not writable." 1>&2
+  exit 1
+elif [[ "$CETPKG_BUILD" == "$CETPKG_SOURCE" ]]; then
+  echo "ERROR: CETPKG_BUILD and CETPKG_SOURCE are identical: $CETPKG_BUILD." 1>&2
+  exit 1
+elif [[ "$CETPKG_BUILD" != /* ]]; then
+  echo "ERROR: CETPKG_BUILD appears to be relative." 1>&2
+  exit 1
+fi
+
+# Program name.
+prog=${0##*/}
+
+# Usage.
+function usage() {
+  local exitval
+  local long
+  if [[ "$1" == "long" ]]; then
+    (( long = 1 ))
+    shift
+  fi
+  (( exitval = ${1:-1} ))
+  cat 1>&2 <<EOF
+usage: ${prog} [<mode-options>] [<misc-options>] [--] <make-build-options>
+       ${prog} --help|-h
+
+Mode options: [-C|--cmake-only|-a|-all] ||
+              { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
+
+Misc options: [-I|--install-prefix <install-location>] [-c|--clean] [-j #]
+              [-l|--log|--log-file [<log-file>]] [-q|--quiet] [--tee]
+
+Required environment: CETPKG_BUILD, CETPKG_SOURCE, CETPKG_TYPE
+Optional environment: CETPKG_INSTALL CETPKG_J CETPKG_QUAL
+EOF
+  (( ${long:-0} )) && cat 1>&2 <<EOF
+
+
+DETAILS.
+
+The following environment variables *must* be set:
+
+CETPKG_BUILD:   The build area for the current package.
+CETPKG_SOURCE:  The source area for the current package (containing the
+                top-level CMakeLists.txt).
+CETPKG_TYPE:    The build type, required by CMake.
+
+Optional environment variables:
+
+CETPKG_INSTALL: The default location of the private (or public) UPS
+                products area into which to install the package if
+                install is requested. This is overridden by -I option,
+                but will override existing CMAKE_INSTALL_PREFIX from
+                CMake.
+CETPKG_J:       Default parallelism for all appropriate steps, assuming
+                -j is not specified explicitly.
+
+CETPKG_QUAL:    If set, causes -Dqualifier:STRING=$CETPKG_QUAL to be
+                added to the CMake arguments.
+
+MODE OPTIONS.
+
+If -a (--all) or -C (--cmake-only) are set, they override all other mode
+options. The cmake-only option overrides the all option. If any of the
+other options are selected, they will be executed in order *after* the
+CMake stage (which is always executed in the CETPKG_BUILD directory).
+
+-A|--all
+
+  Execute all targets.
+
+-C|--cmake-only
+
+  Execute *only* the CMake stage.
+
+-b|--build
+
+  Execute the build stage from the current directory. Since this is
+  default, this is only required if you specify --install or --package
+  and do *not* also specify test (see below).
+
+-i|--install
+
+  Execute the install stage from CETPKG_BUILD. CMake's generated build
+  procedure will ensure that all build targets are up to date so the
+  explicit build option is deactivated. However, you *may* wish to
+  specify --build anyway in the case that you wish to pass arguments to
+  the make procedure for the build phase.
+
+-p|--package
+
+  Execute the package stage from CETPKG_BUILD to create an install
+  tarball. See the notes for --install above regarding the build option.
+
+-t|--test
+
+  Execute configured tests with ctest from the current
+  directory. Implies --build.
+
+
+MISC. OPTIONS.
+
+-I|--install-prefix <ups-install-dir>
+
+  Specify the location of the private (or public) UPS products area into
+  which to install the package if install is requested. Overrides
+  the CETPKG_INSTALL environment variable and anything already known to
+  CMake.
+
+-c|--clean
+
+  Remove *everything* in the CETPKG_BUILD area, including CMake cache
+  files. If you want the equivalent of make clean, you should invoke:
+
+    buildtool -- clean
+
+  from CETPKG_BUILD.
+
+-h|--help
+
+  This help (long-form).
+
+-j #
+
+  Specify the level of parallelism for stages for which it is
+  appropriate.
+
+-l|--log|--log-file [<log-file>]
+
+  All build output is redirected to the specified log-file, or one with
+  a default name if no other is specified. Unless --quiet is also
+  specified, stage information will still be printed to the screen,
+  though see --tee below.
+
+-q|--quiet
+
+  Suppress all non-error output to the screen (but see --tee below). A
+  log file will still be written as normal if so specified.
+
+--tee
+
+  Write to a log file (either as specified by --log or the default), but
+  copy output to the screen also: --quiet is overridden by this option.
+
+
+EXAMPLES.
+
+Build, test, install and create a package tarball from scratch with
+output to a default-named log file, using parallelism:
+
+  $prog -A -c -l -I <install-dir> -j16
+
+As above, but copying output to screen:
+
+  $prog -A -c -l --tee -I <install-dir> -j16
+
+The need for the -I option may be obviated by defining CETPKG_INSTALL;
+the need for the explicit parallelism may be similarly voided by
+defining (eg) CETPKG_J=16.
+
+To build a particular target only (eg):
+
+  cd art/Framework/IO/Root; buildtool -- RootOutput_source.o
+
+To build and test only:
+
+  buildtool -t -j16
+
+To install and package only:
+
+  buildtool -i -p -j16
+EOF
+
+  exit ${exitval}
+}
+
+# Obtain a given CMake variable.
+function cmake_var() {
+  ( cd "$CETPKG_BUILD" && cmake -N -L | grep -e '^'"$1"':' | cut -d= -f2- ) 2>/dev/null
+}
+
+# Banner line
+function banner() {
+  (( ${quiet:-0} )) && return
+  if [[ -n "$2" ]]; then
+    local redir="1>&$1"
+    shift
+  fi
+  eval cat $redir <<EOF
+
+------------------------------------
+$1
+------------------------------------
+
+EOF
+}
+
+function log_no_tee() {
+ [[ -n "$log" ]] && (( ! ${tee:-0} ))
+  return $?
+}
+
+function report() {
+  (( ${report:-0} )) && echo "$*"
+}
+
+# Check status and exit if necessary
+function check_status() {
+  local status=$?
+  if (( status == 0 )); then
+    banner "INFO: Stage $stage successful."
+    if log_no_tee; then # Print to screen
+      report "INFO: Stage $stage successful." 1>&3
+    fi
+  else
+    banner 2 "ERROR: Stage $stage failed."
+    if log_no_tee; then # Print to screen
+      echo "ERROR: Stage $stage failed with code $status." 1>&4
+    fi
+    exit $status
+  fi
+}
+
+# Announce the next stage.
+function announce_stage() {
+  banner "INFO: Executing $stage."
+  if log_no_tee; then
+    report "INFO: Executing $stage." 1>&3
+  fi
+}
+
+# Cleanup
+function cleanup() {
+  if log_no_tee; then
+    exec 4>&2 1>&3-
+  fi
+}
+
+# Main work
+function do_work() {
+  if log_no_tee; then
+    exec 3>&1 4>&2 >"$log" 2>&1
+    trap "cleanup" EXIT
+  fi
+
+  stage=cmake
+  announce_stage
+  local extradef
+  [[ -n "$CETPKG_QUAL" ]] && extradef="-Dqualifier:STRING=$CETPKG_QUAL "
+  ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${extradef}${CETPKG_SOURCE} )
+  check_status && (( ${cmake_only:-0} )) && exit 0
+
+  if (( ${do_build:-0} )); then
+    stage=build
+    announce_stage
+    time make $jarg "$@"
+    check_status
+  fi
+
+  if (( ${do_test:-0} )); then
+    stage=test
+    announce_stage
+    ctest $jarg
+    check_status
+  fi
+
+  if [[ -n "$targets" ]]; then
+    stage="install / package"
+    announce_stage
+    ( cd "$CETPKG_BUILD" && make $jarg $targets )
+    check_status
+  fi
+}
+
+# Defaults.
+log_default="build_`date \"+%Y-%m-%d\"`.log"
+(( report = 1 ))
+
+# Parse arguments.
+TEMP=`getopt -n "$prog" --long all --long cmake-only --long install-prefix: --long build --long clean --long help --long install --long log:: --long log-file:: --long package --long quiet --long tee --long test -o :ACI:bchij:l::pqt -- "${@}"`
+
+if [[ -n "$CETPKG_J" ]]; then
+  jarg="-j$CETPKG_J"
+fi
+
+eval set -- "$TEMP"
+while true; do
+  case $1 in
+    -A|all)
+      (( all = 1 ))
+      shift
+      ;;
+    -C|--cmake-only)
+      (( cmake_only = 1 ))
+      shift
+      ;;
+    -I|--install-prefix)
+      install_prefix=$2
+      shift
+      shift
+      ;;
+    -b|--build)
+      (( do_build = 1 ))
+      shift
+      ;;
+    -c|--clean)
+      (( clean = 1 ))
+      shift
+      ;;
+    -h|--help)
+      usage long
+      shift
+      ;;
+    -i|--install)
+      (( no_build = 1 ))
+      targets="$targets install"
+      shift
+      ;;
+    -j)
+      jarg="-j$2"
+      shift
+      shift
+      ;;
+    -l|--log|--log-file)
+      if [[ -d "$2" ]]; then
+        log="$2/${log_default}"
+      else
+        log="${2:-${log_default}}"
+      fi
+      shift
+      shift
+      ;;
+    -p|--package)
+      (( no_build = 1 ))
+      targets="$targets package"
+      shift
+      ;;
+    -q|--quiet)
+      (( quiet = 1 ))
+      shift
+      ;;
+    -t|--test)
+      (( do_build = 1 ))
+      (( do_test = 1 ))
+      shift
+      ;;
+    --tee)
+      log="${log:-${log_default}}"
+      (( tee = 1 ))
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo "Bad argument $1" 1>&2
+      usage 1
+  esac
+done
+
+# Make sure output will appear as we'd like.
+if (( ${tee:-0} )); then
+  # You asked for stuff to the scren -- that's what you'll get.
+  unset quiet
+  unset report
+elif (( ${quiet:-0} )); then
+  # If we're not teeing a logfile, you don't want screen reports.
+  unset report
+fi
+
+# If you're logging to file (but not using tee) we don't want quiet (but
+# reports may be turned off).
+if log_no_tee; then
+  unset quiet
+fi
+
+# Did we specify all?
+if (( ${all:-0} )); then
+  (( do_build = 1 ))
+  (( do_test = 1 ))
+  targets="install package"
+else
+  # In general, build unless we've been asked not to where that is
+  # compatible with our other options.
+  (( do_build = ${do_build:-0} || ! ${no_build:-0} ))
+fi
+
+if (( ${clean:-0} )); then
+  (( ${report:-0} )) && echo "INFO: Cleaning \"$CETPKG_BUILD\""
+  if [[ "$(/bin/pwd)" == "`(cd \"$CETPKG_BUILD\" && /bin/pwd)`"/* ]]; then
+    echo "ERROR: Clean operation would remove the current directory!" 1>&2
+    exit 2
+  fi
+  pushd /tmp >/dev/null # 2>&1
+  if ! { find "$CETPKG_BUILD" -mindepth 1 -maxdepth 1 | xargs rm -rf; }; then
+    echo "ERROR: Unable to clean directory \"$CETPKG_BUILD\"" 1>&2
+    exit 2
+  fi
+  popd >/dev/null || cd "$CETPKG_BUILD" # 2>&1
+else # Check consistency.
+  check_build_type="$(cmake_var CMAKE_BUILD_TYPE)"
+  if [[ -n "$cmake_build_type" ]] && [[ "$check_build_type" != "$CETPKG_TYPE" ]]; then
+    echo "ERROR: Build type has changed from $check_build_type to $CETPKG_TYPE: need clean build." 1>&2
+    exit 2
+  fi
+  check_qual="$(cmake_var qualifier)"
+  if [[ -n "$check_qual" ]] && [[ "$check_qual" != "$CETPKG_QUAL" ]]; then
+    echo "ERROR: Qualifier has changed from \"$check_qual\" to \"$CETPKG_QUAL\": need clean build." 1>&2
+    exit 2
+  fi
+fi
+
+# Set install prefix from wherever we can get it.
+install_prefix=${install_prefix:-${CETPKG_INSTALL}}
+install_prefix=${install_prefix:-$(cmake_var CMAKE_INSTALL_PREFIX)}
+
+# Check we found an install prefix.
+if [[ -z "$install_prefix" ]]; then
+  echo "ERROR: Install prefix not specified, CETPKG_INSTALL not set and CMAKE_INSTALL_PREFIX cannot be obtained from CMake cache." 1>&2
+  usage 2
+fi
+
+if [[ "$targets" == *install* ]] && \
+   { [[ ! -d "$install_prefix" ]] || [[ ! -w "$install_prefix" ]]; }; then
+  echo "ERROR: Install prefix does not exist as a directory or is not writable with install target selected." 1>&2
+fi
+
+# Want absolute dir
+install_prefix="`( cd \"$install_prefix\" >/dev/null 2>&1 && /bin/pwd)`"
+
+# Suppress messages if desired.
+if (( ${quiet:-0} )); then
+  exec >/dev/null
+fi
+
+# If we're tee-ing.
+if (( ${tee:-0} )); then
+  do_work 2>&1 | tee "$log"
+else
+  do_work
+fi
+
+# Done.
