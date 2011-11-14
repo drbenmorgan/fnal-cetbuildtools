@@ -9,6 +9,7 @@ Qualifiers = ""
   Action = setup
        prodDir()
        setupEnv()
+       setupRequired(cetpkgsupport)
        # faking out unsetup
        envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
        execute( "get-directory-name subdir '' ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
@@ -22,6 +23,7 @@ Qualifiers = "@qualifier@"
   Action = setup
        prodDir()
        setupEnv()
+       setupRequired(cetpkgsupport)
        # faking out unsetup
        envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
        execute( "get-directory-name subdir @qualifier@ ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
@@ -35,6 +37,7 @@ Qualifiers = "@qualifier@:debug"
   Action = setup
        prodDir()
        setupEnv()
+       setupRequired(cetpkgsupport)
        # faking out unsetup
        envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
        execute( "get-directory-name subdir @qualifier@.debug ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
