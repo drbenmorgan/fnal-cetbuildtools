@@ -38,7 +38,8 @@ setup cmake
 setup gcc v4_6_1
 #setup -j boost v1_46_1 -q gcc46$extraqual
 # set up CET products
-setup cetbuildtools v1_13_04
+setup cetpkgsupport
+setup -j cetbuildtools v1_14_00
 #setup -j cpp0x v1_02_02 -q a4$extraqual
 
 test $?shell = 1 && set ss=csh || ss=sh
