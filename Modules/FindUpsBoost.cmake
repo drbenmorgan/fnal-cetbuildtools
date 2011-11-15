@@ -49,7 +49,7 @@ else( )
   message(STATUS "WARNING: Boost has no qualifier")
 endif( )
 message(STATUS "Boost version and qualifier are ${BOOST_VERS} ${BOOST_QUAL}" )
-message(STATUS "Boost base qualifier is ${BOOST_BASE_QUAL}" )
+#message(STATUS "Boost base qualifier is ${BOOST_BASE_QUAL}" )
 
 include_directories ( $ENV{BOOST_INC} )
 

@@ -37,7 +37,7 @@ else( )
 #  message(STATUS "${PRODUCTNAME_UC} has no qualifier")
 endif( )
 message(STATUS "${PRODUCTNAME_UC} version and qualifier are ${${PRODUCTNAME_UC}_VERSION} ${${PRODUCTNAME_UC}_QUAL}" )
-message(STATUS "${PRODUCTNAME_UC} base qualifier is ${${PRODUCTNAME_UC}_BASE_QUAL}" )
+#message(STATUS "${PRODUCTNAME_UC} base qualifier is ${${PRODUCTNAME_UC}_BASE_QUAL}" )
 
 # add include directory to include path if it exists
 set( ${PRODUCTNAME_UC}_INC $ENV{${PRODUCTNAME_UC}_INC} )
