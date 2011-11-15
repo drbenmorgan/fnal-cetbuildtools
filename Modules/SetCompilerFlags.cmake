@@ -11,6 +11,8 @@
 #
 # CET flags
 # (debug)   DEBUG           -g -O0
+# (prof)    PROF            -O3 -g -DNDEBUG -fno-omit-frame-pointer
+# (opt)     OPT             -O3 -g -DNDEBUG
 # (prof)    MINSIZEREL      -O3 -g -DNDEBUG -fno-omit-frame-pointer
 # (opt)     RELEASE         -O3 -g -DNDEBUG
 # (default) RELWITHDEBINFO  unchanged
@@ -154,6 +156,14 @@ macro( cet_set_compiler_flags )
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   remove_definitions(-DNDEBUG)
   if( ${BTYPE_UC} MATCHES "DEBUG")
+  elseif( ${BTYPE_UC} MATCHES "OPT" )
+    if ( NOT CSCF_ENABLE_ASSERTS )
+      add_definitions(-DNDEBUG)
+    endif()
+  elseif( ${BTYPE_UC} MATCHES "PROF")
+    if ( NOT CSCF_ENABLE_ASSERTS )
+      add_definitions(-DNDEBUG)
+    endif()
   elseif( ${BTYPE_UC} MATCHES "RELEASE" )
     if ( NOT CSCF_ENABLE_ASSERTS )
       add_definitions(-DNDEBUG)
