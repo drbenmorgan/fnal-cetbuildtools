@@ -403,7 +403,7 @@ else
 fi
 
 if (( ${clean:-0} )); then
-  (( ${report:-0} )) && echo "INFO: Cleaning \"$CETPKG_BUILD\""
+  report echo "INFO: Cleaning \"$CETPKG_BUILD\""
   if [[ "$(/bin/pwd)" == "`(cd \"$CETPKG_BUILD\" && /bin/pwd)`"/* ]]; then
     echo "ERROR: Clean operation would remove the current directory!" 1>&2
     exit 2
@@ -436,6 +436,8 @@ if [[ -z "$install_prefix" ]]; then
   echo "ERROR: Install prefix not specified, CETPKG_INSTALL not set and CMAKE_INSTALL_PREFIX cannot be obtained from CMake cache." 1>&2
   usage 2
 fi
+
+report "INFO: CETPKG_TYPE = $CETPKG_TYPE"
 
 if [[ "$targets" == *install* ]] && \
    { [[ ! -d "$install_prefix" ]] || [[ ! -w "$install_prefix" ]]; }; then
