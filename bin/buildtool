@@ -418,7 +418,7 @@ if (( ${clean:-0} )); then
   popd >/dev/null || cd "$CETPKG_BUILD" # 2>&1
 else # Check consistency.
   check_build_type="$(cmake_var CMAKE_BUILD_TYPE)"
-  if [[ -n "$cmake_build_type" ]] && [[ "$check_build_type" != "$CETPKG_TYPE" ]]; then
+  if [[ -n "$check_build_type" ]] && [[ "$check_build_type" != "$CETPKG_TYPE" ]]; then
     echo "ERROR: Build type has changed from $check_build_type to $CETPKG_TYPE: need clean build." 1>&2
     exit 2
   fi
