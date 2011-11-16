@@ -44,7 +44,7 @@ Mode options: [-C|--cmake-only|-a|-all] ||
               { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
 
 Misc options: [-I|--install-prefix <install-location>] [-c|--clean] [-j #]
-              [-l|--log|--log-file [<log-file>]] [-q|--quiet] [--tee]
+              [-l|--log=|--log-file=[<log-file>]] [-q|--quiet] [--tee]
 
 Required environment: CETPKG_BUILD, CETPKG_SOURCE, CETPKG_TYPE
 Optional environment: CETPKG_INSTALL CETPKG_J CETPKG_QUAL
@@ -141,12 +141,14 @@ MISC. OPTIONS.
   Specify the level of parallelism for stages for which it is
   appropriate.
 
--l|--log|--log-file [<log-file>]
+-l|--log=|--log-file=[<log-file>]
 
   All build output is redirected to the specified log-file, or one with
   a default name if no other is specified. Unless --quiet is also
   specified, stage information will still be printed to the screen,
-  though see --tee below.
+  though see --tee below. Note that the argument to the short variant,
+  if used, must *immediately* follow the "-l" with no space. The long
+  forms may optionally use "=" (but spaces are also not permitted here).
 
 -q|--quiet
 
@@ -293,7 +295,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all --long cmake-only --long install-prefix: --long build --long clean --long help --long install --long log:: --long log-file:: --long package --long quiet --long tee --long test -o :ACI:bchij:l::pqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,help,install,log::,log-file::,package,quiet,tee,test -o +ACI:bchij:l::pqt -- "${@}"`
 
 if [[ -n "$CETPKG_J" ]]; then
   jarg="-j$CETPKG_J"
@@ -341,7 +343,7 @@ while true; do
       if [[ -d "$2" ]]; then
         log="$2/${log_default}"
       else
-        log="${2:-${log_default}}"
+        log="${2:-${log:-${log_default}}}"
       fi
       shift
       shift
@@ -450,6 +452,10 @@ install_prefix="`( cd \"$install_prefix\" >/dev/null 2>&1 && /bin/pwd)`"
 # Suppress messages if desired.
 if (( ${quiet:-0} )); then
   exec >/dev/null
+fi
+
+if [[ -n "$@" ]]; then
+  report "Extra arguments to make for build stage: $@"
 fi
 
 # If we're tee-ing.
