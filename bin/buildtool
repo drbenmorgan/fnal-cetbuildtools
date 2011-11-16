@@ -460,9 +460,9 @@ fi
 
 # If we're tee-ing.
 if (( ${tee:-0} )); then
-  do_work 2>&1 | tee "$log"
+  do_work "$@" 2>&1 | tee "$log"
 else
-  do_work
+  do_work "$@"
 fi
 
 # Done.
