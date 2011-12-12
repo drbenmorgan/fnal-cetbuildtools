@@ -85,6 +85,11 @@
 #    modifications).
 #
 ####################################
+# cet_report_compiler_flags()
+#
+#   Print the compiler flags currently in use.
+#
+####################################
 # cet_query_system()
 #
 #   List the values of various variables
@@ -92,12 +97,12 @@
 ########################################################################
 include(CMakeParseArguments)
 
-macro( _cet_report_compiler_flags )
+macro( cet_report_compiler_flags )
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   message( STATUS "compiler flags for directory " ${CURRENT_SUBDIR} " and below")
   message( STATUS "   C++ FLAGS:   ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
   message( STATUS "   C   FLAGS:   ${CMAKE_C_FLAGS_${BTYPE_UC}}")
-endmacro( _cet_report_compiler_flags )
+endmacro( cet_report_compiler_flags )
 
 macro( _cet_add_build_types )
   SET( CMAKE_CXX_FLAGS_OPT "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
@@ -189,7 +194,7 @@ macro( cet_add_compiler_flags )
     SET(CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}} ${CSCF_CXX}")
   ENDIF()
   IF (NOT CSCF_QUIET)
-    _cet_report_compiler_flags()
+    cet_report_compiler_flags()
   ENDIF()
 endmacro( cet_add_compiler_flags )
 
@@ -212,7 +217,7 @@ macro( cet_remove_compiler_flag )
   ENDIF()
 
   IF (NOT CSCF_QUIET)
-    _cet_report_compiler_flags()
+    cet_report_compiler_flags()
   ENDIF()
 endmacro(cet_remove_compiler_flag)
 
@@ -295,7 +300,7 @@ macro( cet_set_compiler_flags )
   #message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS}")
   
   IF (NOT CSCF_QUIET)
-    _cet_report_compiler_flags()
+    cet_report_compiler_flags()
   ENDIF()
 
   get_directory_property( CSCF_CD COMPILE_DEFINITIONS )
