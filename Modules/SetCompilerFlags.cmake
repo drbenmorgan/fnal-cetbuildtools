@@ -23,19 +23,81 @@
 #    DIAGS
 #      This option may be CAVALIER, CAUTIOUS, VIGILANT or PARANOID.
 #      Default is CAUTIOUS.
-#
 #    EXTRA_FLAGS (applied to both C and CXX)
 #    EXTRA_C_FLAGS
 #    EXTRA_CXX_FLAGS
 #    EXTRA_DEFINITIONS
 #      This list parameters will append tbe appropriate items.
+#   QUIET
+#      Do not report the current compiler flag settings (useful for
+#      subsequent invocation of cet_add_compiler_flags(), etc).
 #
 ####################################
+# cet_enable_asserts()
 #
-# cet_query_system() just lists the values of various variables
+#   Enable use of assserts (ie remove -DNDEBUG) regardless of
+#   optimization level.
+#
+####################################
+# cet_disable_asserts()
+#
+#   Disable use of assserts (ie ensure -DNDEBUG) regardless of
+#   optimization level.
+#
+####################################
+# cet_maybe_disable_asserts()
+#
+#   Possibly disable use of assserts (ie ensure -DNDEBUG) based on
+#   optimization level.
+#
+####################################
+# cet_add_compiler_flags(<options>)
+#
+#   Add the specified compiler flags.
+#
+# Options:
+#
+#   C <flags>
+#     Add <flags> to C compile flags.
+#
+#   CXX <flags>
+#    Add <flags> to CXX compile flags.
+#
+#   QUIET
+#    Do not report current compiler flags (useful for chaining flag
+#    modifications).
+#
+####################################
+# cet_remove_compiler_flags(<options>)
+#
+#   Remove the specifiied compiler flag (one only).
+#
+# Options:
+#
+#   C <flag>
+#     Remove <flag> from C compile flags.
+#
+#   CXX <flags>
+#    Remove <flag> from CXX compile flags.
+#
+#   QUIET
+#    Do not report current compiler flags (useful for chaining flag
+#    modifications).
+#
+####################################
+# cet_query_system()
+#
+#   List the values of various variables
 #
 ########################################################################
 include(CMakeParseArguments)
+
+macro( _cet_report_compiler_flags )
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  message( STATUS "compiler flags for directory " ${CURRENT_SUBDIR} " and below")
+  message( STATUS "   C++ FLAGS:   ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
+  message( STATUS "   C   FLAGS:   ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+endmacro( _cet_report_compiler_flags )
 
 macro( _cet_add_build_types )
   SET( CMAKE_CXX_FLAGS_OPT "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
@@ -86,9 +148,77 @@ macro( _cet_add_build_types )
 
 endmacro( _cet_add_build_types )
 
+macro( cet_enable_asserts )
+  remove_definitions(-DNDEBUG)
+endmacro( cet_enable_asserts )
+
+macro( cet_disable_asserts )
+  remove_definitions(-DNDEBUG)
+  add_definitions(-DNDEBUG)
+endmacro( cet_disable_asserts )
+
+macro( cet_maybe_disable_asserts )
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  cet_enable_asserts() # Starting point
+  if( ${BTYPE_UC} MATCHES "OPT" OR
+      ${BTYPE_UC} MATCHES "PROF" OR
+      ${BTYPE_UC} MATCHES "RELEASE" OR
+      ${BTYPE_UC} MATCHES "MINSIZEREL" )
+    cet_disable_asserts()
+  endif()
+endmacro( cet_maybe_disable_asserts )
+
+macro( cet_add_compiler_flags )
+  CMAKE_PARSE_ARGUMENTS(CSCF
+    "QUIET"
+    ""
+    "C;CXX"
+    ${ARGN}
+    )
+  if (CSCF_UNPARSED_ARGUMENTS)
+    message(FATAL "Unexpected extra arguments: ${CSCF_UNPARSED_ARGUMENTS}.\nConsider C OR CXX")
+  endif()
+
+  STRING(REGEX REPLACE ";" " " CSCF_C "${CSCF_C}")
+  STRING(REGEX REPLACE ";" " " CSCF_CXX "${CSCF_CXX}")
+  STRING(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  IF (CSCF_C)
+    SET(CMAKE_C_FLAGS_${BTYPE_UC} "${CMAKE_C_FLAGS_${BTYPE_UC}} ${CSCF_C}")
+  ENDIF()
+  IF (CSCF_CXX)
+    SET(CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}} ${CSCF_CXX}")
+  ENDIF()
+  IF (NOT CSCF_QUIET)
+    _cet_report_compiler_flags()
+  ENDIF()
+endmacro( cet_add_compiler_flags )
+
+macro( cet_remove_compiler_flag )
+  CMAKE_PARSE_ARGUMENTS(CSCF
+    "QUIET"
+    "C;CXX"
+    ""
+    ${ARGN}
+    )
+  if (CSCF_UNPARSED_ARGUMENTS)
+    message(FATAL "Unexpected extra arguments: ${CSCF_UNPARSED_ARGUMENTS}.\nConsider C OR CXX")
+  endif()
+
+  IF (CSCF_C)
+    STRING(REGEX REPLACE "${CSCF_C}" "" CMAKE_C_FLAGS_${BTYPE_UC} "${CMAKE_C_FLAGS_${BTYPE_UC}" )
+  ENDIF()
+  IF (CSCF_CXX)
+    STRING(REGEX REPLACE "${CSCF_CXX}" "" CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}" )
+  ENDIF()
+
+  IF (NOT CSCF_QUIET)
+    _cet_report_compiler_flags()
+  ENDIF()
+endmacro(cet_remove_compiler_flag)
+
 macro( cet_set_compiler_flags )
   CMAKE_PARSE_ARGUMENTS(CSCF
-    "ENABLE_ASSERTS"
+    "ENABLE_ASSERTS;QUIET"
     "DIAGS"
     "EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
     ${ARGN}
@@ -155,31 +285,19 @@ macro( cet_set_compiler_flags )
 
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   remove_definitions(-DNDEBUG)
-  if( ${BTYPE_UC} MATCHES "DEBUG")
-  elseif( ${BTYPE_UC} MATCHES "OPT" )
-    if ( NOT CSCF_ENABLE_ASSERTS )
-      add_definitions(-DNDEBUG)
-    endif()
-  elseif( ${BTYPE_UC} MATCHES "PROF")
-    if ( NOT CSCF_ENABLE_ASSERTS )
-      add_definitions(-DNDEBUG)
-    endif()
-  elseif( ${BTYPE_UC} MATCHES "RELEASE" )
-    if ( NOT CSCF_ENABLE_ASSERTS )
-      add_definitions(-DNDEBUG)
-    endif()
-  elseif( ${BTYPE_UC} MATCHES "MINSIZEREL")
-    if ( NOT CSCF_ENABLE_ASSERTS )
-      add_definitions(-DNDEBUG)
-    endif()
+  if ( CSCF_ENABLE_ASSERTS )
+    cet_enable_asserts()
+  else()
+    cet_maybe_disable_asserts()
   endif()
   add_definitions(${CSCF_EXTRA_DEFINITIONS})
   
   #message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS}")
   
-  message( STATUS "compiler flags for directory " ${CURRENT_SUBDIR} " and below")
-  message( STATUS "   C++ FLAGS:   ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
-  message( STATUS "   C   FLAGS:   ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+  IF (NOT CSCF_QUIET)
+    _cet_report_compiler_flags()
+  ENDIF()
+
   get_directory_property( CSCF_CD COMPILE_DEFINITIONS )
   if( CSCF_CD )
     message( STATUS "   DEFINE (-D): ${CSCF_CD}")
