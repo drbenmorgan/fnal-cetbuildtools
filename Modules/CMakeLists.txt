@@ -5,6 +5,7 @@ INSTALL(FILES
 	CetParseArgs.cmake
 	CetTest.cmake
 	CetMake.cmake
+	CetCMakeEnv.cmake
 	CheckUpsVersion.cmake
 	EnsureOutOfSourceBuild.cmake
 	FindCompilerVersion.cmake
