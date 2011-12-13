@@ -12,7 +12,7 @@ macro(cet_cmake_env cet_proj cet_ver)
 
   if(ARGN AND NOT qualifier)
     get( ARGN 0 qualifier)
-    mesage(STATUS "qualifier set to ${qualifier}")
+    message(STATUS "qualifier set to ${qualifier}")
   endif()
 
   project(${cet_proj})
