@@ -18,6 +18,7 @@ Common:
     pathPrepend(PATH, ${UPS_PROD_DIR}/bin )
     # cetpkgsupport has get-directory-name and find-path
     setupRequired(cetpkgsupport)
+    setupRequired(cmake)
 
 End:
 # End Group definition
