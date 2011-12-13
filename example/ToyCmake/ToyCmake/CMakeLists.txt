@@ -1,4 +1,4 @@
 
-subdirs(Math)
-subdirs(MathIO)
-subdirs(Square)
+add_subdirectory(Math)
+add_subdirectory(MathIO)
+add_subdirectory(Square)

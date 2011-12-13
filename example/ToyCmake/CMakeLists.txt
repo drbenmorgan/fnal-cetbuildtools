@@ -101,13 +101,13 @@ endif()
 # The environment has been established, now generate the Makefiles.
 
 # source
-subdirs (ToyCmake)
+add_subdirectory(ToyCmake)
 
 # testing
-subdirs(test)
+add_subdirectory(test)
 
 # ups - table and config files
-subdirs(ups)
+add_subdirectory(ups)
 
 # This step enables building the package tarball
 # packaging utility

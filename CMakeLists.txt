@@ -36,11 +36,11 @@ set_version_from_ups( ${version} )
 set_flavor_qual(noarch)
 
 # source code
-subdirs(templates)
-subdirs(Modules)
-subdirs(bin)
-subdirs(ups)
-subdirs(example)
+add_subdirectory(templates)
+add_subdirectory(Modules)
+add_subdirectory(bin)
+add_subdirectory(ups)
+add_subdirectory(example)
 
 # packaging utility
 include(UseCPack)
