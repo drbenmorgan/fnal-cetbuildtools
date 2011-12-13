@@ -45,7 +45,7 @@ if ( NOT ${PRODUCTNAME_UC}_INC )
 #  message(STATUS "${PRODUCTNAME_UC} has no ${PRODUCTNAME_UC}_INC")
 else()
   include_directories ( ${${PRODUCTNAME_UC}_INC} )
-  message( STATUS "${${PRODUCTNAME_UC}_INC} added to include path" )
+  #message( STATUS "${${PRODUCTNAME_UC}_INC} added to include path" )
 endif ()
 
 

@@ -98,7 +98,7 @@ endif ()
 SET (flavorqual_dir ${product}/${version}/${flavorqual} )
 
 # check for extra qualifiers
-message(STATUS "set_flavor_qual: build type is ${CMAKE_BUILD_TYPE}")
+#message(STATUS "set_flavor_qual: build type is ${CMAKE_BUILD_TYPE}")
 if( NOT  CMAKE_BUILD_TYPE )
    SET( extra_qualifier "" )
    set( full_qualifier ${qualifier} )
@@ -125,9 +125,9 @@ else()
       set( full_qualifier ${qualifier}:${extra_qualifier} )
    endif()
 endif()
-message(STATUS "set_flavor_qual: flavorqual is ${flavorqual}" )
-message(STATUS "set_flavor_qual: ups flavor is ${UPSFLAVOR}" )
-message(STATUS "set_flavor_qual: flavorqual directory is ${flavorqual_dir}" )
+#message(STATUS "set_flavor_qual: flavorqual is ${flavorqual}" )
+#message(STATUS "set_flavor_qual: ups flavor is ${UPSFLAVOR}" )
+#message(STATUS "set_flavor_qual: flavorqual directory is ${flavorqual_dir}" )
 
 endmacro( set_flavor_qual )
 
@@ -144,7 +144,7 @@ macro( process_ups_files )
 
   # version file
   if( extra_qualifier )
-     message(STATUS "extra qualifier ${extra_qualifier}")
+     #message(STATUS "extra qualifier ${extra_qualifier}")
      configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.version.in
                      ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier}_${extra_qualifier}  @ONLY )
      install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier}_${extra_qualifier} 

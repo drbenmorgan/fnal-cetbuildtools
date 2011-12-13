@@ -16,7 +16,7 @@ endif ()
 SET ( ROOT_STRING $ENV{SETUP_ROOT} )
 set( ROOT_VERSION $ENV{ROOT_VERSION} )
 if ( NOT ROOT_VERSION )
-   message( STATUS "find_ups_root: calculating root version" )
+   #message( STATUS "find_ups_root: calculating root version" )
    STRING( REGEX REPLACE "^[r][o][o][t][ ]+([^ ]+).*" "\\1" ROOT_VERSION "${ROOT_STRING}" )
 endif ()
 

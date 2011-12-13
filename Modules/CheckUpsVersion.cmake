@@ -67,7 +67,7 @@ macro( _check_version product version minimum )
     message( FATAL_ERROR "Bad Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
   endif()
 
-  message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
+  #message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
 endmacro( _check_version product version minimum )
  
 macro( _compare_root_micro microversion micromin )

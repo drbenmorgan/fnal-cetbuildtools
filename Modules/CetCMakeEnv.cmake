@@ -7,6 +7,7 @@
 # 
 # make sure gcc has been setup
 # cet_check_gcc()
+# 
 
 macro(cet_cmake_env cet_proj cet_ver)
 
@@ -65,6 +66,6 @@ macro(cet_check_gcc)
   IF (NOT GCC_VERSION)
       MESSAGE (FATAL_ERROR "gcc has not been setup")
   ENDIF()
-  message(STATUS "GCC version is ${GCC_VERSION} with ${CMAKE_CXX_FLAGS}")
+  #message(STATUS "GCC version is ${GCC_VERSION}")
 
 endmacro(cet_check_gcc)

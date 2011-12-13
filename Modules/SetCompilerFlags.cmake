@@ -193,9 +193,6 @@ macro( cet_add_compiler_flags )
   IF (CSCF_CXX)
     SET(CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}} ${CSCF_CXX}")
   ENDIF()
-  IF (NOT CSCF_QUIET)
-    cet_report_compiler_flags()
-  ENDIF()
 endmacro( cet_add_compiler_flags )
 
 macro( cet_remove_compiler_flag )
@@ -216,9 +213,6 @@ macro( cet_remove_compiler_flag )
     STRING(REGEX REPLACE "${CSCF_CXX}" "" CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}" )
   ENDIF()
 
-  IF (NOT CSCF_QUIET)
-    cet_report_compiler_flags()
-  ENDIF()
 endmacro(cet_remove_compiler_flag)
 
 macro( cet_set_compiler_flags )
@@ -298,10 +292,6 @@ macro( cet_set_compiler_flags )
   add_definitions(${CSCF_EXTRA_DEFINITIONS})
   
   #message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS}")
-  
-  IF (NOT CSCF_QUIET)
-    cet_report_compiler_flags()
-  ENDIF()
 
   get_directory_property( CSCF_CD COMPILE_DEFINITIONS )
   if( CSCF_CD )

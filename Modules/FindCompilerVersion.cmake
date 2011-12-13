@@ -69,7 +69,7 @@ macro( find_compiler )
 	  endif()
       endif (CMAKE_COMPILER_IS_GNUCXX)
     endif()
-    message(STATUS "Using compiler ${CPack_COMPILER_STRING}")
+    #message(STATUS "Using compiler ${CPack_COMPILER_STRING}")
   endif(My_COMPILER)
 endmacro( find_compiler )
 
