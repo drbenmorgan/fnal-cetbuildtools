@@ -11,53 +11,22 @@
 #   make package
 # ======================================================================
 
-cmake_minimum_required (VERSION 2.6)  # use cmake 2.6 or later
-
-# project name
-project(ToyCmake)
-# the ups convention is that product names are all lower case, but this is a choices
-set( product toycmake )
-set( version v1_02_00 )
-SET (qualifier a4)
+cmake_minimum_required (VERSION 2.8)  # use cmake 2.8 or later
 
 # cetbuildtools contains our cmake modules
 set( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
 if( NOT CETBUILDTOOLS_VERSION )
   message( FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules" )
 endif()
-set( CMAKE_MODULE_PATH "${CMAKE_ROOT}/Modules" )
 set( CMAKE_MODULE_PATH $ENV{CETBUILDTOOLS_DIR}/Modules ${CMAKE_MODULE_PATH} )
-message( STATUS "module path is ${CMAKE_MODULE_PATH}" )
 
-set( CMAKE_SKIP_RPATH ) # don't embed path in shared lib's or executables
+include(CetCMakeEnv)
 
-enable_testing()
-
-# make sure someone isn't typing cmake in the source code tree
-include(EnsureOutOfSourceBuild)
-cet_ensure_out_of_source_build()
-
-# define some necessary modules
-include( FindUpsPackage )
-include( FindUpsBoost )
-include( SetFlavorQual )
-include( ParseUpsVersion )
-include( InstallSource )
-
-#set package version from ups version
-set_version_from_ups( ${version} )
-#define flavorqual and flavorqual_dir
-set_flavor_qual()
+cet_cmake_env( ToyCmake v1_02_00 a4 )
 
 # ----------------------------------------------------------------------
 
-# require GCC
-set( GCC_VERSION $ENV{GCC_VERSION} )
-if( NOT GCC_VERSION )
-  message( FATAL_ERROR
-           "Can't locate GCC_VERSION, required to build and test ${PROJECT_NAME}"
-         )
-endif()
+cet_check_gcc()
 
 # find external packages
 # product versions here are meant to be minimum required versions

@@ -11,9 +11,8 @@
 #    set fw_db=/some/path; source /some/path/this_file
 # or  fw_db=/some/path; . /some/path/this_file
 #
-# If TOYCMAKE_BUILD is undefined, it is set to whatever directory
+# If TOYCMAKE_BUILD is undefined, CETPKG_BUILD is set to whatever directory
 # you are in when this script is invoked.
-# $TOYCMAKE_BUILD/lib is added to LD_LIBRARY_PATH
 
 test $?shell = 1 && set ss=csh || ss=sh
 #echo Shell type is $ss.
@@ -21,25 +20,36 @@ test $?shell = 1 && set ss=csh || ss=sh
 # make some things similar. need to use set_ because sh builtin set would hide function set
 # Note: perhaps the trickiest thing in this file is the sh set_ function tries to return the same status
 #       as at the start of the function (which most likely is the result of a back-tick expression
-test "$ss" = csh && alias set_ set && alias vecho_ 'if ($?vv == 1) echo \!*' || eval 'vecho_() { test -n "${vv-}" && echo "$@";}'
-test "$ss" =  sh && eval 'set_() { ss=$?;for xx in "$@";do var=`expr "$xx" : "\([^=]*\)"`;val=`expr "$xx" : "[^=]*=\(.*\)"`;eval "$var=\"$val\"";done;return $ss; }'
-test "$ss" =  sh && eval 'setenv() { export $1;eval "$1=\"\${2-}\""; }' && eval 'source() { file=$1; shift; . $file "$@"; }' && eval 'unsetenv() { unset "$@"; }'
+test "$ss" = csh && alias set_ set && alias vecho_ 'if ($?vv == 1) echo \!*' || eval 'vecho_() { test -n "${vv-}" && echo "$@"; return 0; }'
+test "$ss" =  sh && eval 'set_() { sts=$?;for xx in "$@";do var=`expr "$xx" : "\([^=]*\)"`;val=`expr "$xx" : "[^=]*=\(.*\)"`;eval "$var=\"$val\"";done;return $sts; }'
+test "$ss" =  sh && eval 'setenv() { export $1;eval "$1=\"\${2-}\""; }; source() { file=$1; shift; . $file "$@"; }; unsetenv_() { unset "$@"; }'
 test "$ss" =  sh && eval 'tnotnull() { eval "test -n \"\${$1-}\""; }'                             && eval 'nullout() { "$@" >/dev/null 2>&1; }'
 test "$ss" = csh && alias tnotnull "eval '"'test $?'"\!* -eq 1' && eval '"'test -n "$'"\!*"'"'"'" && alias nullout "\!* >& /dev/null"
+test "$ss" = csh && alias return exit 
 
-test "$1" = "-d" && set_ extraqual=":debug" && echo "called with $1, using qualifier a4$extraqual"
+set_ msg2='ERROR: You MUST setup ups'
+test -z $UPS_DIR && ( echo ""; echo "$msg2"; echo "" ) && return
 
-set_ msg2='You MUST setup ups'
-tnotnull UPS_DIR || echo "$msg2"
+set_ msg3='ERROR: You MUST specify either -o, -p, or -d'
+test -z "$1" && ( echo ""; echo "$msg3"; echo "" ) && return
+
+# set the default type, just to avoid confusion
+setenv CETPKG_TYPE RelWithDebInfo
+test "$1" = "-d" && set_ extraqual=":debug" && setenv CETPKG_TYPE Debug
+test "$1" = "-o" && set_ extraqual=":opt" && setenv CETPKG_TYPE Opt
+test "$1" = "-p" && set_ extraqual=":prof" && setenv CETPKG_TYPE Prof
+echo "called with $1, using qualifier a4$extraqual"
+
+# we setup dependent products here
+# note that we do not test for them first...
+# use setup -j to avoid pulling dependencies
 
 # set up external products
-# use setup -j to avoid pulling dependencies
 setup cmake
 setup gcc v4_6_1
 #setup -j boost v1_46_1 -q gcc46$extraqual
 # set up CET products
-setup cetpkgsupport
-setup -j cetbuildtools v1_14_03
+setup cetbuildtools v1_14_03
 #setup -j cpp0x v1_02_02 -q a4$extraqual
 
 test $?shell = 1 && set ss=csh || ss=sh
@@ -64,27 +74,37 @@ test -n "$db" && setenv TOYCMAKE_SOURCE `dirname $db`
 #echo This script lives in $db
 
 tnotnull TOYCMAKE_BUILD && set_ thisdir=$TOYCMAKE_BUILD || set_ thisdir=`pwd`
-test -n "$thisdir" && setenv TOYCMAKE_BUILD $thisdir
+test -n "$thisdir" && setenv CETPKG_BUILD $thisdir
 test -d "$thisdir/lib" || mkdir -p $thisdir/lib
 test -d "$thisdir/bin" || mkdir -p $thisdir/bin
-echo The workng build directory is $thisdir
+echo The working build directory is $thisdir
 
-tnotnull TOYCMAKE_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${TOYCMAKE_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`
-tnotnull TOYCMAKE_BUILD && setenv LD_LIBRARY_PATH ${TOYCMAKE_BUILD}/lib:${LD_LIBRARY_PATH}
+tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${CETPKG_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`
+tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH ${CETPKG_BUILD}/lib:${LD_LIBRARY_PATH}
 setenv LD_LIBRARY_PATH `dropit -D -p "$LD_LIBRARY_PATH"`
 
-tnotnull TOYCMAKE_BUILD && setenv PATH `echo :${PATH}: | sed -e "s|:${TOYCMAKE_BUILD}/bin:|:|" -e 's|^:||;s|:$||'`
-tnotnull TOYCMAKE_BUILD && setenv PATH ${TOYCMAKE_BUILD}/bin:${PATH}
+tnotnull CETPKG_BUILD && setenv PATH `echo :${PATH}: | sed -e "s|:${CETPKG_BUILD}/bin:|:|" -e 's|^:||;s|:$||'`
+tnotnull CETPKG_BUILD && setenv PATH ${CETPKG_BUILD}/bin:${PATH}
 setenv PATH `dropit -D`
 
+# Package-specific variable names.
+for i in SOURCE BUILD TYPE; do
+  eval setenv TOYCMAKE_${i} \${CETPKG_${i}}
+done
+
 echo
-echo TOYCMAKE_SOURCE=$TOYCMAKE_SOURCE
-echo TOYCMAKE_BUILD=$TOYCMAKE_BUILD
+echo TOYCMAKE_SOURCE=CETPKG_SOURCE=$CETPKG_SOURCE
+echo TOYCMAKE_BUILD=CETPKG_BUILD=$CETPKG_BUILD
+echo TOYCMAKE_TYPE=CETPKG_TYPE=$CETPKG_TYPE
 echo $thisdir/lib has been added to LD_LIBRARY_PATH
+echo $thisdir/bin has been added to PATH
 echo
 echo LD_LIBRARY_PATH is now ${LD_LIBRARY_PATH}
+echo PATH is now ${PATH}
+echo Please use this cmake command:
+echo cmake -DCMAKE_INSTALL_PREFIX=/install/path -DCMAKE_BUILD_TYPE=\$CETPKG_TYPE \$CETPKG_SOURCE
 
 # cleanup before exiting
-test "$ss" = csh && unalias tnotnull nullout set_ vecho_
-unset ss msg db me thisdir py_ver
+test "$ss" = csh && unalias tnotnull nullout set_ vecho_ return
+unset ss msg db me thisdir py_ver extraqual msg2 msg3
 unset set_ setenv unsetenv tnotnull source nullout vecho_
