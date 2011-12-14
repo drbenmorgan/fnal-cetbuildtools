@@ -40,7 +40,7 @@ function usage() {
 usage: ${prog} [<mode-options>] [<misc-options>] [--] <make-build-options>
        ${prog} --help|-h
 
-Mode options: [-C|--cmake-only|-a|-all] ||
+Mode options: [-C|--cmake-only|-a|--all] ||
               { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
 
 Misc options: [-I|--install-prefix <install-location>] [-c|--clean] [-j #]
@@ -233,7 +233,7 @@ function check_status() {
   else
     banner 2 "ERROR: Stage $stage failed."
     if log_no_tee; then # Print to screen
-      echo "ERROR: Stage $stage failed with code $status." 1>&4
+      echo "ERROR: Stage $stage failed with code $status: see $log." 1>&4
     fi
     exit $status
   fi
@@ -304,7 +304,7 @@ fi
 eval set -- "$TEMP"
 while true; do
   case $1 in
-    -A|all)
+    -A|--all)
       (( all = 1 ))
       shift
       ;;
@@ -405,7 +405,7 @@ else
 fi
 
 if (( ${clean:-0} )); then
-  report echo "INFO: Cleaning \"$CETPKG_BUILD\""
+  report "INFO: Cleaning \"$CETPKG_BUILD\""
   if [[ "$(/bin/pwd)" == "`(cd \"$CETPKG_BUILD\" && /bin/pwd)`"/* ]]; then
     echo "ERROR: Clean operation would remove the current directory!" 1>&2
     exit 2
