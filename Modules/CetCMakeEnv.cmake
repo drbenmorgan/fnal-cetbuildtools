@@ -16,7 +16,6 @@ macro(cet_cmake_env cet_proj cet_ver)
     message(STATUS "qualifier set to ${qualifier}")
   endif()
 
-  project(${cet_proj})
   set(product ${cet_proj})
   set(version ${cet_ver})
 
@@ -24,7 +23,7 @@ macro(cet_cmake_env cet_proj cet_ver)
   # because the binaries might be relocated
   set(CMAKE_SKIP_RPATH)
 
-  message(STATUS "Project is ${product} ${version}")
+  message(STATUS "Product is ${product} ${version}")
   message(STATUS "Module path is ${CMAKE_MODULE_PATH}")
 
   enable_testing()
