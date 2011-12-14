@@ -28,9 +28,6 @@
 #    EXTRA_CXX_FLAGS
 #    EXTRA_DEFINITIONS
 #      This list parameters will append tbe appropriate items.
-#   QUIET
-#      Do not report the current compiler flag settings (useful for
-#      subsequent invocation of cet_add_compiler_flags(), etc).
 #
 ####################################
 # cet_enable_asserts()
@@ -63,10 +60,6 @@
 #   CXX <flags>
 #    Add <flags> to CXX compile flags.
 #
-#   QUIET
-#    Do not report current compiler flags (useful for chaining flag
-#    modifications).
-#
 ####################################
 # cet_remove_compiler_flags(<options>)
 #
@@ -79,10 +72,6 @@
 #
 #   CXX <flags>
 #    Remove <flag> from CXX compile flags.
-#
-#   QUIET
-#    Do not report current compiler flags (useful for chaining flag
-#    modifications).
 #
 ####################################
 # cet_report_compiler_flags()
@@ -175,7 +164,7 @@ endmacro( cet_maybe_disable_asserts )
 
 macro( cet_add_compiler_flags )
   CMAKE_PARSE_ARGUMENTS(CSCF
-    "QUIET"
+    ""
     ""
     "C;CXX"
     ${ARGN}
@@ -197,7 +186,7 @@ endmacro( cet_add_compiler_flags )
 
 macro( cet_remove_compiler_flag )
   CMAKE_PARSE_ARGUMENTS(CSCF
-    "QUIET"
+    ""
     "C;CXX"
     ""
     ${ARGN}
@@ -217,7 +206,7 @@ endmacro(cet_remove_compiler_flag)
 
 macro( cet_set_compiler_flags )
   CMAKE_PARSE_ARGUMENTS(CSCF
-    "ENABLE_ASSERTS;QUIET"
+    "ENABLE_ASSERTS"
     "DIAGS"
     "EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
     ${ARGN}
