@@ -35,7 +35,7 @@ cet_check_gcc()
 #find_ups_boost( v1_46_1 filesystem regex unit_test_framework )
 # this will also define the ROOT library variables
 #find_ups_root( v5_26_00 )
-find_ups_product( cetbuildtools v1_14_00 )
+find_ups_product( cetbuildtools v1_15_00 )
 #find_ups_product( cpp0x v1_02_02 )
 
 # Use cmake directive include_directories to define include search path
