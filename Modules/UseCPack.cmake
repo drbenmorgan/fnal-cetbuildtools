@@ -9,6 +9,7 @@ set( CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH} )
 
 set( CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0 )
 set( CPACK_GENERATOR TGZ )
+set( CPACK_PACKAGE_NAME ${product} )
 
 find_compiler()
 
@@ -44,6 +45,6 @@ else()
    endif()   
 endif()
 
-message(STATUS "CPACK_SYSTEM_NAME = ${CPACK_SYSTEM_NAME}" )
+message(STATUS "CPACK_PACKAGE_NAME and CPACK_SYSTEM_NAME are ${CPACK_PACKAGE_NAME} ${CPACK_SYSTEM_NAME}" )
 
 include(CPack)
