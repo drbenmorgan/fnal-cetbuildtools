@@ -9,6 +9,12 @@
 # 2011/11/10
 ########################################################################
 
+function real_dir() {
+    [[ -n "$1" ]] || return 1
+    ( cd "$1" >/dev/null 2>&1 && /bin/pwd 2>/dev/null; exit $? )
+    return $?
+}
+
 # Basic safety checks.
 if [[ -z "$CETPKG_BUILD" ]] || [[ -z "$CETPKG_SOURCE" ]] || [[ -z "$CETPKG_TYPE" ]]; then
   echo "ERROR: Expected CETPKG_BUILD and friends to be set." 1>&2
@@ -19,8 +25,15 @@ elif [[ ! -d "$CETPKG_BUILD" ]] || [[ ! -w "$CETPKG_BUILD" ]]; then
 elif [[ "$CETPKG_BUILD" == "$CETPKG_SOURCE" ]]; then
   echo "ERROR: CETPKG_BUILD and CETPKG_SOURCE are identical: $CETPKG_BUILD." 1>&2
   exit 1
+elif [[ "$CETPKG_BUILD" == "/" ]]; then
+  echo "ERROR: CETPKG_BUILD == /" 1>&2
+  exit 1
 elif [[ "$CETPKG_BUILD" != /* ]]; then
   echo "ERROR: CETPKG_BUILD appears to be relative." 1>&2
+  exit 1
+elif [[ $(real_dir "$CETPKG_BUILD") == "${HOME}" ]] || \
+     [[ $(real_dir "$CETPKG_BUILD") == ~ ]]; then
+  echo "ERROR: CETPKG_BUILD has been set to your home directory."
   exit 1
 fi
 
@@ -405,17 +418,22 @@ else
 fi
 
 if (( ${clean:-0} )); then
-  report "INFO: Cleaning \"$CETPKG_BUILD\""
-  if [[ "$(/bin/pwd)" == "`(cd \"$CETPKG_BUILD\" && /bin/pwd)`"/* ]]; then
+  if [[ $(real_dir .) == $(real_dir "$CETPKG_BUILD")/* ]]; then
     echo "ERROR: Clean operation would remove the current directory!" 1>&2
     exit 2
   fi
+  trap "printf \"\nAborted\n\" 1>&2; cleanup; exit" 2
+  printf "INFO: About to clean \"$CETPKG_BUILD\": ctrl-C to abort within 3 seconds "
+  for i in 1 2 3; do printf "."; sleep 1; done
+  printf "\n";
   pushd /tmp >/dev/null # 2>&1
+  report "INFO: Cleaning \"$CETPKG_BUILD\" ..."
   if ! { find "$CETPKG_BUILD" -mindepth 1 -maxdepth 1 | xargs rm -rf; }; then
     echo "ERROR: Unable to clean directory \"$CETPKG_BUILD\"" 1>&2
     exit 2
   fi
   popd >/dev/null || cd "$CETPKG_BUILD" # 2>&1
+  trap 2
 else # Check consistency.
   check_build_type="$(cmake_var CMAKE_BUILD_TYPE)"
   if [[ -n "$check_build_type" ]] && [[ "$check_build_type" != "$CETPKG_TYPE" ]]; then
