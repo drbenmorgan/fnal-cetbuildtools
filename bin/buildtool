@@ -260,8 +260,8 @@ function announce_stage() {
   fi
 }
 
-# Cleanup
-function cleanup() {
+# Clean up
+function restore_output_streams() {
   if log_no_tee; then
     exec 4>&2 1>&3-
   fi
@@ -271,7 +271,7 @@ function cleanup() {
 function do_work() {
   if log_no_tee; then
     exec 3>&1 4>&2 >"$log" 2>&1
-    trap "cleanup" EXIT
+    trap "restore_output_streams" EXIT
   fi
 
   stage=cmake
@@ -422,9 +422,9 @@ if (( ${clean:-0} )); then
     echo "ERROR: Clean operation would remove the current directory!" 1>&2
     exit 2
   fi
-  trap "printf \"\nAborted\n\" 1>&2; cleanup; exit" 2
-  printf "INFO: About to clean \"$CETPKG_BUILD\": ctrl-C to abort within 3 seconds "
-  for i in 1 2 3; do printf "."; sleep 1; done
+  trap "f=$?; printf \"\nAborted\n\" 1>&2; exit $f" 2
+  printf "INFO: About to clean \"$CETPKG_BUILD\": ctrl-C to abort within 5 seconds "
+  for i in 1 2 3 4 5; do printf "."; sleep 1; done
   printf "\n";
   pushd /tmp >/dev/null # 2>&1
   report "INFO: Cleaning \"$CETPKG_BUILD\" ..."
