@@ -84,7 +84,7 @@
 #   List the values of various variables
 #
 ########################################################################
-include(CMakeParseArguments)
+include(CetParseArgs)
 
 macro( cet_report_compiler_flags )
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
@@ -205,15 +205,14 @@ macro( cet_remove_compiler_flag )
 endmacro(cet_remove_compiler_flag)
 
 macro( cet_set_compiler_flags )
-  CMAKE_PARSE_ARGUMENTS(CSCF
+  CET_PARSE_ARGS(CSCF
+    "DIAGS;EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
     "ENABLE_ASSERTS;WERROR"
-    "DIAGS"
-    "EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
     ${ARGN}
     )
 
-  if (CSCF_UNPARSED_ARGUMENTS)
-    message(FATAL "Unexpected extra arguments: ${CSCF_UNPARSED_ARGUMENTS}.\nConsider EXTRA_FLAGS, EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
+  if (CSCF_DEFAULT_ARGS)
+    message(FATAL "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider EXTRA_FLAGS, EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
   endif()
   
   # turn a colon separated list into a space separated string
