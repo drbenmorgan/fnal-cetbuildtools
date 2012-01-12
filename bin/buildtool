@@ -251,12 +251,10 @@ function check_status() {
     banner "INFO: Stage $stage successful."
     log_no_tee && \
         report "INFO: Stage $stage successful." 1>&3
-    fi
   else
     banner 2 "ERROR: Stage $stage failed."
     log_no_tee && \
         echo "ERROR: Stage $stage failed with code $status: see $log." 1>&4
-    fi
     exit $status
   fi
 }
@@ -315,7 +313,7 @@ function do_work() {
     announce_stage
     check_dir
     # Trap and tee *only* stderr from ctest. Yes, this is fiddly.
-    TMP=`mktemp -d --tmpdir buildtool.XXXXXXXXXX`
+    TMP=`mktemp -d -t buildtool.XXXXXXXXXX`
     if [[ -z "$TMP" ]]; then
       error "ERROR: Unable to create temporary working directory: aborting buildtool execution."
       exit 1
