@@ -244,6 +244,9 @@ function error() {
 # Check status and exit if necessary
 function check_status() {
   local status=$?
+  if [[ -n "$1" ]]; then # Override
+    status=$1
+  fi
   if (( status == 0 )); then
     banner "INFO: Stage $stage successful."
     log_no_tee && \
