@@ -314,8 +314,23 @@ function do_work() {
     stage=test
     announce_stage
     check_dir
-    ctest $jarg
-    check_status
+    # Trap and tee *only* stderr from ctest. Yes, this is fiddly.
+    TMP=`mktemp -d --tmpdir buildtool.XXXXXXXXXX`
+    if [[ -z "$TMP" ]]; then
+      error "ERROR: Unable to create temporary working directory: aborting buildtool execution."
+      exit 1
+    fi
+    exec 5>&1
+    { ctest $jarg 2>&1 >&5 5>&-; echo $? > "$TMP/status.dat"; } | tee "$TMP/ctest.err" 5>&-
+    exec 5>&-
+    local status
+    (( status = $(cat "$TMP/status.dat") ))
+    if (( status == 0 )) && [[ -s "$TMP/ctest.err" ]]; then
+      error "ERROR: Detected stderr output from ctest."
+      check_status 1
+    else
+      check_status $status
+    fi
   fi
 
   if [[ -n "$targets" ]]; then
