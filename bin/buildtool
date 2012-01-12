@@ -235,6 +235,12 @@ function report() {
   (( ${report:-0} )) && echo "$*"
 }
 
+function error() {
+  local errmsg="$*"
+  printf "$errmsg\n\n" 1>&2
+  log_no_tee && echo "$errmsg" 1>&4
+}
+
 # Check status and exit if necessary
 function check_status() {
   local status=$?
