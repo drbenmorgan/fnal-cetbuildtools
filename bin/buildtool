@@ -266,6 +266,14 @@ function announce_stage() {
   fi
 }
 
+function check_dir() {
+  if [[ $(real_dir .) != $(real_dir "$CETPKG_BUILD")* ]]; then
+    error "WARNING: current directiory $(real_dir .) is not in the current build tree
+         ($(real_dir "$CETPKG_BUILD")). Executing stage $stage from \$CETPKG_BUILD."
+    cd "$(real_dir "$CETPKG_BUILD")"
+  fi
+}
+
 # Clean up
 function restore_output_streams() {
   if log_no_tee; then
@@ -290,6 +298,7 @@ function do_work() {
   if (( ${do_build:-0} )); then
     stage=build
     announce_stage
+    check_dir
     time make $jarg "$@"
     check_status
   fi
@@ -297,6 +306,7 @@ function do_work() {
   if (( ${do_test:-0} )); then
     stage=test
     announce_stage
+    check_dir
     ctest $jarg
     check_status
   fi
