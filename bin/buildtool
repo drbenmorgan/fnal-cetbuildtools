@@ -227,7 +227,7 @@ EOF
 }
 
 function log_no_tee() {
- [[ -n "$log" ]] && (( ! ${tee:-0} ))
+  [[ -n "$log" ]] && (( ! ${tee:-0} ))
   return $?
 }
 
@@ -240,13 +240,13 @@ function check_status() {
   local status=$?
   if (( status == 0 )); then
     banner "INFO: Stage $stage successful."
-    if log_no_tee; then # Print to screen
-      report "INFO: Stage $stage successful." 1>&3
+    log_no_tee && \
+        report "INFO: Stage $stage successful." 1>&3
     fi
   else
     banner 2 "ERROR: Stage $stage failed."
-    if log_no_tee; then # Print to screen
-      echo "ERROR: Stage $stage failed with code $status: see $log." 1>&4
+    log_no_tee && \
+        echo "ERROR: Stage $stage failed with code $status: see $log." 1>&4
     fi
     exit $status
   fi
