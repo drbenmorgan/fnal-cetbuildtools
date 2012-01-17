@@ -1,0 +1,8 @@
+
+# set up external products
+setup -B gcc v4_6_1
+
+# set up CET products
+setup cetpkgsupport
+setup cetbuildtools v1_15_04
+setup -B fhiclcpp v2_16_03 -q +$CETPKG_QUAL$extraqual

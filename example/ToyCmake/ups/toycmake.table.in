@@ -6,53 +6,73 @@ Group:
 
 Flavor     = ANY
 Qualifiers = ""
-  Action = setup
-       prodDir()
-       setupEnv()
-       setupRequired(cetpkgsupport)
+  Action = GetFQDir
        # faking out unsetup
        envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
        execute( "get-directory-name subdir '' ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
-       exeActionRequired("setup__")
-       #setupRequired(boost @BOOST_VERS@ @BOOST_QUAL@)
+
+  Action = GetExtraProducts
+    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@ )
 
 Flavor     = ANY
 Qualifiers = "@qualifier@"
-  Action = setup
-       prodDir()
-       setupEnv()
-       setupRequired(cetpkgsupport)
+  Action = GetFQDir
        # faking out unsetup
        envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
        execute( "get-directory-name subdir @qualifier@ ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
-       exeActionRequired("setup__")
-       #setupRequired(boost @BOOST_VERS@ @BOOST_QUAL@)
+
+  Action = GetExtraProducts
+    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@ )
 
 Flavor     = ANY
 Qualifiers = "@qualifier@:debug"
-  Action = setup
-       prodDir()
-       setupEnv()
-       setupRequired(cetpkgsupport)
+  Action = GetFQDir
        # faking out unsetup
        envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
        execute( "get-directory-name subdir @qualifier@.debug ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
-       exeActionRequired("setup__")
-       #setupRequired(boost @BOOST_VERS@ @BOOST_QUAL@)
+
+  Action = GetExtraProducts
+    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:debug )
+
+Flavor     = ANY
+Qualifiers = "@qualifier@:opt"
+  Action = GetFQDir
+       # faking out unsetup
+       envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
+       execute( "get-directory-name subdir @qualifier@.opt ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
+       fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
+
+  Action = GetExtraProducts
+    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:opt )
+
+Flavor     = ANY
+Qualifiers = "@qualifier@:prof"
+  Action = GetFQDir
+       # faking out unsetup
+       envSet( ${UPS_PROD_NAME_UC}_FQ, "" )
+       execute( "get-directory-name subdir @qualifier@.prof ${UPS_PROD_FLAVOR}", UPS_ENV, ${UPS_PROD_NAME_UC}_FQ )
+       fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
+
+  Action = GetExtraProducts
+    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:prof )
 
 Common:
-  Action = setup__
+  Action = setup
+    prodDir()
+    setupEnv()
+    setupRequired(cetpkgsupport)
+    exeActionRequired(GetFQDir)
     envSet(${UPS_PROD_NAME_UC}_VERSION, @version@)
     prodDir( _FQ_DIR, ${${UPS_PROD_NAME_UC}_FQ} )
 
     # faking out unsetup
-    envSet(${UPS_PROD_NAME_UC}_INC,"") 
+    envSet(${UPS_PROD_NAME_UC}_INC,"")
     execute( "find-path include ${${UPS_PROD_NAME_UC}_FQ_DIR} ${UPS_PROD_DIR}", UPS_ENV, ${UPS_PROD_NAME_UC}_INC)
     # faking out unsetup
-    envSet(${UPS_PROD_NAME_UC}_LIB,"") 
+    envSet(${UPS_PROD_NAME_UC}_LIB,"")
     execute( "find-path lib ${${UPS_PROD_NAME_UC}_FQ_DIR} ${UPS_PROD_DIR}", UPS_ENV, ${UPS_PROD_NAME_UC}_LIB)
     pathPrepend(LD_LIBRARY_PATH, ${${UPS_PROD_NAME_UC}_LIB})
 
@@ -62,9 +82,8 @@ Common:
     # dropit -E removes non-existent directories
     Execute(dropit -E, NO_UPS_ENV, PATH)
 
-    # uncomment or add to this list as relevant
-    setupRequired(cmake)
-    setupRequired(gcc @GCC_VERSION@ @GCC_QUAL@)
+    exeActionRequired(GetExtraProducts)
+    setupRequired(gcc @GCC_VERSION@ )
 
 End:
 # End Group definition
