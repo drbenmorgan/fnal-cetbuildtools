@@ -210,6 +210,23 @@ function cmake_var() {
   ( cd "$CETPKG_BUILD" && cmake -N -L | grep -e '^'"$1"':' | cut -d= -f2- ) 2>/dev/null
 }
 
+function package_name() {
+    echo "$(cmake_var product)"
+}
+
+function package_version() {
+  echo "$(cmake_var VERSION_MAJOR).$(cmake_var VERSION_MINOR).$(cmake_var VERSION_PATCH)"
+}
+
+function package_info() {
+  local package_name=$(package_name)
+  local package_version=$(package_version)
+  [[ -n "$package_name" ]] && [[ -n "$package_version" ]] || return
+  local msg="INFO: $package_name version $package_version configured."
+  banner "$msg"
+  log_no_tee && report "$msg" 1>&3
+}
+
 # Banner line
 function banner() {
   (( ${quiet:-0} )) && return
@@ -257,6 +274,7 @@ function check_status() {
         echo "ERROR: Stage $stage failed with code $status: see $log." 1>&4
     exit $status
   fi
+  return $status
 }
 
 # Announce the next stage.
@@ -298,8 +316,9 @@ function do_work() {
   local extradef
   [[ -n "$CETPKG_QUAL" ]] && extradef="-Dqualifier:STRING=$CETPKG_QUAL "
   ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${extradef}${CETPKG_SOURCE} )
-  check_status && (( ${cmake_only:-0} )) && exit 0
-
+  check_status
+  package_info
+  (( ${cmake_only:-0} )) && exit 0
   if (( ${do_build:-0} )); then
     stage=build
     announce_stage
