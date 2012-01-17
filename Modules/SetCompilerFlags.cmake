@@ -163,14 +163,13 @@ macro( cet_maybe_disable_asserts )
 endmacro( cet_maybe_disable_asserts )
 
 macro( cet_add_compiler_flags )
-  CMAKE_PARSE_ARGUMENTS(CSCF
-    ""
-    ""
+  CET_PARSE_ARGS(CSCF
     "C;CXX"
+    ""
     ${ARGN}
     )
-  if (CSCF_UNPARSED_ARGUMENTS)
-    message(FATAL "Unexpected extra arguments: ${CSCF_UNPARSED_ARGUMENTS}.\nConsider C OR CXX")
+  if (CSCF_DEFAULT_ARGS)
+    message(FATAL "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider C OR CXX")
   endif()
 
   STRING(REGEX REPLACE ";" " " CSCF_C "${CSCF_C}")
@@ -185,14 +184,13 @@ macro( cet_add_compiler_flags )
 endmacro( cet_add_compiler_flags )
 
 macro( cet_remove_compiler_flag )
-  CMAKE_PARSE_ARGUMENTS(CSCF
-    ""
+  CET_PARSE_ARGS(CSCF
     "C;CXX"
     ""
     ${ARGN}
     )
-  if (CSCF_UNPARSED_ARGUMENTS)
-    message(FATAL "Unexpected extra arguments: ${CSCF_UNPARSED_ARGUMENTS}.\nConsider C OR CXX")
+  if (CSCF_DEFAULT_ARGS)
+    message(FATAL "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider C OR CXX")
   endif()
 
   IF (CSCF_C)
