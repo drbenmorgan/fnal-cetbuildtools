@@ -19,9 +19,9 @@ macro( set_version_from_ups UPS_VERSION )
 
   parse_ups_version( ${UPS_VERSION} )
 
-  set( VERSION_MAJOR ${VMAJ} )
-  set( VERSION_MINOR ${VMIN} )
-  set( VERSION_PATCH ${VPRJ} )
+  set( VERSION_MAJOR ${VMAJ} CACHE STRING "Package major version" FORCE)
+  set( VERSION_MINOR ${VMIN} CACHE STRING "Package minor version" FORCE )
+  set( VERSION_PATCH ${VPRJ} CACHE STRING "Package patch version" FORCE )
   message(STATUS "project version is ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
 
 endmacro( set_version_from_ups )
