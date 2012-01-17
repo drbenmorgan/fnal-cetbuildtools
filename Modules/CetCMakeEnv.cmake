@@ -16,8 +16,8 @@ macro(cet_cmake_env cet_proj cet_ver)
     message(STATUS "qualifier set to ${qualifier}")
   endif()
 
-  set(product ${cet_proj})
-  set(version ${cet_ver})
+  set(product ${cet_proj} CACHE STRING "Package UPS name" FORCE)
+  set(version ${cet_ver} CACHE STRING "Package UPS version" FORCE)
 
   # do not embed full path in shared libraries or executables
   # because the binaries might be relocated
