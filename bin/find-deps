@@ -1,0 +1,140 @@
+#!/bin/bash
+
+shopt -s extglob
+
+while getopts :d:o:v OPT; do
+    case $OPT in
+	d)
+	    topdir="$OPTARG"
+	    ;;
+	o)
+	    outfile="$OPTARG"
+	    ;;
+  v)
+      verbose=1
+      ;;
+	*)
+	    echo "usage: ${0##*/} [-d <topdir>] [-o <outfile>]"
+	    exit 2
+    esac
+done
+shift $[ OPTIND - 1 ]
+
+[[ -n "$outfile" ]] && exec>$outfile
+
+cd "$topdir" || { echo "Unable to cd to \"$topdir\"" 1>&2; exit 1; }
+
+cat <<EOF
+digraph {
+
+EOF
+have_src_dir=$(( $(find . -type d -name src 2>/dev/null | wc -l) ))
+if (( ${have_src_dir:-0} )); then
+  declare -a paths=( $(find . \( \( -name .git -o -name .svn -o -name CVS \) -prune \) \
+                              -o -type f -path '*/src/CMakeLists.txt' -print | \
+                       sed -e 's/^\.\///' -e 's/\/src\/CMakeLists\.txt$//') )
+else
+  declare -a paths=( $(find . \( \( -name .git -o -name .svn -o -name CVS -o -name bin -o -name test -o -name ups -o -name tools \) -prune \) \
+                              -o -type f -path '*/CMakeLists.txt' -print | \
+                       sed -e 's/^\.\///' -e 's/\/\{0,1\}CMakeLists\.txt$//') )
+fi
+for path in "${paths[@]}"; do
+  ( cd $path
+    package=${path//\//}
+    (( ${verbose:-0} )) && echo "INFO: Examining package $package." 1>&2 
+    if (( ${have_src_dir:-0} )); then
+      declare -a dirs=( src interface )
+    else
+      declare -a dirs=( . )
+    fi
+    ack -l -f -n "${dirs[@]}" | \
+     xargs grep -he '^[ \t]*#include[ \t]*"' \
+                -e '^[ \t]*#include[ \t]*<.*/.*>' | \
+     grep -e / | \
+     sed -e 's/^[ \t]*#include[ \t]*["<]\(.*\)[">].*$/\1/' | \
+     grep -e '/' | \
+     sed -e 's/interface\///' \
+         -e 's/\/[^\/]*$//' \
+         -e 's/\/src$//' \
+         -e 's/\/detail$//' | \
+     sort -u | while read dep; do
+      (( ${verbose:-0} )) && echo "INFO: -> Found dependency $dep in $package." 1>&2 
+       if [[ "$dep" == boost* ]] || \
+          [[ "$dep" == CLHEP* ]] || \
+          [[ "$dep" == Reflex* ]] || \
+	        [[ "$dep" == ext ]] || \
+	        [[ "$dep" == sigc\+\+ ]] || \
+	        [[ "$dep" == sys ]] || \
+	        [[ "$dep" == Cintex ]] || \
+	        [[ "$dep" == uuid ]] || \
+	        [[ "$dep" == cpp0x ]] || \
+	        [[ "$dep" == cetlib ]] || \
+	        [[ "$dep" == fhiclcpp ]] || \
+	        [[ "$dep" == messagefacility* ]]
+       then
+         echo "INFO: Ignoring dependency $package -> $dep." 1>&2
+         continue
+       fi
+       dep=${dep//\//}
+       if [[ "$package" == "$dep" ]]; then
+         continue # Self-dependency
+       fi
+       if [[ "$package" == "FWCore"* ]]; then
+         old=1
+       fi
+       echo "  $package -> $dep;"
+     done
+  ); done
+
+if (( ${old:-0} )); then
+cat <<EOF
+
+  { rank = 0;
+    FWCoreMessageLogger;
+    FWCoreParameterSet;
+  }
+  { rank = 1;
+    FWCoreVersion;
+  }
+  { rank = 2;
+    FWCoreUtilities;
+  }
+  { rank = 3;
+    FWCorePluginManager;
+    DataFormatsProvenance;
+  }
+  { rank = 4;
+    FWCoreRootAutoLibraryLoader;
+    FWCorePrescaleService;
+    DataFormatsCommon;
+  }
+  { rank = 5;
+    FWCoreFramework;
+    FWCoreServices;
+  }
+  { rank = 6;
+    FWCoreServiceRegistry;
+  }
+  { rank = 7;
+    FWCoreMessageService;
+    FWCoreCatalog;
+    IOPoolCommon;
+  }
+  { rank = 8;
+    FWCoreSources;
+  }
+  { rank = 9;
+    IOPoolInput;
+    FWCoreModules;
+    IOPoolOutput;
+    DataFormatsTestObjects;
+    DataFormatsWrappedStdDictionaries;
+  }
+EOF
+else
+cat <<EOF
+EOF
+fi
+cat <<EOF
+}
+EOF
