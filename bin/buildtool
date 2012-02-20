@@ -271,7 +271,7 @@ function check_status() {
   else
     banner 2 "ERROR: Stage $stage failed."
     log_no_tee && \
-        echo "ERROR: Stage $stage failed with code $status: see $log." 1>&4
+        echo "ERROR: Stage $stage failed with code $status: see $log for details" 1>&4
     exit $status
   fi
   return $status
