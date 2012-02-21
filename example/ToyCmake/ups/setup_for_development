@@ -53,7 +53,7 @@ test -z "$1" && setenv CETPKG_QUAL "$defaultqual"
 # e1 is a special case
 test "$1" = "e1" && set_ hybridqual=$1 && set_ rootqual=gcc46
 
-echo "called with $type, using qualifiers +$CETPKG_QUAL$extraqual and +$hybridqual$extraqual"
+echo "called with $type, using qualifiers +$CETPKG_QUAL$extraqual, $defaultqual$extraqual, $rootqual$extraqual, and +$hybridqual$extraqual"
 
 # now is if we were passed a path or if not, if we can figure it out (maybe if we are interactive)
 #   bash, zsh, ksh and tcsh pass params to a source file, csh does not. but someone will be writing csh scripts
@@ -81,10 +81,17 @@ echo The working build directory is $thisdir
 setenv UPS_OPTIONS -B
 source $CETPKG_SOURCE/ups/product_list
 
+echo Define LD_LIBRARY_PATH
 tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${CETPKG_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`
 tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH ${CETPKG_BUILD}/lib:${LD_LIBRARY_PATH}
 setenv LD_LIBRARY_PATH `dropit -D -p "$LD_LIBRARY_PATH"`
 
+echo Define PATH
+tnotnull CETPKG_BUILD && setenv PATH `echo :${PATH}: | sed -e "s|:${CETPKG_BUILD}/bin:|:|" -e 's|^:||;s|:$||'`
+tnotnull CETPKG_BUILD && setenv PATH ${CETPKG_BUILD}/bin:${PATH}
+setenv PATH `dropit -D`
+
+echo Define TOYCMAKE_ variables
 # Package-specific variable names.
 setenv TOYCMAKE_SOURCE ${CETPKG_SOURCE}
 setenv TOYCMAKE_BUILD  ${CETPKG_BUILD}
@@ -97,8 +104,11 @@ echo TOYCMAKE_BUILD=CETPKG_BUILD=$CETPKG_BUILD
 echo TOYCMAKE_TYPE=CETPKG_TYPE=$CETPKG_TYPE
 echo CETPKG_QUAL=$CETPKG_QUAL
 echo $thisdir/lib has been added to LD_LIBRARY_PATH
+echo $thisdir/bin has been added to PATH
 echo
 echo LD_LIBRARY_PATH is now ${LD_LIBRARY_PATH}
+echo
+echo PATH is now ${PATH}
 echo
 echo Please use this cmake command:
 

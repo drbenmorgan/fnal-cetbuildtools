@@ -2,6 +2,7 @@
 # All cmake files below this directory are part of the example
 
 set( installUPSfiles ToyCmake/ups/CMakeLists.txt
+		     ToyCmake/ups/product_list
 		     ToyCmake/ups/setup_for_development
 		     ToyCmake/ups/toycmake.table.in
 		     ToyCmake/ups/toycmake.version.in )
