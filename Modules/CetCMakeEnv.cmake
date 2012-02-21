@@ -40,6 +40,7 @@ macro(cet_cmake_env cet_proj cet_ver)
   include(ParseUpsVersion)
   include(SetFlavorQual)
   include(InstallSource)
+  include(CetMake)
 
   # More setup.
   set_version_from_ups(${version})
