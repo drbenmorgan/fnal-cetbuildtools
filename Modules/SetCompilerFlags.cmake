@@ -233,6 +233,8 @@ macro( cet_set_compiler_flags )
 
   if (CSCF_WERROR)
     SET(CSCF_WERROR "-Werror")
+  else()
+    set(CSCF_WERROR "")
   endif()
 
   string(TOUPPER "${CSCF_DIAGS}" CSCF_DIAGS)
