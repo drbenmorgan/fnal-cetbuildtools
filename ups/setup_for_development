@@ -29,9 +29,10 @@ tnotnull UPS_DIR || echo "$msg2"
 
 # we setup dependent products here
 # note that we do not test for them first...
-# use setup -j to avoid pulling dependencies
+echo ----------- check this block for errors -----------------------
 setup cmake
 setup cetpkgsupport
+echo ---------------------------------------------------------------
 
 test $?shell = 1 && set ss=csh || ss=sh
 test "$ss" = csh && alias set_ set && alias vecho_ 'if ($?vv == 1) echo \!*' || eval 'vecho_() { test -n "${vv-}" && echo "$@";}'
@@ -56,12 +57,15 @@ test -n "$db" && setenv CETBUILDTOOLS_SOURCE `dirname $db`
 
 tnotnull CETBUILDTOOLS_BUILD && set_ thisdir=$CETBUILDTOOLS_BUILD || set_ thisdir=`pwd`
 test -n "$thisdir" && setenv CETBUILDTOOLS_BUILD $thisdir
-echo The workng build directory is $thisdir
+echo The working build directory is $thisdir
 
 echo
 echo CETBUILDTOOLS_SOURCE=$CETBUILDTOOLS_SOURCE
 echo CETBUILDTOOLS_BUILD=$CETBUILDTOOLS_BUILD
 echo
+echo Please use this cmake command:
+
+echo cmake -DCMAKE_INSTALL_PREFIX=/install/path  \$CETBUILDTOOLS_SOURCE
 
 # cleanup before exiting
 test "$ss" = csh && unalias tnotnull nullout set_ vecho_

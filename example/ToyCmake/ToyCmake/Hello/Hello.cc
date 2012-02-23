@@ -13,6 +13,8 @@ int main()
   y = 5.;
   mth.setval(y);
   assert( mth.calculate(x) == 80. );
+  
+  std::cout << "Hello, I've just done some math calculations" << std::endl;
 
   return 0;
 }

@@ -77,9 +77,11 @@ test -d "$thisdir/lib" || mkdir -p $thisdir/lib
 test -d "$thisdir/bin" || mkdir -p $thisdir/bin
 echo The working build directory is $thisdir
 
+echo ----------- check this block for errors -----------------------
 # we setup dependent products here
 setenv UPS_OPTIONS -B
 source $CETPKG_SOURCE/ups/product_list
+echo ----------------------------------------------------------------
 
 echo Define LD_LIBRARY_PATH
 tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${CETPKG_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`

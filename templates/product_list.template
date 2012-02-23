@@ -1,5 +1,7 @@
 
 # set up external products
+# these are examples
+# you may need some or none
 setup -B clhep v2_1_1_0 -q +$hybridqual$extraqual
 setup -B cppunit v1_12_1 -q +$hybridqual$extraqual
 setup -B libsigcpp v2_2_10 -q +$hybridqual$extraqual
@@ -9,6 +11,8 @@ setup -B root v5_30_02 -q +$rootqual$extraqual
 setup -B sqlite v3_07_08_00 -q +$compilerqual$extraqual
 
 # set up CET products
+# you need cetpkgsupport and cetbuildtools
 setup cetpkgsupport
-setup -B cetbuildtools v1_15_06
+setup -B cetbuildtools v1_15_07
+# use if your package includes art
 setup -B art v1_00_08 -q +$CETPKG_QUAL$extraqual

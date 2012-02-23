@@ -4,4 +4,4 @@ setup -B gcc v4_6_1
 
 # set up CET products
 setup cetpkgsupport
-setup cetbuildtools v1_15_06
+setup -B cetbuildtools v1_15_07
