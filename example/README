@@ -9,8 +9,10 @@ mkdir build install
 cd build (this is your working directory)
 source ../ToyCmake/ups/setup_for_development
    This will setup cmake and gcc v4_5_1
-   This will also define TOYCMAKE_SOURCE and TOYCMAKE_BUILD
-cmake -DCMAKE_INSTALL_PREFIX=../install $TOYCMAKE_SOURCE
+   This will also define CETPKG_TYPE, CETPKG_QUAL, and CETPKG_SOURCE
+cmake -DCMAKE_INSTALL_PREFIX=../install \
+      -DCMAKE_BUILD_TYPE=\$CETPKG_TYPE \
+      -Dqualifier:STRING=\$CETPKG_QUAL \$CETPKG_SOURCE
 make
 make test
 make install
