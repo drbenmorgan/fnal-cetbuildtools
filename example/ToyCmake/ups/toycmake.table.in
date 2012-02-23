@@ -13,7 +13,7 @@ Qualifiers = ""
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
 
   Action = GetExtraProducts
-    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@ )
+    #setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@ )
 
 Flavor     = ANY
 Qualifiers = "@qualifier@"
@@ -24,7 +24,7 @@ Qualifiers = "@qualifier@"
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
 
   Action = GetExtraProducts
-    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@ )
+    #setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@ )
 
 Flavor     = ANY
 Qualifiers = "@qualifier@:debug"
@@ -35,7 +35,7 @@ Qualifiers = "@qualifier@:debug"
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
 
   Action = GetExtraProducts
-    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:debug )
+    #setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:debug )
 
 Flavor     = ANY
 Qualifiers = "@qualifier@:opt"
@@ -46,7 +46,7 @@ Qualifiers = "@qualifier@:opt"
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
 
   Action = GetExtraProducts
-    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:opt )
+    #setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:opt )
 
 Flavor     = ANY
 Qualifiers = "@qualifier@:prof"
@@ -57,7 +57,7 @@ Qualifiers = "@qualifier@:prof"
        fileTest( ${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ}, -d, "${UPS_PROD_DIR}/${${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED")
 
   Action = GetExtraProducts
-    setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:prof )
+    #setupRequired(fhiclcpp @FHICLCPP_VERSION@ -q @FHICLCPP_BASE_QUAL@:prof )
 
 Common:
   Action = setup
