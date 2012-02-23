@@ -27,6 +27,10 @@ INSTALL (FILES ToyCmake/CMakeLists.txt ToyCmake/README
 INSTALL (FILES ToyCmake/ToyCmake/CMakeLists.txt
          DESTINATION ${product}/${version}/example/ToyCmake/ToyCmake )
 
+INSTALL (FILES ToyCmake/ToyCmake/Hello/CMakeLists.txt
+               ToyCmake/ToyCmake/Hello/Hello.cc
+         DESTINATION ${product}/${version}/example/ToyCmake/ToyCmake/Hello )
+
 INSTALL (FILES ${installMathFiles}
          DESTINATION ${product}/${version}/example/ToyCmake/ToyCmake/Math )
 
