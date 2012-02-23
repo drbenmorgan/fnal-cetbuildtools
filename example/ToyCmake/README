@@ -7,5 +7,5 @@ Various CET conventions:
 4. in a build directory:
    source .../ToyCmake/ups/setup_for_development <-d|-p>
    where -d means debug and -p means profile
-   This will establish the build environment so you can then make, make test, make install
+   This will establish the build environment so you can then run make
 
