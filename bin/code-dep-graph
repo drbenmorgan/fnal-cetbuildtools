@@ -2,11 +2,93 @@
 
 shopt -s extglob
 
-while getopts :d:o:v OPT; do
+function usage() {
+  cat <<EOF
+usage: ${0##*/} [<options>] [-d <topdir>] [-o <outfile>]"
+
+Options:
+
+  -D
+     Show external dependencies also.
+
+  -h
+     This help.
+
+  -v
+     Verbose output.
+
+Post-processing:
+
+Output is in the graphviz, "dot" format. Examples of post-processing:
+
+* Basic graph (could be complicated).
+
+  dot -Tpng -o out.png in.dot
+
+* Apply transitive reduction to graph prior to main processing.
+
+  tred in.dot | dot -Tpng -o out.dot
+EOF
+}
+
+function find_paths_helper() {
+  local prefix="${1}"
+  find . \( \( -name .git -o -name .svn -o -name CVS -o -name test -o -name unittest -o -name java -o -name job \) -prune \) -o \
+         -type f \
+         \( -path "*/${prefix}CMakeLists.txt" -o \
+            -path "*/${prefix}SConscript" -o \
+            -path "*/${prefix}GNUmakefile" -o \
+            -path "*/${prefix}[Mm]akefile" \) -printf "%P\n" | \
+    sed -e "s&${prefix}"'/\{0,1\}\(CMakeLists\.txt\|SConscript\|\(GNUm\|[Mm]\)akefile\)$&&'
+}
+
+function find_int_packages() {
+  local prefix
+  find . -mindepth 1 -maxdepth 1 -type d -printf "%P\n" | while read dir; do (
+    { [[ "$dir" == "CVS" ]] || \
+      [[ "$dir" == "."* ]] || \
+      [[ "$dir" = "bin" ]] || \
+      [[ "$dir" = "doc" ]] || \
+      [[ "$dir" = "include" ]] || \
+      [[ "$dir" = "job" ]] || \
+      [[ "$dir" = "lib" ]] || \
+      [[ "$dir" = "man" ]] || \
+      [[ "$dir" = "results" ]] || \
+      [[ "$dir" = "test" ]] || \
+      [[ "$dir" = "tmp" ]] || \
+      [[ "$dir" = "ups" ]]; } && continue
+    cd "$dir"
+    if [[ -d "cxx/src" ]]; then
+      prefix="cxx/src/"
+    elif [[ -d "src" ]]; then
+      prefix="src/"
+    else
+      prefix=""
+    fi
+    echo "$dir" >> "${TMP}.int_packages.tmp"
+    find_paths_helper "$prefix" | while read subdir; do
+      if [[ -n "${subdir}" ]]; then
+        echo "${dir}/${subdir}"
+      else
+        echo "${dir}"
+      fi
+    done
+  ) done
+  sort -u "${TMP}.int_packages.tmp" > "${TMP}.int_packages"
+}
+
+while getopts :Dd:ho:v OPT; do
     case $OPT in
+  D)
+      want_all_deps=1
+      ;;
 	d)
 	    topdir="$OPTARG"
 	    ;;
+  h)
+      usage
+      exit 1
+      ;;
 	o)
 	    outfile="$OPTARG"
 	    ;;
@@ -14,7 +96,7 @@ while getopts :d:o:v OPT; do
       verbose=1
       ;;
 	*)
-	    echo "usage: ${0##*/} [-d <topdir>] [-o <outfile>]"
+      usage
 	    exit 2
     esac
 done
@@ -24,69 +106,60 @@ shift $[ OPTIND - 1 ]
 
 cd "$topdir" || { echo "Unable to cd to \"$topdir\"" 1>&2; exit 1; }
 
+TMP=`mktemp "${TMPDIR:-/tmp}/code-dep-graph.XXXXXXXXXX"`
+[[ -n "$TMP" ]] || { echo "ERROR: could not open temporary file for write" 1>&2; exit 1; }
+#trap "rm -f \"$TMP\"* 2>/dev/null" EXIT
+
 cat <<EOF
 digraph {
-
+  node [ shape=rectangle ]
 EOF
-have_src_dir=$(( $(find . -type d -name src 2>/dev/null | wc -l) ))
-if (( ${have_src_dir:-0} )); then
-  declare -a paths=( $(find . \( \( -name .git -o -name .svn -o -name CVS \) -prune \) \
-                              -o -type f -path '*/src/CMakeLists.txt' -print | \
-                       sed -e 's/^\.\///' -e 's/\/src\/CMakeLists\.txt$//') )
-else
-  declare -a paths=( $(find . \( \( -name .git -o -name .svn -o -name CVS -o -name bin -o -name test -o -name ups -o -name tools \) -prune \) \
-                              -o -type f -path '*/CMakeLists.txt' -print | \
-                       sed -e 's/^\.\///' -e 's/\/\{0,1\}CMakeLists\.txt$//') )
-fi
-for path in "${paths[@]}"; do
+find_int_packages > "$TMP"
+cat "${TMP}" | while read path; do
   ( cd $path
-    package=${path//\//}
-    (( ${verbose:-0} )) && echo "INFO: Examining package $package." 1>&2 
-    if (( ${have_src_dir:-0} )); then
-      declare -a dirs=( src interface )
-    else
-      declare -a dirs=( . )
-    fi
-    ack -l -f -n "${dirs[@]}" | \
+    package=${path}
+    echo "INFO: Examining package $package." 1>&2 
+    declare -a dirs=( . src inc include interface )
+    ack -l -f -n "${dirs[@]}" </dev/null 2>/dev/null | \
      xargs grep -he '^[ \t]*#include[ \t]*"' \
                 -e '^[ \t]*#include[ \t]*<.*/.*>' | \
      grep -e / | \
      sed -e 's/^[ \t]*#include[ \t]*["<]\(.*\)[">].*$/\1/' | \
      grep -e '/' | \
      sed -e 's/interface\///' \
+         -e 's/inc\///' \
+         -e 's/include\///' \
          -e 's/\/[^\/]*$//' \
          -e 's/\/src$//' \
+         -e 's/\/cxx$//' \
          -e 's/\/detail$//' | \
      sort -u | while read dep; do
-      (( ${verbose:-0} )) && echo "INFO: -> Found dependency $dep in $package." 1>&2 
-       if [[ "$dep" == boost* ]] || \
-          [[ "$dep" == CLHEP* ]] || \
-          [[ "$dep" == Reflex* ]] || \
-	        [[ "$dep" == ext ]] || \
-	        [[ "$dep" == sigc\+\+ ]] || \
-	        [[ "$dep" == sys ]] || \
-	        [[ "$dep" == Cintex ]] || \
-	        [[ "$dep" == uuid ]] || \
-	        [[ "$dep" == cpp0x ]] || \
-	        [[ "$dep" == cetlib ]] || \
-	        [[ "$dep" == fhiclcpp ]] || \
-	        [[ "$dep" == messagefacility* ]]
-       then
-         echo "INFO: Ignoring dependency $package -> $dep." 1>&2
-         continue
-       fi
-       dep=${dep//\//}
        if [[ "$package" == "$dep" ]]; then
          continue # Self-dependency
        fi
-       if [[ "$package" == "FWCore"* ]]; then
-         old=1
+       (( ${verbose:-0} )) && echo "INFO: -> Found dependency $dep in $package." 1>&2 
+       dep_top=${dep%%/*}
+       if ! grep -e "^${dep_top}\$" "${TMP}.int_packages" >/dev/null 2>&1; then
+         if (( ${want_all_deps:-0} ))
+         then
+           echo "${dep}" >> "$TMP.deps"
+         else
+           (( ${verbose:-0} )) && echo "INFO: Ignoring external dependency $package -> $dep." 1>&2
+           continue
+         fi
        fi
-       echo "  $package -> $dep;"
+       if [[ "$package_top" == "FWCore" ]]; then
+         old_fw=1 # Special instructions
+       fi
+       echo "  \"$package\" -> \"$dep\";"
      done
   ); done
 
-if (( ${old:-0} )); then
+[[ -f "$TMP.deps" ]] && sort -u "$TMP.deps" | while read dep; do
+  echo "  \"$dep\" [ shape=rectangle; style=\"rounded,filled\"; color=pink; ]"
+done
+
+if (( ${old_fw:-0} )); then
 cat <<EOF
 
   { rank = 0;
