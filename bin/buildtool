@@ -307,6 +307,8 @@ function maybe_force_top_and_announce() {
     else
       announce_stage " in $(real_dir .) (--force-top to override)"
     fi
+  else
+    announce_stage
   fi
 }
 
