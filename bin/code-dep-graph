@@ -108,7 +108,7 @@ cd "$topdir" || { echo "Unable to cd to \"$topdir\"" 1>&2; exit 1; }
 
 TMP=`mktemp "${TMPDIR:-/tmp}/code-dep-graph.XXXXXXXXXX"`
 [[ -n "$TMP" ]] || { echo "ERROR: could not open temporary file for write" 1>&2; exit 1; }
-#trap "rm -f \"$TMP\"* 2>/dev/null" EXIT
+trap "rm -f \"$TMP\"* 2>/dev/null" EXIT
 
 cat <<EOF
 digraph {
