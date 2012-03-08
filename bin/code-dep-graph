@@ -2,6 +2,19 @@
 
 shopt -s extglob
 
+declare -a ignored_deps=(sys)
+
+function ignore_dep() {
+  local dep="${1}"
+  local depdir=`dirname "${dep}"`
+  for i in "${ignored_deps[@]}"; do
+    if [[ ${i} = "${dep}" ]]; then
+      return 0
+    fi
+  done
+  return 1;
+}
+
 function usage() {
   cat <<EOF
 usage: ${0##*/} [<options>] [-d <topdir>] [-o <outfile>]"
@@ -9,7 +22,8 @@ usage: ${0##*/} [<options>] [-d <topdir>] [-o <outfile>]"
 Options:
 
   -D
-     Show external dependencies also.
+     Show external dependencies also. Specify twice to include external
+     dependencies that would usually be ignored (like sys/).
 
   -h
      This help.
@@ -78,10 +92,12 @@ function find_int_packages() {
   sort -u "${TMP}.int_packages.tmp" > "${TMP}.int_packages"
 }
 
+(( want_ext_deps = 0 ))
+
 while getopts :Dd:ho:v OPT; do
     case $OPT in
   D)
-      want_all_deps=1
+      (( ++want_ext_deps ))
       ;;
 	d)
 	    topdir="$OPTARG"
@@ -141,12 +157,12 @@ cat "${TMP}" | while read path; do
        (( ${verbose:-0} )) && echo "INFO: -> Found dependency $dep in $package." 1>&2 
        dep_top=${dep%%/*}
        if ! grep -e "^${dep_top}\$" "${TMP}.int_packages" >/dev/null 2>&1; then
-         if (( ${want_all_deps:-0} ))
-         then
-           echo "${dep}" >> "$TMP.deps"
-         else
+         if (( want_ext_deps == 0 )) || \
+            { (( want_ext_deps == 1 )) && ignore_dep "${dep}"; }; then
            (( ${verbose:-0} )) && echo "INFO: Ignoring external dependency $package -> $dep." 1>&2
            continue
+         else
+           echo "${dep}" >> "$TMP.deps"
          fi
        fi
        if [[ "$package_top" == "FWCore" ]]; then
