@@ -73,7 +73,8 @@ function find_int_packages() {
         echo "${dir}"
       fi
     done
-  ) done
+    ) | sort -u
+  done
   sort -u "${TMP}.int_packages.tmp" > "${TMP}.int_packages"
 }
 
