@@ -53,7 +53,7 @@ function usage() {
 usage: ${prog} [<mode-options>] [<misc-options>] [--] <make-build-options>
        ${prog} --help|-h
 
-Mode options: [-C|--cmake-only|-A|--all] ||
+Mode options: [-C|--cmake-only|-A|--all|--info] ||
               { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
 
 Misc options: [-I|--install-prefix <install-location>] [-c|--clean]
@@ -116,6 +116,11 @@ CMake stage (which is always executed in the CETPKG_BUILD directory).
   explicit build option is deactivated. However, you *may* wish to
   specify --build anyway in the case that you wish to pass arguments to
   the make procedure for the build phase.
+
+--info
+
+  If already configured (CMake has been run at least once), give some
+  basic information about the package, then exit.
 
 -p|--package
 
@@ -382,7 +387,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,help,install,log::,log-file::,package,quiet,tee,test -o +ACI:bcfhij:l::pqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,help,info,install,log::,log-file::,package,quiet,tee,test -o +ACI:bcfhij:l::pqt -- "${@}"`
 
 if [[ -n "$CETPKG_J" ]]; then
   jarg="-j$CETPKG_J"
@@ -423,6 +428,10 @@ while true; do
     -i|--install)
       (( no_build = 1 ))
       targets="$targets install"
+      shift
+      ;;
+    --info)
+      (( want_info = 1 ))
       shift
       ;;
     -j)
@@ -467,6 +476,21 @@ while true; do
       usage 1
   esac
 done
+
+# If desired, print current build information and quit.
+if (( ${want_info:-0} )); then
+  if [[ -n $(package_name) ]]; then
+    cat <<EOF
+Package info: $(package_name) $(package_version)
+Build type:   $(cmake_var CMAKE_BUILD_TYPE)
+Qualifier:    $(cmake_var qualifier)
+EOF
+    exit 0
+  else
+    echo "ERROR: CMake not run; no current information in build area." 1>&2
+    exit 1
+  fi
+fi
 
 # Make sure output will appear as we'd like.
 if (( ${tee:-0} )); then
