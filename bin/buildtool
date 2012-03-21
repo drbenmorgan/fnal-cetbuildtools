@@ -57,7 +57,7 @@ Mode options: [-C|--cmake-only|-A|--all] ||
               { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
 
 Misc options: [-I|--install-prefix <install-location>] [-c|--clean]
-              [--force-top] [-j #] [-l|--log=|--log-file=[<log-file>]]
+              [-f|--force-top] [-j #] [-l|--log=|--log-file=[<log-file>]]
               [-q|--quiet] [--tee]
 
 Required environment: CETPKG_BUILD, CETPKG_SOURCE, CETPKG_TYPE
@@ -382,7 +382,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,help,install,log::,log-file::,package,quiet,tee,test -o +ACI:bchij:l::pqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,help,install,log::,log-file::,package,quiet,tee,test -o +ACI:bcfhij:l::pqt -- "${@}"`
 
 if [[ -n "$CETPKG_J" ]]; then
   jarg="-j$CETPKG_J"
@@ -412,7 +412,7 @@ while true; do
       (( clean = 1 ))
       shift
       ;;
-    --force-top)
+    -f|--force-top)
       (( force_top = 1 ))
       shift
       ;;
