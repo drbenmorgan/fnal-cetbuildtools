@@ -69,7 +69,7 @@ sub create_quals {
     print TBL "       execute( \"get-directory-name subdir $qdot \${UPS_PROD_FLAVOR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_FQ )\n";
     print TBL "       fileTest( \${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ}, -d, \"\${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED\")\n";
     print TBL "\n";
-    print TBL "  Action = ExtraSetup\n";
+    print TBL "  Action = GetProducts\n";
     foreach $j ( 1 .. $ndeps ) {
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
@@ -113,7 +113,7 @@ sub create_table_bottom {
   print TBL "    # dropit -E removes non-existent directories\n";
   print TBL "    Execute(dropit -E, NO_UPS_ENV, PATH)\n";
   print TBL "\n";
-  print TBL "    exeActionRequired(GetExtraProducts)\n";
+  print TBL "    exeActionRequired(GetProducts)\n";
   print TBL "\n";
   print TBL "End:\n";
   print TBL "# End Group definition\n";
