@@ -5,17 +5,34 @@
 use File::Basename;
 use lib dirname($0);
 
+if( $#ARGV >= 0 ) {
+   $inputdir = $ARGV[0];
+   if( $#ARGV > 0 ) {
+       $outputdir = $ARGV[1];
+   } else {
+       $outputdir = ".";
+   }
+} else {
+    print "\n";
+    print "ERROR: directory not specified\n";
+    print "USAGE: build_table <input-directory> [output-directory]\n";
+    print "       input-directory  = directory containing product_deps and qualifier_deps>\n";
+    print "\n";
+    exit 1;
+}
+
+
 require parse_deps;
 
-$pfile="product_deps";
-$qfile="qualifier_deps";
+$pfile=$inputdir."/product_deps";
+$qfile=$inputdir."/qualifier_deps";
 
 ($product, $version, %phash) = parse_product_list( $pfile );
 ($ndeps, @qlist) = parse_qualifier_list( $product, $version, $qfile );
 
 print "creating table file for $product $version\n";
 
-$table = $product.".table";
+$table = $outputdir."/".$product.".table";
 open(TBL, "> $table") or die "Couldn't open $table";
 create_table_top();
 create_quals();
@@ -29,17 +46,9 @@ sub create_table_top {
   print TBL "File    = table\n";
   print TBL "Product = $product\n";
   print TBL "\n";
-  print TBL "# ---------------------------------------\n";
+  print TBL "#*************************************************\n";
+  print TBL "# Starting Group definition\n";
   print TBL "Group:\n";
-  print TBL "\n";
-  print TBL "  Flavor     = ANY\n";
-  print TBL "  Qualifiers = \"\"\n";
-  print TBL "\n";
-  print TBL "  Action = SetRootSys\n";
-  print TBL "    envSet(ROOTSYS,\${UPS_PROD_DIR}/\${UPS_PROD_FLAVOR})\n";
-  print TBL "    envSet(ROOT_FQ,\${UPS_PROD_FLAVOR})\n";
-  print TBL "\n";
-  print TBL "  Action = ExtraSetup\n";
   print TBL "\n";
 
 }
@@ -47,16 +56,18 @@ sub create_table_top {
 sub create_quals {
   foreach $i ( 1 .. $#qlist ) {
     @words = split(/:/,$qlist[$i][0]);
-    $ql=$words[0];
+    $qdot=$words[0];
     foreach $j ( 1 .. $#words ) {
-      $ql = $ql."-".$words[$j];
+      $qdot = $qdot.".".$words[$j];
     }
-    print TBL "  Flavor     = ANY\n";
-    print TBL "  Qualifiers = \"$qlist[$i][0]\"\n";
+    print TBL "Flavor     = ANY\n";
+    print TBL "Qualifiers = \"$qlist[$i][0]\"\n";
     print TBL "\n";
-    print TBL "  Action = SetRootSys\n";
-    print TBL "    envSet(ROOTSYS,\${UPS_PROD_DIR}/\${UPS_PROD_FLAVOR}-$ql)\n";
-    print TBL "    envSet(ROOT_FQ,\${UPS_PROD_FLAVOR}-$ql)\n";
+    print TBL "  Action = GetFQDir\n";
+    print TBL "       # faking out unsetup\n";
+    print TBL "       envSet( \${UPS_PROD_NAME_UC}_FQ, \"\" )\n";
+    print TBL "       execute( \"get-directory-name subdir $qdot \${UPS_PROD_FLAVOR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_FQ )\n";
+    print TBL "       fileTest( \${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ}, -d, \"\${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED\")\n";
     print TBL "\n";
     print TBL "  Action = ExtraSetup\n";
     foreach $j ( 1 .. $ndeps ) {
@@ -64,7 +75,12 @@ sub create_quals {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
         print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
       } else {
-        print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} -q $qlist[$i][$j] )\n";
+        @qwords = split(/:/,$qlist[$i][$j]);
+	$ql="+".$qwords[0];
+	foreach $j ( 1 .. $#qwords ) {
+	  $ql = $ql.":+".$qwords[$j];
+	}
+        print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql )\n";
       }
     }
     print TBL "\n";
@@ -73,38 +89,33 @@ sub create_quals {
 
 sub create_table_bottom {
 
+  $pvername = $product."_VERSION";
   print TBL "\n";
   print TBL "Common:\n";
   print TBL "  Action = setup\n";
-  print TBL "    setupEnv()\n";
   print TBL "    prodDir()\n";
-  print TBL "    envSet(ROOT_VERSION, $version)\n";
-  print TBL "    exeActionRequired(SetRootSys)\n";
-  print TBL "\n";
-  print TBL "    # define ROOT_INC if there is an appropriate include subdirectory\n";
-  print TBL "    if    ( sh -c 'for dd in \${ROOT_FQ}/include;do [ -d \${UPS_PROD_DIR}/\$dd ] && exit;done;exit 1' )\n";
-  print TBL "        prodDir( _INC, \${ROOT_FQ}/include )\n";
-  print TBL "    else ()\n";
-  print TBL "        execute( true, NO_UPS_ENV )\n";
-  print TBL "    endif ( sh -c 'for dd in \${ROOT_FQ}/include;do [ -d \${UPS_PROD_DIR}/\$dd ] && exit;done;exit 1' )\n";
-  print TBL "\n";
-  print TBL "    # look for the lib subdirectory\n";
-  print TBL "    if    ( sh -c 'for dd in \${ROOT_FQ}/lib;do [ -d \${UPS_PROD_DIR}/\$dd ] && exit;done;exit 1' )\n";
-  print TBL "        pathPrepend(LD_LIBRARY_PATH, \${ROOTSYS}/lib )\n";
-  print TBL "        pathPrepend(PYTHONPATH, \${ROOTSYS}/lib )\n";
-  print TBL "    else ()\n";
-  print TBL "        execute( true, NO_UPS_ENV )\n";
-  print TBL "    endif ( sh -c 'for dd in \${ROOT_FQ}/lib;do [ -d \${UPS_PROD_DIR}/\$dd ] && exit;done;exit 1' )\n";
+  print TBL "    setupEnv()\n";
+  print TBL "    setupRequired(cetpkgsupport)\n";
+  print TBL "    exeActionRequired(GetFQDir)\n";
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_VERSION, $version)\n";
+  print TBL "    prodDir( _FQ_DIR, \${\${UPS_PROD_NAME_UC}_FQ} )\n";
+  print TBL "    # faking out unsetup\n";
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC,\"\") \n";
+  print TBL "    execute( \"find-path include \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_INC)\n";
+  print TBL "    # faking out unsetup\n";
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB,\"\") \n";
+  print TBL "    execute( \"find-path lib \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_LIB)\n";
+  print TBL "    pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
   print TBL "\n";
   print TBL "    # add the bin directory to the path if it exists\n";
-  print TBL "    if    ( sh -c 'for dd in \${ROOT_FQ}/bin;do [ -d \${UPS_PROD_DIR}/\$dd ] && exit;done;exit 1' )\n";
-  print TBL "        pathPrepend(PATH, \${ROOTSYS}/bin )\n";
-  print TBL "    else ()\n";
-  print TBL "        execute( true, NO_UPS_ENV )\n";
-  print TBL "	execute( echo \"ERROR: root is not available for flavor qualifier \${UPS_PROD_FLAVOR} \${UPS_PROD_QUALIFIERS}\", UPS_ENV )\n";
-  print TBL "    endif ( sh -c 'for dd in \${ROOT_FQ}/bin;do [ -d \${UPS_PROD_DIR}/\$dd ] && exit;done;exit 1' )\n";
+  print TBL "    pathPrepend(PATH, \${UPS_PROD_DIR}/bin )\n";
+  print TBL "    pathPrepend(PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/bin )\n";
+  print TBL "    # dropit -E removes non-existent directories\n";
+  print TBL "    Execute(dropit -E, NO_UPS_ENV, PATH)\n";
   print TBL "\n";
-  print TBL "    exeActionRequired(ExtraSetup)\n";
+  print TBL "    exeActionRequired(GetExtraProducts)\n";
   print TBL "\n";
   print TBL "End:\n";
+  print TBL "# End Group definition\n";
+  print TBL "#*************************************************\n";
 }

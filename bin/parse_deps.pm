@@ -12,7 +12,11 @@ sub parse_product_list {
        $ver=$words[2];
     } elsif( $words[0] eq "product" ) {
     } else {
-      $phash{ $words[0] } = $words[1];
+      if( $words[1] eq "-" ) {
+        $phash{ $words[0] } = "";
+      } else {
+        $phash{ $words[0] } = $words[1];
+      }
     }
   }
   close(PIN);
