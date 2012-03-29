@@ -89,6 +89,10 @@ sub create_quals {
 
 sub create_table_bottom {
 
+  $include_directory = get_include_directory( $pfile );
+  $lib_directory = get_lib_directory( $pfile );
+  $bin_directory = get_bin_directory( $pfile );
+
   $pvername = $product."_VERSION";
   print TBL "\n";
   print TBL "Common:\n";
@@ -99,17 +103,29 @@ sub create_table_bottom {
   print TBL "    exeActionRequired(GetFQDir)\n";
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_VERSION, $version)\n";
   print TBL "    prodDir( _FQ_DIR, \${\${UPS_PROD_NAME_UC}_FQ} )\n";
+  if( $include_directory eq "default" ) {
   print TBL "    # faking out unsetup\n";
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC,\"\") \n";
-  print TBL "    execute( \"find-path include \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_INC)\n";
+  print TBL "    execute( \"find-path include $include_directory \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_INC)\n";
+  } else {
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, $include_directory) \n";
+  }
+  if( $lib_directory eq "default" ) {
   print TBL "    # faking out unsetup\n";
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB,\"\") \n";
   print TBL "    execute( \"find-path lib \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_LIB)\n";
+  } else {
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, $lib_directory) \n";
+  }
   print TBL "    pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
   print TBL "\n";
   print TBL "    # add the bin directory to the path if it exists\n";
+  if( $bin_directory eq "default" ) {
   print TBL "    pathPrepend(PATH, \${UPS_PROD_DIR}/bin )\n";
   print TBL "    pathPrepend(PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/bin )\n";
+  } else {
+  print TBL "    pathPrepend(PATH, $bin_directory )\n";
+  }
   print TBL "    # dropit -E removes non-existent directories\n";
   print TBL "    Execute(dropit -E, NO_UPS_ENV, PATH)\n";
   print TBL "\n";
