@@ -55,6 +55,11 @@ sub parse_product_list {
 # Use as many rows as you need for the qualifiers
 # Use a separate column for each dependent product that must be explicitly setup
 # Do not list products which will be setup by a dependent_product
+#
+# special qualifier options
+# -	not installed for this parent qualifier
+# -nq-	this dependent product has no qualifier
+# -b-	this dependent product is only used for the build - it will not be in the table
 
 sub parse_qualifier_list {
   my @params = @_;

@@ -74,6 +74,7 @@ sub create_quals {
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
         print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
+      } elsif ( $qlist[$i][$j] eq "-b-" ) {
       } else {
         @qwords = split(/:/,$qlist[$i][$j]);
 	$ql="+".$qwords[0];
