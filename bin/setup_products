@@ -45,8 +45,6 @@ $qfile=$inputdir."/qualifier_deps";
 ($product, $version, %phash) = parse_product_list( $pfile );
 ($ndeps, @qlist) = parse_qualifier_list( $product, $version, $qfile );
 
-print "setup products needed to build $product $version -q $qual\n";
-
 $match = 0;
 $tmpfl = "/tmp/".$product.$version.$qual;
 open(TSET, "> $tmpfl") or die "Couldn't open $tmpfl";
@@ -74,6 +72,6 @@ close(TSET);
 if ( $match = 0 ) {
    print "ERROR: failed to find a match for $product $version -q $qual\n";
 }
-system( "cat $tmpfl" );
+print "$tmpfl\n";
 
 exit 0;
