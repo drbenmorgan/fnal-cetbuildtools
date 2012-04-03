@@ -4,8 +4,6 @@
 # allow optional architecture declaration
 # noarch is recognized, others are used at your own discretion
 #
-# process_ups_files()
-#   the configure and install steps for ups version and table files
 
 macro( cet_build_table )
    # set sltype
@@ -20,8 +18,13 @@ macro( cet_build_table )
        message(FATAL_ERROR "Can't find build_table")
    endif()
 
-   EXEC_PROGRAM( ${BUILD_TABLE_NAME} OUTPUT_VARIABLE MSG )
-   message( STATUS "${BUILD_TABLE_NAME} returned ${MSG}")
+   EXECUTE_PROCESS(COMMAND ${BUILD_TABLE_NAME} 
+                           ${CMAKE_CURRENT_SOURCE_DIR} 
+			   ${CMAKE_CURRENT_BINARY_DIR}
+                   OUTPUT_VARIABLE MSG )
+   ##message( STATUS "${BUILD_TABLE_NAME} returned ${MSG}")
+   install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}.table
+           DESTINATION ${product}/${version}/ups )
 
 endmacro( cet_build_table )
 
