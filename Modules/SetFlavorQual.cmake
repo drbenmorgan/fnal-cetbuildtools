@@ -17,15 +17,11 @@ set(arch "${ARGN}")
 # sl4 is 2.6.9
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
    # set sltype
-   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-   if( NOT CETBUILDTOOLS_DIR )
-       FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name 
-                     ${CMAKE_SOURCE_DIR}/bin )
-   else()
-       FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name 
-                     ${CETBUILDTOOLS_DIR}/bin  )
-   endif ()
-   execute_process(COMMAND ${CETB_GET_DIRECTORY_NAME} os OUTPUT_VARIABLE SLTYPE )
+   FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name )
+   execute_process(COMMAND ${CETB_GET_DIRECTORY_NAME} os 
+                   OUTPUT_VARIABLE SLTYPE 
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
    # find ups flavor
    set( UPS_DIR $ENV{UPS_DIR} )
    if( NOT UPS_DIR )
@@ -49,7 +45,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
        endif ()
    else()
        FIND_PROGRAM( CET_UPS ups ${UPS_DIR}/bin  )
-       execute_process(COMMAND ${CET_UPS} flavor OUTPUT_VARIABLE UPSFLAVOR )
+       execute_process(COMMAND ${CET_UPS} flavor 
+                       OUTPUT_VARIABLE UPSFLAVOR
+		       OUTPUT_STRIP_TRAILING_WHITESPACE
+		       )
+       message( STATUS " flavor is ${UPSFLAVOR}" )
    endif ()
    if( CMAKE_CROSSCOMPILING )
        if( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc" )

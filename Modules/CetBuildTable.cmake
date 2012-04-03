@@ -18,10 +18,12 @@ macro( cet_build_table )
        message(FATAL_ERROR "Can't find build_table")
    endif()
 
-   EXECUTE_PROCESS(COMMAND ${BUILD_TABLE_NAME} 
+   execute_process(COMMAND ${BUILD_TABLE_NAME} 
                            ${CMAKE_CURRENT_SOURCE_DIR} 
 			   ${CMAKE_CURRENT_BINARY_DIR}
-                   OUTPUT_VARIABLE MSG )
+                   OUTPUT_VARIABLE MSG
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
    ##message( STATUS "${BUILD_TABLE_NAME} returned ${MSG}")
    install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}.table
            DESTINATION ${product}/${version}/ups )
