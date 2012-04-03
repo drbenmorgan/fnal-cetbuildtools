@@ -56,6 +56,14 @@ macro(cet_cmake_env cet_proj cet_ver)
     message(FATAL_ERROR "Can't locate CETPKG_BUILD, required to build this package.")
   endif()
 
+  # add to the include path
+  include_directories ("${PROJECT_BINARY_DIR}")
+  include_directories("${PROJECT_SOURCE_DIR}" )
+  # make sure all libraries are in one directory
+  set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/lib)
+  # make sure all executables are in one directory
+  set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
 endmacro(cet_cmake_env)
 
 macro(cet_check_gcc)

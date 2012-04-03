@@ -60,8 +60,6 @@ find_ups_product( cetbuildtools v1_16_00 )
 cet_check_gcc()
 
 # include search path
-include_directories ("${PROJECT_BINARY_DIR}")
-include_directories ("${PROJECT_SOURCE_DIR}")
 # notice use of ENV to invoke an external variable
 include_directories ( $ENV{LIBSIGCPP_INC}/sigc++-2.0 )
 include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
@@ -85,11 +83,6 @@ include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
 
 # define common flags
 # set( CMAKE_CXX_LINK_FLAGS "${CPPUNIT} -luuid -ldl" )
-
-#build all libraries in a single directory to enable testing
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-#build all executables in a single directory
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 message(STATUS "Project is ${product} ${version}")
 
