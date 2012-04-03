@@ -7,6 +7,8 @@
 # process_ups_files()
 #   the configure and install steps for ups version and table files
 
+include(CetBuildTable)
+
 macro( set_flavor_qual )
 
 set(arch "${ARGN}")
@@ -23,7 +25,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
        FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name 
                      ${CETBUILDTOOLS_DIR}/bin  )
    endif ()
-   EXEC_PROGRAM( ${CETB_GET_DIRECTORY_NAME} ARGS os OUTPUT_VARIABLE SLTYPE )
+   execute_process(COMMAND ${CETB_GET_DIRECTORY_NAME} os OUTPUT_VARIABLE SLTYPE )
    # find ups flavor
    set( UPS_DIR $ENV{UPS_DIR} )
    if( NOT UPS_DIR )
@@ -47,7 +49,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
        endif ()
    else()
        FIND_PROGRAM( CET_UPS ups ${UPS_DIR}/bin  )
-       EXEC_PROGRAM( ${CET_UPS} ARGS flavor OUTPUT_VARIABLE UPSFLAVOR )
+       execute_process(COMMAND ${CET_UPS} flavor OUTPUT_VARIABLE UPSFLAVOR )
    endif ()
    if( CMAKE_CROSSCOMPILING )
        if( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc" )
@@ -137,10 +139,7 @@ macro( process_ups_files )
   endif()
 
   # table file
-  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.table.in
-                  ${CMAKE_CURRENT_BINARY_DIR}/${product}.table @ONLY )
-  install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}.table
-           DESTINATION ${product}/${version}/ups )
+  cet_build_table()
 
   # version file
   if( extra_qualifier )

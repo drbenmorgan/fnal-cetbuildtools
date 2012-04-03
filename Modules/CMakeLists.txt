@@ -2,6 +2,7 @@
 INSTALL(FILES
 	BuildDictionary.cmake
 	BuildSubdirectories.cmake
+        CetBuildTable.cmake
 	CetParseArgs.cmake
 	CetTest.cmake
 	CetMake.cmake
