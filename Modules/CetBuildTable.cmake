@@ -8,12 +8,18 @@
 macro( cet_build_table )
    # set sltype
    set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-   if( NOT CETBUILDTOOLS_DIR )
+   if( ${product} MATCHES "cetbuildtools" )
+       # building cetbuildtools - use our copy
+       #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+       FIND_PROGRAM( BUILD_TABLE_NAME build_table
+                     ${PROJECT_SOURCE_DIR}/bin  )
+   elseif( NOT CETBUILDTOOLS_DIR )
        FIND_PROGRAM( BUILD_TABLE_NAME build_table )
    else()
        FIND_PROGRAM( BUILD_TABLE_NAME build_table
                      ${CETBUILDTOOLS_DIR}/bin  )
    endif ()
+   #message(STATUS "BUILD_TABLE_NAME: ${BUILD_TABLE_NAME}")
    if( NOT BUILD_TABLE_NAME )
        message(FATAL_ERROR "Can't find build_table")
    endif()
