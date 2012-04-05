@@ -21,24 +21,46 @@
 sub parse_product_list {
   my @params = @_;
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  $get_phash="";
+  $get_quals="";
   while ( $line=<PIN> ) {
     chop $line;
     if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "parent" ) {
 	 $prod=$words[1];
 	 $ver=$words[2];
+	 $get_phash="";
+         $get_quals="";
       } elsif( $words[0] eq "product" ) {
+	 $get_phash="true";
+         $get_quals="";
       } elsif( $words[0] eq "incdir" ) {
+	 $get_phash="";
+         $get_quals="";
       } elsif( $words[0] eq "libdir" ) {
+	 $get_phash="";
+         $get_quals="";
       } elsif( $words[0] eq "bindir" ) {
-      } else {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "defaultqual" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "qualifier" ) {
+	 $get_phash="";
+         $get_quals="true";
+      } elsif( $get_phash ) {
 	if( $words[1] eq "-" ) {
           $phash{ $words[0] } = "";
 	} else {
           $phash{ $words[0] } = $words[1];
 	}
+      } elsif( $get_quals ) {
+      } else {
+        print "ignoring $line\n";
       }
     }
   }
@@ -64,25 +86,40 @@ sub parse_product_list {
 sub parse_qualifier_list {
   my @params = @_;
   ##print "\n";
-  ##print "reading $params[2]\n";
+  ##print "reading $params[0]\n";
   $irow=0;
-  open(QIN, "< $params[2]") or die "Couldn't open $params[2]";
+  $get_phash="";
+  $get_quals="";
+  open(QIN, "< $params[0]") or die "Couldn't open $params[0]";
   while ( $line=<QIN> ) {
     chop $line;
     if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
     } else {
       ##print "$line";
       @words=split(/\s+/,$line);
       if( $words[0] eq "parent" ) {
-	 ##print "found parent\n";
-	 if(( $words[1] ne $params[0] ) || ( $words[2] ne $params[1] )){
-            print "ERROR: inconsistent lists\n";
-	    print "       product_deps is for $params[0] $params[1]\n";
-	    print "       but qualifier_deps is for $words[1] $words[2]\n";
-	    exit 1;
-	 }
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "incdir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "libdir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "bindir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "defaultqual" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "product" ) {
+	 $get_phash="true";
+         $get_quals="";
       } elsif( $words[0] eq "qualifier" ) {
 	 $qlen = $#words;
+	 $get_phash="";
+         $get_quals="true";
 	 for $i ( 0 .. $#words ) {
 	      if( $words[$i] eq "notes" ) {
 		 $qlen = $i - 1;
@@ -97,7 +134,8 @@ sub parse_qualifier_list {
 	   $qlist[$irow][$i] = $words[$i];
 	 }
 	 $irow++;
-      } else {
+      } elsif( $get_phash ) {
+      } elsif( $get_quals ) {
 	 ##print "$params[0] qualifier $words[0]\n";
 	 if( ! $qlen ) {
             print "ERROR: qualifier definition row must come before qualifier list\n";
@@ -111,6 +149,8 @@ sub parse_qualifier_list {
 	   $qlist[$irow][$i] = $words[$i];
 	 }
 	 $irow++;
+      } else {
+        print "ignoring $line\n";
       }
     }
   }
@@ -142,7 +182,7 @@ sub get_include_directory {
     }
   }
   close(PIN);
-  print "defining include directory $incdir\n";
+  ##print "defining include directory $incdir\n";
   return ($incdir);
 }
 
@@ -169,7 +209,7 @@ sub get_bin_directory {
     }
   }
   close(PIN);
-  print "defining executable directory $bindir\n";
+  ##print "defining executable directory $bindir\n";
   return ($bindir);
 }
 
@@ -196,7 +236,7 @@ sub get_lib_directory {
     }
   }
   close(PIN);
-  print "defining library directory $libdir\n";
+  ##print "defining library directory $libdir\n";
   return ($libdir);
 }
 

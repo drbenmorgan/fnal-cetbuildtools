@@ -25,10 +25,9 @@ if( $#ARGV >= 0 ) {
 require parse_deps;
 
 $pfile=$inputdir."/product_deps";
-$qfile=$inputdir."/qualifier_deps";
 
 ($product, $version, %phash) = parse_product_list( $pfile );
-($ndeps, @qlist) = parse_qualifier_list( $product, $version, $qfile );
+($ndeps, @qlist) = parse_qualifier_list( $pfile );
 
 print "creating table file for $product $version\n";
 
