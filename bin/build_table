@@ -26,15 +26,19 @@ require parse_deps;
 
 $pfile=$inputdir."/product_deps";
 
-($product, $version, %phash) = parse_product_list( $pfile );
+($product, $version, $default_qual, %phash) = parse_product_list( $pfile );
 ($ndeps, @qlist) = parse_qualifier_list( $pfile );
+$have_fq = check_fq_dir( $pfile );
 
 print "creating table file for $product $version\n";
-
 $table = $outputdir."/".$product.".table";
 open(TBL, "> $table") or die "Couldn't open $table";
 create_table_top();
-create_quals();
+if ( $qlist[1][0] eq "-nq-"  ) {
+  no_quals();
+} else {
+  create_quals();
+}
 create_table_bottom();
 close(TBL);
 
@@ -50,6 +54,30 @@ sub create_table_top {
   print TBL "Group:\n";
   print TBL "\n";
 
+}
+
+sub no_quals {
+  print TBL "Flavor     = ANY\n";
+  print TBL "Qualifiers = \"\"\n";
+  print TBL "\n";
+  print TBL "  Action = GetProducts\n";
+  foreach $i ( 1 .. $#qlist ) {
+    foreach $j ( 1 .. $ndeps ) {
+      if ( $qlist[$i][$j] eq "-" ) {
+      } elsif ( $qlist[$i][$j] eq "-nq-" ) {
+        print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
+      } elsif ( $qlist[$i][$j] eq "-b-" ) {
+      } else {
+        @qwords = split(/:/,$qlist[$i][$j]);
+	$ql="+".$qwords[0];
+	foreach $j ( 1 .. $#qwords ) {
+	  $ql = $ql.":+".$qwords[$j];
+	}
+        print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql )\n";
+      }
+    }
+  }
+  print TBL "\n";
 }
 
 sub create_quals {
@@ -99,14 +127,19 @@ sub create_table_bottom {
   print TBL "  Action = setup\n";
   print TBL "    prodDir()\n";
   print TBL "    setupEnv()\n";
-  print TBL "    setupRequired(cetpkgsupport)\n";
-  print TBL "    exeActionRequired(GetFQDir)\n";
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_VERSION, $version)\n";
+  print TBL "    # cetpkgsupport has get-directory-name and find-path\n";
+  print TBL "    setupRequired(cetpkgsupport)\n";
+  if( $have_fq ) {
+  print TBL "    exeActionRequired(GetFQDir)\n";
   print TBL "    prodDir( _FQ_DIR, \${\${UPS_PROD_NAME_UC}_FQ} )\n";
+  }
   if( $include_directory eq "default" ) {
   print TBL "    # faking out unsetup\n";
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC,\"\") \n";
-  print TBL "    execute( \"find-path include $include_directory \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_INC)\n";
+  print TBL "    execute( \"find-path include \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_INC)\n";
+  print TBL "\n";
+  } elsif ( $include_directory eq "none" )   {
   } else {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, $include_directory) \n";
   }
@@ -114,21 +147,26 @@ sub create_table_bottom {
   print TBL "    # faking out unsetup\n";
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB,\"\") \n";
   print TBL "    execute( \"find-path lib \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_LIB)\n";
-  } else {
-  print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, $lib_directory) \n";
-  }
   print TBL "    pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
   print TBL "\n";
-  print TBL "    # add the bin directory to the path if it exists\n";
+  } elsif ( $lib_directory eq "none" )   {
+  } else {
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, $lib_directory) \n";
+  print TBL "    pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
+  print TBL "\n";
+  }
   if( $bin_directory eq "default" ) {
+  print TBL "    # add the bin directory to the path if it exists\n";
   print TBL "    pathPrepend(PATH, \${UPS_PROD_DIR}/bin )\n";
   print TBL "    pathPrepend(PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/bin )\n";
-  } else {
-  print TBL "    pathPrepend(PATH, $bin_directory )\n";
-  }
   print TBL "    # dropit -E removes non-existent directories\n";
   print TBL "    Execute(dropit -E, NO_UPS_ENV, PATH)\n";
   print TBL "\n";
+  } elsif ( $bin_directory eq "none" )   {
+  } else {
+  print TBL "    # add the bin directory to the path\n";
+  print TBL "    pathPrepend(PATH, $bin_directory )\n";
+  }
   print TBL "    exeActionRequired(GetProducts)\n";
   print TBL "\n";
   print TBL "End:\n";

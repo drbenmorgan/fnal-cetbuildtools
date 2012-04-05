@@ -34,8 +34,8 @@ sub parse_product_list {
 	 $ver=$words[2];
 	 $get_phash="";
          $get_quals="";
-      } elsif( $words[0] eq "product" ) {
-	 $get_phash="true";
+      } elsif( $words[0] eq "no_fq_dir" ) {
+	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "incdir" ) {
 	 $get_phash="";
@@ -48,6 +48,10 @@ sub parse_product_list {
          $get_quals="";
       } elsif( $words[0] eq "defaultqual" ) {
 	 $get_phash="";
+         $get_quals="";
+	 $dq=@words[1];
+      } elsif( $words[0] eq "product" ) {
+	 $get_phash="true";
          $get_quals="";
       } elsif( $words[0] eq "qualifier" ) {
 	 $get_phash="";
@@ -65,7 +69,7 @@ sub parse_product_list {
     }
   }
   close(PIN);
-  return ($prod, $ver, %phash);
+  return ($prod, $ver, $dq, %phash);
 }
 
 # qualifier_deps format:
@@ -96,9 +100,12 @@ sub parse_qualifier_list {
     if ( index($line,"#") == 0 ) {
     } elsif ( $line !~ /\w+/ ) {
     } else {
-      ##print "$line";
+      ##print "$line\n";
       @words=split(/\s+/,$line);
       if( $words[0] eq "parent" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "no_fq_dir" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "incdir" ) {
@@ -166,6 +173,7 @@ sub get_include_directory {
   while ( $line=<PIN> ) {
     chop $line;
     if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "incdir" ) {
@@ -173,6 +181,8 @@ sub get_include_directory {
 	    $incdir = "\${UPS_PROD_DIR}/".$words[2];
          } elsif( $words[1] eq "fq_dir" ) {
 	    $incdir = "\${\${UPS_PROD_NAME_UC}_FQ_DIR}/".$words[2];
+         } elsif( $words[1] eq "-" ) {
+	    $incdir = "none";
 	 } else {
 	    print "ERROR: $words[1] is an invalid directory path\n";
 	    print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
@@ -193,6 +203,7 @@ sub get_bin_directory {
   while ( $line=<PIN> ) {
     chop $line;
     if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "bindir" ) {
@@ -200,6 +211,8 @@ sub get_bin_directory {
 	    $bindir = "\${UPS_PROD_DIR}/".$words[2];
          } elsif( $words[1] eq "fq_dir" ) {
 	    $bindir = "\${\${UPS_PROD_NAME_UC}_FQ_DIR}/".$words[2];
+         } elsif( $words[1] eq "-" ) {
+	    $bindir = "none";
 	 } else {
 	    print "ERROR: $words[1] is an invalid directory path\n";
 	    print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
@@ -220,6 +233,7 @@ sub get_lib_directory {
   while ( $line=<PIN> ) {
     chop $line;
     if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "libdir" ) {
@@ -227,6 +241,8 @@ sub get_lib_directory {
 	    $libdir = "\${UPS_PROD_DIR}/".$words[2];
          } elsif( $words[1] eq "fq_dir" ) {
 	    $libdir = "\${\${UPS_PROD_NAME_UC}_FQ_DIR}/".$words[2];
+         } elsif( $words[1] eq "-" ) {
+	    $libdir = "none";
 	 } else {
 	    print "ERROR: $words[1] is an invalid directory path\n";
 	    print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
@@ -238,6 +254,26 @@ sub get_lib_directory {
   close(PIN);
   ##print "defining library directory $libdir\n";
   return ($libdir);
+}
+
+sub check_fq_dir {
+  my @params = @_;
+  $fq = "true";
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "no_fq_dir" ) {
+         $fq = "";
+      }
+    }
+  }
+  close(PIN);
+  ##print "defining library directory $libdir\n";
+  return ($fq);
 }
 
 1;
