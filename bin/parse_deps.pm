@@ -50,6 +50,9 @@ sub parse_product_list {
 	 $get_phash="";
          $get_quals="";
 	 $dq=@words[1];
+      } elsif( $words[0] eq "only_for_build" ) {
+	 $get_phash="";
+         $get_quals="";
       } elsif( $words[0] eq "product" ) {
 	 $get_phash="true";
          $get_quals="";
@@ -118,6 +121,9 @@ sub parse_qualifier_list {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "defaultqual" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "only_for_build" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "product" ) {
