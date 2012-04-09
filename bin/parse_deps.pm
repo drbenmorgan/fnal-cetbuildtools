@@ -282,4 +282,24 @@ sub check_fq_dir {
   return ($fq);
 }
 
+sub find_default_qual {
+  my @params = @_;
+  $defq = "";
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "defaultqual" ) {
+         $defq = $words[1];
+      }
+    }
+  }
+  close(PIN);
+  ##print "defining library directory $libdir\n";
+  return ($defq);
+}
+
 1;

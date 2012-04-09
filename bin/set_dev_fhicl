@@ -1,0 +1,5 @@
+
+echo
+echo Define FHICL_FILE_PATH
+tnotnull FHICL_FILE_PATH || setenv FHICL_FILE_PATH '.'
+echo FHICL_FILE_PATH is now ${FHICL_FILE_PATH}

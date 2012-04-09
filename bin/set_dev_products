@@ -1,0 +1,104 @@
+#!/bin/env perl
+#
+# setup products for the build environment
+# use product_deps and qualifier_deps
+
+# we need to know the qualifiers
+# -d, -o, or -p and 1-2 other qualifiers
+
+# cetbuildtools must already be setup by setup_for_development
+# create a temporary file and return the temporary file name for use by setup_for_development
+
+use File::Basename;
+use lib dirname($0);
+
+if( $#ARGV < 2 ) {
+    print STDERR "\n";
+    print STDERR "ERROR: directory and qualifiers not specified\n";
+    print STDERR "USAGE: basename($0) <input-directory> <-d|-o|-p> <qualifiers> \n";
+    print STDERR "\n";
+    exit 1;
+}
+
+$inputdir = $ARGV[0];
+$builddir = $ARGV[1];
+for $i ( 2 .. $#ARGV ) {
+    if( $ARGV[$i] eq "-d" ) {
+      $dop = "debug";
+      $type = "Debug";
+    } elsif( $ARGV[$i] eq "-o" ) {
+      $dop = "opt";
+      $type = "Opt";
+    } elsif( $ARGV[$i] eq "-p" ) {
+      $dop = "prof";
+      $type = "Prof";
+    } else {
+      $qual = $qual.$ARGV[$i].":";
+      $qdir = $qdir.$ARGV[$i]."-";
+    }
+}
+
+require parse_deps;
+
+$pfile=$inputdir."/product_deps";
+
+($product, $version, $default_qual, %phash) = parse_product_list( $pfile );
+($ndeps, @qlist) = parse_qualifier_list( $pfile );
+
+if ( ! $qual ) {
+  $dq = find_default_qual( $pfile );
+  if ( $dq ) {
+      $qual = $dq.":";
+      $qdir = $dq."-";
+  } else {
+    print STDERR "\n";
+    print STDERR "ERROR: no qualifiers specified \n";
+    print STDERR "ERROR: add a defaultqual line to $pfile \n";
+    print STDERR "ERROR: or specify the qualifier(s) on the command line \n";
+    print STDERR "USAGE: basename($0) <input-directory> <-d|-o|-p> <qualifiers> \n";
+    print STDERR "\n";
+    exit 1;
+  }
+}
+$qual = $qual.$dop;
+$qdir = $qdir.$dop;
+
+$tmpfl = $builddir."/".$product."-".$version."-".$qdir;
+open(TSET, "> $tmpfl") or die "Couldn't open $tmpfl";
+
+$match = 0;
+print TSET "setenv UPS_OPTIONS -B\n";
+print TSET "setenv CETPKG_NAME $product\n";
+print TSET "setenv CETPKG_VERSION $version\n";
+print TSET "setenv CETPKG_QUAL $qual\n";
+print TSET "setenv CETPKG_TYPE $type\n";
+foreach $i ( 1 .. $#qlist ) {
+  if ( $qlist[$i][0] eq $qual ) {
+    $match++;
+    foreach $j ( 1 .. $ndeps ) {
+      if ( $qlist[$i][$j] eq "-" ) {
+      } elsif ( $qlist[$i][$j] eq "-nq-" ) {
+	print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
+      } elsif ( $qlist[$i][$j] eq "-b-" ) {
+	print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
+      } else {
+	@qwords = split(/:/,$qlist[$i][$j]);
+	$ql="+".$qwords[0];
+	foreach $j ( 1 .. $#qwords ) {
+	  $ql = $ql.":+".$qwords[$j];
+	}
+	print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
+      }
+    }
+  }
+}
+
+
+close(TSET);
+if ( $match == 0 ) {
+   print STDERR "ERROR: failed to find any dependent products for $product $version -q $qual\n";
+}
+print "$tmpfl\n";
+
+exit 0;
+
