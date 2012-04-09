@@ -85,6 +85,7 @@ if ( ! $simple ) {
   print TSET "setenv CETPKG_QUAL $qual\n";
   print TSET "setenv CETPKG_TYPE $type\n";
 }
+print TSET "setup cetpkgsupport \n";
 foreach $i ( 1 .. $#qlist ) {
   if ( $qlist[$i][0] eq $qual ) {
     $match++;
