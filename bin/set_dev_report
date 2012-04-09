@@ -9,4 +9,4 @@ echo CETPKG_QUAL=$CETPKG_QUAL
 echo CETPKG_TYPE=$CETPKG_TYPE
 echo
 echo Please use this cmake command:
-echo cmake -DCMAKE_INSTALL_PREFIX=/install/path -DCMAKE_BUILD_TYPE=\$CETPKG_TYPE -Dqualifier:STRING=\$CETPKG_QUAL \$CETPKG_SOURCE
+echo cmake -DCMAKE_INSTALL_PREFIX=/install/path -DCMAKE_BUILD_TYPE=\$CETPKG_TYPE \$CETPKG_SOURCE

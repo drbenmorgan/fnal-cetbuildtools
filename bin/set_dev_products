@@ -22,6 +22,7 @@ if( $#ARGV < 2 ) {
 
 $inputdir = $ARGV[0];
 $builddir = $ARGV[1];
+$simple = "";
 for $i ( 2 .. $#ARGV ) {
     if( $ARGV[$i] eq "-d" ) {
       $dop = "debug";
@@ -32,6 +33,8 @@ for $i ( 2 .. $#ARGV ) {
     } elsif( $ARGV[$i] eq "-p" ) {
       $dop = "prof";
       $type = "Prof";
+    } elsif( $ARGV[$i] eq "simple" ) {
+      $simple = "true";
     } else {
       $qual = $qual.$ARGV[$i].":";
       $qdir = $qdir.$ARGV[$i]."-";
@@ -45,11 +48,21 @@ $pfile=$inputdir."/product_deps";
 ($product, $version, $default_qual, %phash) = parse_product_list( $pfile );
 ($ndeps, @qlist) = parse_qualifier_list( $pfile );
 
-if ( ! $qual ) {
+if ( $qual ) {
+  $qual = $qual.$dop;
+  $qdir = $qdir.$dop;
+  $tmpfl = $builddir."/".$product."-".$version."-".$qdir;
+} else {
   $dq = find_default_qual( $pfile );
   if ( $dq ) {
-      $qual = $dq.":";
-      $qdir = $dq."-";
+    $qual = $dq.":";
+    $qdir = $dq."-";
+    $qual = $qual.$dop;
+    $qdir = $qdir.$dop;
+    $tmpfl = $builddir."/".$product."-".$version."-".$qdir;
+  } elsif ( $simple ) {
+    $qual = "-nq-";
+    $tmpfl = $builddir."/".$product."-".$version;
   } else {
     print STDERR "\n";
     print STDERR "ERROR: no qualifiers specified \n";
@@ -60,8 +73,6 @@ if ( ! $qual ) {
     exit 1;
   }
 }
-$qual = $qual.$dop;
-$qdir = $qdir.$dop;
 
 $tmpfl = $builddir."/".$product."-".$version."-".$qdir;
 open(TSET, "> $tmpfl") or die "Couldn't open $tmpfl";
@@ -70,8 +81,10 @@ $match = 0;
 print TSET "setenv UPS_OPTIONS -B\n";
 print TSET "setenv CETPKG_NAME $product\n";
 print TSET "setenv CETPKG_VERSION $version\n";
-print TSET "setenv CETPKG_QUAL $qual\n";
-print TSET "setenv CETPKG_TYPE $type\n";
+if ( ! $simple ) {
+  print TSET "setenv CETPKG_QUAL $qual\n";
+  print TSET "setenv CETPKG_TYPE $type\n";
+}
 foreach $i ( 1 .. $#qlist ) {
   if ( $qlist[$i][0] eq $qual ) {
     $match++;
