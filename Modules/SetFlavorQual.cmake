@@ -97,8 +97,8 @@ if ( NOT SLTYPE )
 endif ()
 
 # all qualifiers are passed
-STRING( REGEX REPLACE ":" "." QUAL_SUBDIR "${qualifier}" )
-#message(STATUS "qualifiers: ${qualifier} ${QUAL_SUBDIR}")
+STRING( REGEX REPLACE ":" "." QUAL_SUBDIR "${full_qualifier}" )
+#message(STATUS "qualifiers: ${full_qualifier} ${QUAL_SUBDIR}")
 
 if( ${arch} MATCHES "noarch" )
     SET (flavorqual ${SLTYPE}.${QUAL_SUBDIR} )
@@ -115,8 +115,8 @@ endmacro( set_flavor_qual )
 
 macro( cet_version_file )
 
-  STRING( REGEX REPLACE ":" ";" QUAL_LIST "${qualifier}" )
-  STRING( REGEX REPLACE ":" "_" VQUAL "${qualifier}" )
+  STRING( REGEX REPLACE ":" ";" QUAL_LIST "${full_qualifier}" )
+  STRING( REGEX REPLACE ":" "_" VQUAL "${full_qualifier}" )
   
   configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.version.in
                   ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}  @ONLY )

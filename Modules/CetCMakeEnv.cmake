@@ -18,14 +18,20 @@ macro(cet_cmake_env)
 
   set(product $ENV{CETPKG_NAME} CACHE STRING "Package UPS name" FORCE)
   set(version $ENV{CETPKG_VERSION} CACHE STRING "Package UPS version" FORCE)
-  set(qualifier $ENV{CETPKG_QUAL} CACHE STRING "Package UPS qualifier" FORCE)
   set(full_qualifier $ENV{CETPKG_QUAL} CACHE STRING "Package UPS full_qualifier" FORCE)
+
+  # extract base qualifier
+  STRING( REGEX REPLACE ":debug" "" Q1 "${full_qualifier}" )
+  STRING( REGEX REPLACE ":opt" "" Q2 "${Q1}" )
+  STRING( REGEX REPLACE ":prof" "" Q3 "${Q2}" )
+  set(qualifier ${Q3} CACHE STRING "Package UPS qualifier" FORCE)
+  #message( STATUS "full qual ${full_qualifier} reduced to ${qualifier}")
 
   # do not embed full path in shared libraries or executables
   # because the binaries might be relocated
   set(CMAKE_SKIP_RPATH)
 
-  message(STATUS "Product is ${product} ${version} ${qualifier}")
+  message(STATUS "Product is ${product} ${version} ${full_qualifier}")
   message(STATUS "Module path is ${CMAKE_MODULE_PATH}")
 
   enable_testing()
