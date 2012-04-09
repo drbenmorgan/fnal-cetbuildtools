@@ -9,21 +9,23 @@
 # cet_check_gcc()
 # 
 
-macro(cet_cmake_env cet_proj cet_ver)
+macro(cet_cmake_env)
 
-  if(ARGN AND NOT qualifier)
-    get( ARGN 0 qualifier)
-    message(STATUS "qualifier set to ${qualifier}")
-  endif()
+#  if(ARGN AND NOT qualifier)
+#    get( ARGN 0 qualifier)
+#    message(STATUS "qualifier set to ${qualifier}")
+#  endif()
 
-  set(product ${cet_proj} CACHE STRING "Package UPS name" FORCE)
-  set(version ${cet_ver} CACHE STRING "Package UPS version" FORCE)
+  set(product $ENV{CETPKG_NAME} CACHE STRING "Package UPS name" FORCE)
+  set(version $ENV{CETPKG_VERSION} CACHE STRING "Package UPS version" FORCE)
+  set(qualifier $ENV{CETPKG_QUAL} CACHE STRING "Package UPS qualifier" FORCE)
+  set(full_qualifier $ENV{CETPKG_QUAL} CACHE STRING "Package UPS full_qualifier" FORCE)
 
   # do not embed full path in shared libraries or executables
   # because the binaries might be relocated
   set(CMAKE_SKIP_RPATH)
 
-  message(STATUS "Product is ${product} ${version}")
+  message(STATUS "Product is ${product} ${version} ${qualifier}")
   message(STATUS "Module path is ${CMAKE_MODULE_PATH}")
 
   enable_testing()

@@ -49,7 +49,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
                        OUTPUT_VARIABLE UPSFLAVOR
 		       OUTPUT_STRIP_TRAILING_WHITESPACE
 		       )
-       message( STATUS " flavor is ${UPSFLAVOR}" )
+       #message( STATUS " flavor is ${UPSFLAVOR}" )
    endif ()
    if( CMAKE_CROSSCOMPILING )
        if( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc" )
@@ -76,6 +76,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
        set( SLTYPE d10 )
        set( UPSFLAVOR Darwin+10 )
    endif()
+   if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^10.7.*" )
+       set( SLTYPE d11 )
+       set( UPSFLAVOR Darwin+11 )
+   endif()
 endif ()
 message(STATUS "Building for ${CMAKE_SYSTEM_NAME} ${SLTYPE} ${CMAKE_SYSTEM_PROCESSOR}" )
 
@@ -92,46 +96,34 @@ if ( NOT SLTYPE )
   message(FATAL_ERROR "Can't determine system type")
 endif ()
 
+# all qualifiers are passed
+STRING( REGEX REPLACE ":" "." QUAL_SUBDIR "${qualifier}" )
+#message(STATUS "qualifiers: ${qualifier} ${QUAL_SUBDIR}")
+
 if( ${arch} MATCHES "noarch" )
-    SET (flavorqual ${SLTYPE}.${qualifier} )
+    SET (flavorqual ${SLTYPE}.${QUAL_SUBDIR} )
 else ()
-    SET (flavorqual ${SLTYPE}.${CMAKE_SYSTEM_PROCESSOR}.${qualifier})
+    SET (flavorqual ${SLTYPE}.${CMAKE_SYSTEM_PROCESSOR}.${QUAL_SUBDIR})
 endif ()
 SET (flavorqual_dir ${product}/${version}/${flavorqual} )
 
-# check for extra qualifiers
-#message(STATUS "set_flavor_qual: build type is ${CMAKE_BUILD_TYPE}")
-if( NOT  CMAKE_BUILD_TYPE )
-   SET( extra_qualifier "" )
-   set( full_qualifier ${qualifier} )
-else()
-   #message(STATUS "set_flavor_qual: found build type ${CMAKE_BUILD_TYPE}" )
-   STRING(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_TOLOWER)
-   if( ${CMAKE_BUILD_TYPE_TOLOWER} MATCHES "debug")
-      set(extra_qualifier debug )
-   elseif( ${CMAKE_BUILD_TYPE_TOLOWER} MATCHES "opt")
-      set(extra_qualifier opt )
-   elseif( ${CMAKE_BUILD_TYPE_TOLOWER} MATCHES "prof")
-      set(extra_qualifier prof )
-   elseif( ${CMAKE_BUILD_TYPE_TOLOWER} MATCHES "release")
-      set(extra_qualifier opt )
-   elseif( ${CMAKE_BUILD_TYPE_TOLOWER} MATCHES "minsizerel")
-      set(extra_qualifier prof )
-   endif()   
-   if( extra_qualifier )
-      set( flavorqual_dir ${product}/${version}/${flavorqual}.${extra_qualifier} )
-      set( flavorqual ${flavorqual}.${extra_qualifier})
-      set( full_qualifier ${qualifier}:${extra_qualifier} )
-   else()
-      set( flavorqual_dir ${product}/${version}/${flavorqual} )
-      set( full_qualifier ${qualifier}:${extra_qualifier} )
-   endif()
-endif()
 #message(STATUS "set_flavor_qual: flavorqual is ${flavorqual}" )
 #message(STATUS "set_flavor_qual: ups flavor is ${UPSFLAVOR}" )
-#message(STATUS "set_flavor_qual: flavorqual directory is ${flavorqual_dir}" )
+message(STATUS "set_flavor_qual: flavorqual directory is ${flavorqual_dir}" )
 
 endmacro( set_flavor_qual )
+
+macro( cet_version_file )
+
+  STRING( REGEX REPLACE ":" ";" QUAL_LIST "${qualifier}" )
+  STRING( REGEX REPLACE ":" "_" VQUAL "${qualifier}" )
+  
+  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.version.in
+                  ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}  @ONLY )
+  install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} 
+           DESTINATION ${product}/${version}.version )
+
+endmacro( cet_version_file )
 
 macro( process_ups_files )
   if( NOT product )
@@ -142,17 +134,6 @@ macro( process_ups_files )
   cet_build_table()
 
   # version file
-  if( extra_qualifier )
-     #message(STATUS "extra qualifier ${extra_qualifier}")
-     configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.version.in
-                     ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier}_${extra_qualifier}  @ONLY )
-     install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier}_${extra_qualifier} 
-              DESTINATION ${product}/${version}.version )
-  else()
-     configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.version.in
-                     ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier}  @ONLY )
-     install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${qualifier} 
-              DESTINATION ${product}/${version}.version )
-  endif()
+  cet_version_file()
 
 endmacro( process_ups_files )
