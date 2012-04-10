@@ -94,6 +94,7 @@ sub parse_qualifier_list {
   my @params = @_;
   ##print "\n";
   ##print "reading $params[0]\n";
+  my $efl = $params[1];
   $irow=0;
   $get_phash="";
   $get_quals="";
@@ -139,7 +140,8 @@ sub parse_qualifier_list {
 	      }
 	 }
 	 if( $irow != 0 ) {
-            print "ERROR: qualifier definition row must come before qualifier list\n";
+            print $efl "echo ERROR: qualifier definition row must come before qualifier list\n";
+            print $efl "return 2\n";
 	    exit 2;
 	 }
 	 ##print "there are $qlen product entries out of $#words\n";
@@ -151,11 +153,13 @@ sub parse_qualifier_list {
       } elsif( $get_quals ) {
 	 ##print "$params[0] qualifier $words[0]\n";
 	 if( ! $qlen ) {
-            print "ERROR: qualifier definition row must come before qualifier list\n";
+            print $efl "echo ERROR: qualifier definition row must come before qualifier list\n";
+            print $efl "return 3\n";
 	    exit 3;
 	 }
 	 if ( $#words < $qlen ) {
-            print "ERROR: only $#words qualifiers for $words[0] - need $qlen\n";
+            print $efl "echo ERROR: only $#words qualifiers for $words[0] - need $qlen\n";
+            print $efl "return 4\n";
 	    exit 4;
 	 }
 	 for $i ( 0 .. $qlen ) {
@@ -163,7 +167,7 @@ sub parse_qualifier_list {
 	 }
 	 $irow++;
       } else {
-        print "ignoring $line\n";
+        #print "ignoring $line\n";
       }
     }
   }
