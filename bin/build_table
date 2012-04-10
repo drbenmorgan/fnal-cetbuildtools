@@ -1,6 +1,6 @@
 #!/bin/env perl
 #
-# use product_deps and qualifier_deps
+# use product_deps
 
 use File::Basename;
 use lib dirname($0);
@@ -16,7 +16,7 @@ if( $#ARGV >= 0 ) {
     print "\n";
     print "ERROR: directory not specified\n";
     print "USAGE: build_table <input-directory> [output-directory]\n";
-    print "       input-directory  = directory containing product_deps and qualifier_deps>\n";
+    print "       input-directory  = directory containing product_deps\n";
     print "\n";
     exit 1;
 }

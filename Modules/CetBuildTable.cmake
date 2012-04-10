@@ -1,12 +1,10 @@
-# determine the system flavor and define flavorqual_dir
+# build the ups table file from information in product_deps
 #
-# cet_build_table( [arch] )
-# allow optional architecture declaration
-# noarch is recognized, others are used at your own discretion
+# cet_build_table()
 #
 
 macro( cet_build_table )
-   # set sltype
+   # find $CETBUILDTOOLS_DIR/bin/build_table
    set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
    if( ${product} MATCHES "cetbuildtools" )
        # building cetbuildtools - use our copy
@@ -36,3 +34,42 @@ macro( cet_build_table )
 
 endmacro( cet_build_table )
 
+
+macro( cet_version_file )
+   # find $CETBUILDTOOLS_DIR/bin/build_version_file
+   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+   if( ${product} MATCHES "cetbuildtools" )
+       # building cetbuildtools - use our copy
+       #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+       FIND_PROGRAM( BUILD_VERSION_FILE_NAME build_version_file
+                     ${PROJECT_SOURCE_DIR}/bin  )
+   elseif( NOT CETBUILDTOOLS_DIR )
+       FIND_PROGRAM( BUILD_VERSION_FILE_NAME build_version_file )
+   else()
+       FIND_PROGRAM( BUILD_VERSION_FILE_NAME build_version_file
+                     ${CETBUILDTOOLS_DIR}/bin  )
+   endif ()
+   #message(STATUS "BUILD_VERSION_FILE_NAME: ${BUILD_VERSION_FILE_NAME}")
+   if( NOT BUILD_VERSION_FILE_NAME )
+       message(FATAL_ERROR "Can't find build_version_file")
+   endif()
+
+##   execute_process( COMMAND date
+##                    OUTPUT_VARIABLE datime
+##                    OUTPUT_STRIP_TRAILING_WHITESPACE )
+
+   STRING( REGEX REPLACE ":" "_" VQUAL "${full_qualifier}" )
+   execute_process(COMMAND ${BUILD_VERSION_FILE_NAME} 
+			   ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}
+			   ${product}
+			   ${version}
+			   ${UPSFLAVOR}
+			   ${full_qualifier}
+                   OUTPUT_VARIABLE MSG
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
+   ##message( STATUS "${BUILD_VERSION_FILE_NAME} returned ${MSG}")
+   install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} 
+            DESTINATION ${product}/${version}.version )
+
+endmacro( cet_version_file )

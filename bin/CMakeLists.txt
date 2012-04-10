@@ -1,6 +1,7 @@
 
 INSTALL ( PROGRAMS buildtool
  		   build_table
+		   build_version_file
                    genreflex-wrapper
 		   set_dev_products
           DESTINATION ${product}/${version}/bin )

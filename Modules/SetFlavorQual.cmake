@@ -113,18 +113,6 @@ message(STATUS "set_flavor_qual: flavorqual directory is ${flavorqual_dir}" )
 
 endmacro( set_flavor_qual )
 
-macro( cet_version_file )
-
-  STRING( REGEX REPLACE ":" ";" QUAL_LIST "${full_qualifier}" )
-  STRING( REGEX REPLACE ":" "_" VQUAL "${full_qualifier}" )
-  
-  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${product}.version.in
-                  ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}  @ONLY )
-  install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} 
-           DESTINATION ${product}/${version}.version )
-
-endmacro( cet_version_file )
-
 macro( process_ups_files )
   if( NOT product )
     message(FATAL_ERROR "product name is not defined")
