@@ -53,8 +53,7 @@ echo ----------- check this block for errors -----------------------
 set_ cmd="$CETPKG_SOURCE/bin/set_dev_products $CETPKG_SOURCE/ups $CETPKG_BUILD simple"
 #echo Ready to run $cmd
 source `$cmd`
-set_ return_status=$?
-test $?return_status = 0 || return
+test "$?" = 0 || return
 echo ----------------------------------------------------------------
 
 echo
