@@ -1,9 +1,9 @@
 # cet_cmake_env
 #
 # factor out the boiler plate at the top of every main CMakeLists.txt file
-# cet_cmake_env( <package name>  
-#                <package version>
-#                [package qualifier] )
+# cet_cmake_env( [arch] )
+# allow optional architecture declaration
+# noarch is recognized, others are used at your own discretion
 # 
 # make sure gcc has been setup
 # cet_check_gcc()
@@ -11,21 +11,20 @@
 
 macro(cet_cmake_env)
 
-#  if(ARGN AND NOT qualifier)
-#    get( ARGN 0 qualifier)
-#    message(STATUS "qualifier set to ${qualifier}")
-#  endif()
+  set(arch "${ARGN}")
 
   set(product $ENV{CETPKG_NAME} CACHE STRING "Package UPS name" FORCE)
   set(version $ENV{CETPKG_VERSION} CACHE STRING "Package UPS version" FORCE)
   set(full_qualifier $ENV{CETPKG_QUAL} CACHE STRING "Package UPS full_qualifier" FORCE)
 
-  # extract base qualifier
-  STRING( REGEX REPLACE ":debug" "" Q1 "${full_qualifier}" )
-  STRING( REGEX REPLACE ":opt" "" Q2 "${Q1}" )
-  STRING( REGEX REPLACE ":prof" "" Q3 "${Q2}" )
-  set(qualifier ${Q3} CACHE STRING "Package UPS qualifier" FORCE)
-  #message( STATUS "full qual ${full_qualifier} reduced to ${qualifier}")
+  if( ${full_qualifier} )
+    # extract base qualifier
+    STRING( REGEX REPLACE ":debug" "" Q1 "${full_qualifier}" )
+    STRING( REGEX REPLACE ":opt" "" Q2 "${Q1}" )
+    STRING( REGEX REPLACE ":prof" "" Q3 "${Q2}" )
+    set(qualifier ${Q3} CACHE STRING "Package UPS qualifier" FORCE)
+    #message( STATUS "full qual ${full_qualifier} reduced to ${qualifier}")
+  endif()
 
   # do not embed full path in shared libraries or executables
   # because the binaries might be relocated
@@ -50,14 +49,10 @@ macro(cet_cmake_env)
   include(InstallSource)
   include(CetMake)
 
-  # More setup.
-  set_version_from_ups(${version})
-  set_flavor_qual()
-
   #set package version from ups version
   set_version_from_ups( ${version} )
   #define flavorqual and flavorqual_dir
-  set_flavor_qual()
+  set_flavor_qual( ${arch} )
 
   set(CETPKG_BUILD $ENV{CETPKG_BUILD})
   if(NOT CETPKG_BUILD)
