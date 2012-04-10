@@ -4,7 +4,6 @@
 #  cd .../path/to/build/directory
 #  source .../path/to/ToyCmake/ups/setup_for_development <-d|-o|-p>
 #  cmake [-DCMAKE_INSTALL_PREFIX=/install/path]
-#        -Dqualifier:STRING=$CETPKG_QUAL
 #        -DCMAKE_BUILD_TYPE=$CETPKG_TYPE
 #        $CETPKG_SOURCE
 #  make
@@ -20,19 +19,15 @@ cmake_minimum_required (VERSION 2.8)
 project(ToyCmake)
 
 # cetbuildtools contains our cmake modules
-SET ( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
-IF (NOT CETBUILDTOOLS_VERSION)
-    MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
-ENDIF()
+set( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
+if( NOT CETBUILDTOOLS_VERSION )
+  message( FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules" )
+endif()
 set(CMAKE_MODULE_PATH $ENV{CETBUILDTOOLS_DIR}/Modules 
 		      ${CMAKE_MODULE_PATH})
 
 include(CetCMakeEnv)
-
-if ( NOT qualifier )
-    message (FATAL_ERROR "ERROR: please call cmake with -Dqualifier:STRING=qualifier")
-endif ( NOT qualifier )
-cet_cmake_env( toycmake v1_00_01 ${qualifier} )
+cet_cmake_env()
 
 cet_set_compiler_flags(DIAGS VIGILANT WERROR EXTRA_FLAGS -pedantic)
 cet_report_compiler_flags()
@@ -43,7 +38,7 @@ cet_report_compiler_flags()
 #find_ups_product( libsigcpp v2_2_10 )
 #find_ups_product( clhep v2_1_1_0 )
 
-find_ups_product( cetbuildtools v1_16_00 )
+find_ups_product( cetbuildtools v1_17_00 )
 #find_ups_product( cpp0x v1_03_00 )
 #find_ups_product( cetlib v1_03_00 )
 #find_ups_product( fhiclcpp v2_16_00 )
@@ -83,8 +78,6 @@ include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
 
 # define common flags
 # set( CMAKE_CXX_LINK_FLAGS "${CPPUNIT} -luuid -ldl" )
-
-message(STATUS "Project is ${product} ${version}")
 
 # source
 add_subdirectory (ToyCmake)

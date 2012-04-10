@@ -1,0 +1,14 @@
+parent toycmake v1_01_00
+defaultqual a7
+#
+# define product/version pairs
+product		version
+gcc		v4_6_1
+
+only_for_build cetbuildtools	v1_17_00
+
+# Matrix of qualifiers versus dependent products
+qualifie	gcc	notes
+a7:debug	-nq-
+a7:opt		-nq-
+a7:prof		-nq-

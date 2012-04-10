@@ -1,7 +1,0 @@
-
-# set up external products
-setup -B gcc v4_6_1
-
-# set up CET products
-setup cetpkgsupport
-setup -B cetbuildtools v1_16_00
