@@ -81,7 +81,10 @@ $match = 0;
 print TSET "setenv UPS_OPTIONS -B\n";
 print TSET "setenv CETPKG_NAME $product\n";
 print TSET "setenv CETPKG_VERSION $version\n";
-if ( ! $simple ) {
+if ( $simple ) {
+  print TSET "unsetenv_ CETPKG_QUAL\n";
+  print TSET "unsetenv_ CETPKG_TYPE\n";
+} else {
   print TSET "setenv CETPKG_QUAL $qual\n";
   print TSET "setenv CETPKG_TYPE $type\n";
 }
