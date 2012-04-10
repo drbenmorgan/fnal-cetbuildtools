@@ -14,26 +14,12 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
 PROJECT (cetbuildtools)
-set (product cetbuildtools)
-SET (version v1_16_00)
-# we don't need a qualifier for a utility product
-##SET (qualifier a1)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Modules)
 
-# define some necessary modules
-include( SetFlavorQual )
-include(ParseUpsVersion)
-include(EnsureOutOfSourceBuild)
-
-# make sure someone isn't typing cmake in the source code tree
-cet_ensure_out_of_source_build()
-
-set_version_from_ups( ${version} )
-
-#define flavorqual and flavorqual_dir
+include(CetCMakeEnv)
 # cetbuildtools has no architecture dependence
-set_flavor_qual(noarch)
+cet_cmake_env( noarch )
 
 # source code
 add_subdirectory(templates)
