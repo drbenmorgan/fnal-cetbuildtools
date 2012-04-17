@@ -56,9 +56,12 @@ usage: ${prog} [<mode-options>] [<misc-options>] [--] <make-build-options>
 Mode options: [-C|--cmake-only|-A|--all|--info] ||
               { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
 
-Misc options: [-D<CMake-definition>] [-I|--install-prefix <install-location>]
+Misc options: [-D<CMake-definition>]+ [-I|--install-prefix <install-location>]
               [-c|--clean] [-f|--force-top] [-j #]
               [-l|--log=|--log-file=[<log-file>]] [-q|--quiet] [--tee]
+              [--test-groups|--groups <group>[<;|,><group>]+]
+
+Options suffixed  with '+' are repeatable and cumulative.
 
 Required environment: CETPKG_BUILD, CETPKG_SOURCE, CETPKG_TYPE
 Optional environment: CETPKG_INSTALL CETPKG_J CETPKG_QUAL
@@ -190,6 +193,13 @@ MISC. OPTIONS.
   Write to a log file (either as specified by --log or the default), but
   copy output to the screen also: --quiet is overridden by this option.
 
+--test-groups|--groups <group>[<;|,><group>]+
+
+  Specify optional test groups to configure per cet_test macro
+  (CetTest.cmake). Equivalent to -DET_TEST_GROUPS=... if multiple groups
+  are delimited with semicolons they should be escaped or quoted.to
+  protect them from the shell. A warning shall be issued if this option
+  is specified but the CMake stage is not to be executed.
 
 EXAMPLES.
 
@@ -393,7 +403,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,help,info,install,log::,log-file::,package,quiet,tee,test -o +AD:CI:bcfhij:l::pqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,groups:,help,info,install,log::,log-file::,package,quiet,tee,test,test-groups: -o +AD:CI:bcfhij:l::pqt -- "${@}"`
 
 if [[ -n "$CETPKG_J" ]]; then
   jarg="-j$CETPKG_J"
@@ -476,6 +486,11 @@ while true; do
     --tee)
       log="${log:-${log_default}}"
       (( tee = 1 ))
+      shift
+      ;;
+    --test-groups|--groups)
+      cmake_defs="${cmake_defs}-DCET_TEST_GROUPS=${2} "
+      shift
       shift
       ;;
     --)
