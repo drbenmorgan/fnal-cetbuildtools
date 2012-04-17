@@ -28,8 +28,13 @@
 #
 # INSTALL_SOURCE
 #   Install this test's source in the source area of the product.
+#
 ####################################
 # Args
+#
+# CONFIGURATIONS
+#
+#   Configurations (Debug, etc, etc) under which the test shall be executed.
 #
 # DATAFILES
 #   Input and/or references files to be copied to the test area in the
@@ -43,6 +48,13 @@
 #
 # LIBRARIES
 #   Extra libraries with which to link this target.
+#
+# OPTIONAL_GROUPS
+#   Assign this test to one or more named optional groups. If the CMake
+#    list variable CET_TEST_GROUPS is set (e.g. with -D on the CMake
+#    command line) and there is overlap between the two lists, execute
+#    the test. The CET_TEST_GROUPS cache variable may additionally
+#    contain the optional values ALL or NONE.
 #
 # SOURCES
 #   Sources to use to build the target (default is ${target}.cc).
@@ -58,6 +70,17 @@
 #   Properties to be added to the test. See documentation of the cmake
 #   command, "set_tests_properties."
 #
+####################################
+# Cache variables
+#
+# CET_TEST_GROUPS
+#   Test group names specified using the OPTIONAL_GROUPS list option are
+#    compared against this list to determine whether to configure the
+#    test. Default value is the special value "NONE," meaning no
+#    optional tests are to be configured. Optionally CET_TEST_GROUPS may
+#    contain the special value "ALL." Specify multiple values separated
+#    by ";" (escape or protect with quotes) or "," See explanation of
+#    the OPTIONAL_GROUPS variable above for more details.
 ########################################################################
 
 # Need argument parser.
@@ -80,6 +103,37 @@ IF((NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND BOOST_VERS)
   find_ups_boost(${BOOST_VERS} unit_test_framework)
 ENDIF() 
 
+SET(CET_TEST_GROUPS "NONE"
+  CACHE STRING "List of optional test groups to be configured."
+  )
+
+STRING(TOUPPER "${CET_TEST_GROUPS}" CET_TEST_GROUPS_UC)
+
+FUNCTION(_check_want_test CET_OPTIONAL_GROUPS CET_WANT_TEST)
+  IF(NOT CET_OPTIONAL_GROUPS)
+    SET(${CET_WANT_TEST} YES PARENT_SCOPE)
+    RETURN() # Short-circuit.
+  ENDIF()
+  SET (${CET_WANT_TEST} NO PARENT_SCOPE)
+  LIST(FIND CET_TEST_GROUPS_UC ALL WANT_ALL)
+  LIST(FIND CET_TEST_GROUPS_UC NONE WANT_NONE)
+  IF(WANT_ALL GREATER -1)
+    SET (${CET_WANT_TEST} YES PARENT_SCOPE)
+    RETURN() # Short-circuit.
+  ELSEIF(WANT_NONE GREATER -1)
+    RETURN() # Short-circuit.
+  ELSE()
+    FOREACH(item IN LISTS CET_OPTIONAL_GROUPS)
+      STRING(TOUPPER "${item}" item_uc)
+      LIST(FIND CET_TEST_GROUPS_UC ${item_uc} FOUND_ITEM)
+      IF(FOUND_ITEM GREATER -1)
+        SET (${CET_WANT_TEST} YES PARENT_SCOPE)
+        RETURN() # Short-circuit.
+      ENDIF()
+    ENDFOREACH()
+  ENDIF()
+ENDFUNCTION()
+
 ####################################
 # Main macro definition.
 MACRO(cet_test CET_TARGET)
@@ -89,12 +143,12 @@ MACRO(cet_test CET_TARGET)
       "target name with the HANDBUILT and TEST_EXEC options instead.")
   ENDIF()
   CET_PARSE_ARGS(CET
-    "DATAFILES;DEPENDENCIES;LIBRARIES;SOURCES;TEST_ARGS;TEST_EXEC;TEST_PROPERTIES"
+    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;SOURCES;TEST_ARGS;TEST_EXEC;TEST_PROPERTIES"
     "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_EXAMPLE;INSTALL_SOURCE"
     ${ARGN}
     )
   IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
-    # Set up to handle a per-tst work directory for parallel testing.
+    # Set up to handle a per-test work directory for parallel testing.
     SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
     STRING(REPLACE "/" "!" wdtarget ${CET_TEST_WORKDIR})
     ADD_CUSTOM_TARGET(${wdtarget} ALL
@@ -183,9 +237,15 @@ MACRO(cet_test CET_TARGET)
       ENDIF()
     ENDIF()
   ENDFOREACH()
-  IF(NOT CET_NO_AUTO)
+  IF(CET_CONFIGURATIONS)
+    SET(CONFIGURATIONS_CMD CONFIGURATIONS)
+  ENDIF()
+  _check_want_test("${CET_OPTIONAL_GROUPS}" WANT_TEST)
+  IF(NOT CET_NO_AUTO AND WANT_TEST)
     # Add the test.
-    ADD_TEST(${CET_TARGET} ${CET_TEST_EXEC} ${CET_TEST_ARGS})
+    ADD_TEST(NAME ${CET_TARGET}
+      ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
+      COMMAND ${CET_TEST_EXEC} ${CET_TEST_ARGS})
     IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
       SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES WORKING_DIRECTORY ${CET_TEST_WORKDIR})
     ENDIF()
