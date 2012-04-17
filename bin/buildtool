@@ -33,7 +33,7 @@ elif [[ "$CETPKG_BUILD" != /* ]]; then
   exit 1
 elif [[ $(real_dir "$CETPKG_BUILD") == "${HOME}" ]] || \
      [[ $(real_dir "$CETPKG_BUILD") == ~ ]]; then
-  echo "ERROR: CETPKG_BUILD has been set to your home directory."
+  echo "ERROR: CETPKG_BUILD has been set to your home directory." 1>&2
   exit 1
 fi
 
