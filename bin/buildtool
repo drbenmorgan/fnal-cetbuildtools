@@ -130,6 +130,11 @@ CMake stage (which is always executed in the CETPKG_BUILD directory).
   Execute the package stage from CETPKG_BUILD to create an install
   tarball. See the notes for --install above regarding the build option.
 
+--short-circuit|--sc
+
+  Execute only the specified targets and not those that might be implied
+  (CMake stage, build stage when test stage is specified, etc).
+
 -t|--test
 
   Execute configured tests with ctest from the current
@@ -351,15 +356,23 @@ function do_work() {
     trap "restore_output_streams; cleanup" EXIT
   fi
   stage=cmake
-  announce_stage
-  local extradef
-  [[ -n "$CETPKG_QUAL" ]] && extradef="-Dqualifier:STRING=$CETPKG_QUAL "
-  cmake_defs=${cmake_defs//,/;}
-  ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${extradef}${cmake_defs}${CETPKG_SOURCE} )
-  check_status
-  package_info
-  (( ${cmake_only:-0} )) && exit 0
-  if (( ${do_build:-0} )); then
+  if (( ${short_circuit:-0} && ! ${cmake_only:-0} )); then
+    announce_stage " SKIPPED per --short-circuit"
+    if [[ -n "${cmake_defs}" ]]; then
+      error "WARNING: CMake definitions ignored since CMake not invoked."
+    fi
+  else
+    announce_stage
+    local extradef
+    [[ -n "$CETPKG_QUAL" ]] && extradef="-Dqualifier:STRING=$CETPKG_QUAL "
+    cmake_defs=${cmake_defs//,/;}
+    ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${extradef}${cmake_defs}${CETPKG_SOURCE} )
+    check_status
+    package_info
+    (( ${cmake_only:-0} )) && exit 0
+  fi
+
+  if (( ${do_build:-0} == 1 || ( ${do_build:-0} > 1 && ! ${short_circuit:-0} ) )); then
     stage=build
     maybe_force_top_and_announce
     check_curdir_in_build_tree
@@ -403,7 +416,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,groups:,help,info,install,log::,log-file::,package,quiet,tee,test,test-groups: -o +AD:CI:bcfhij:l::pqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-groups: -o +AD:CI:bcfhij:l::pqt -- "${@}"`
 
 if [[ -n "$CETPKG_J" ]]; then
   jarg="-j$CETPKG_J"
@@ -478,8 +491,12 @@ while true; do
       (( quiet = 1 ))
       shift
       ;;
+     --short-circuit|--sc)
+      (( short_circuit = 1 ))
+      shift
+      ;;
     -t|--test)
-      (( do_build = 1 ))
+      (( do_build = 2 )) # May be overridden by ${short_circuit}.
       (( do_test = 1 ))
       shift
       ;;
@@ -542,7 +559,7 @@ if (( ${all:-0} )); then
 else
   # In general, build unless we've been asked not to where that is
   # compatible with our other options.
-  (( do_build = ${do_build:-0} || ! ${no_build:-0} ))
+  (( do_build = ${do_build:-0} | ! ${no_build:-0} ))
 fi
 
 if (( ${clean:-0} )); then
