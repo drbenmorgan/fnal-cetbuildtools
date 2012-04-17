@@ -417,6 +417,9 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 
 # Parse arguments.
 TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-groups: -o +AD:CI:bcfhij:l::pqt -- "${@}"`
+if (( $? )); then
+  usage 1
+fi
 
 if [[ -n "$CETPKG_J" ]]; then
   jarg="-j$CETPKG_J"
