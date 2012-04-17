@@ -56,9 +56,9 @@ usage: ${prog} [<mode-options>] [<misc-options>] [--] <make-build-options>
 Mode options: [-C|--cmake-only|-A|--all|--info] ||
               { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
 
-Misc options: [-I|--install-prefix <install-location>] [-c|--clean]
-              [-f|--force-top] [-j #] [-l|--log=|--log-file=[<log-file>]]
-              [-q|--quiet] [--tee]
+Misc options: [-D<CMake-definition>] [-I|--install-prefix <install-location>]
+              [-c|--clean] [-f|--force-top] [-j #]
+              [-l|--log=|--log-file=[<log-file>]] [-q|--quiet] [--tee]
 
 Required environment: CETPKG_BUILD, CETPKG_SOURCE, CETPKG_TYPE
 Optional environment: CETPKG_INSTALL CETPKG_J CETPKG_QUAL
@@ -134,6 +134,12 @@ CMake stage (which is always executed in the CETPKG_BUILD directory).
 
 
 MISC. OPTIONS.
+
+-D<CMake-definition>
+
+  Pass definitions to the invocation of the CMake stage. A warning shall
+  be issued if this option is specified but the CMake stage is not to be
+  executed.
 
 -I|--install-prefix <ups-install-dir>
 
@@ -334,12 +340,12 @@ function do_work() {
     exec 3>&1 4>&2 >"$log" 2>&1
     trap "restore_output_streams; cleanup" EXIT
   fi
-
   stage=cmake
   announce_stage
   local extradef
   [[ -n "$CETPKG_QUAL" ]] && extradef="-Dqualifier:STRING=$CETPKG_QUAL "
-  ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${extradef}${CETPKG_SOURCE} )
+  cmake_defs=${cmake_defs//,/;}
+  ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${extradef}${cmake_defs}${CETPKG_SOURCE} )
   check_status
   package_info
   (( ${cmake_only:-0} )) && exit 0
@@ -387,7 +393,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,help,info,install,log::,log-file::,package,quiet,tee,test -o +ACI:bcfhij:l::pqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,help,info,install,log::,log-file::,package,quiet,tee,test -o +AD:CI:bcfhij:l::pqt -- "${@}"`
 
 if [[ -n "$CETPKG_J" ]]; then
   jarg="-j$CETPKG_J"
@@ -402,6 +408,11 @@ while true; do
       ;;
     -C|--cmake-only)
       (( cmake_only = 1 ))
+      shift
+      ;;
+    -D)
+      cmake_defs="${cmake_defs}${1}${2} "
+      shift
       shift
       ;;
     -I|--install-prefix)
