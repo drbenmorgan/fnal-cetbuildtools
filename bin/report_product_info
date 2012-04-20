@@ -1,0 +1,50 @@
+#!/bin/env perl
+#
+# report product, version, etc.
+
+if( $#ARGV < 1 ) {
+    print "\n";
+    print "USAGE: report_product_info <input-directory> <product|version>\n";
+    print "       input-directory  = directory containing cetpkg_variable_report\n";
+    print "\n";
+    exit 1;
+}
+
+$inputdir = $ARGV[0];
+$info_type = $ARGV[1];
+
+$report=$inputdir."/cetpkg_variable_report";
+
+open(PIN, "< $report") or die "Couldn't open $report";
+while ( $line=<PIN> ) {
+    chop $line;
+    @words = split(/\s+/,$line);
+    if( $words[0] eq "CETPKG_NAME" ) {
+       $product = $words[1];
+    } elsif( $words[0] eq "CETPKG_VERSION" ) {
+       $version = $words[1];
+    } elsif( $words[0] eq "CETPKG_QUAL" ) {
+       if( $words[1] eq "-nq-" ) { 
+         $qual = ""; 
+       } else {
+         $qual = $words[1]; 
+       }
+    } elsif( $words[0] eq "CETPKG_TYPE" ) {
+       $type = $words[1];
+    }
+}
+close(PIN);
+
+
+if( $info_type eq "product" ) {
+    print "$product\n";
+} elsif( $info_type eq "version" ) {
+    print "$version\n";
+} elsif( $info_type eq "qualifier" ) {
+    print "$qual\n";
+} elsif( $info_type eq "type" ) {
+    print "$type\n";
+}
+
+exit 0;
+

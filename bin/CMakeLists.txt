@@ -4,6 +4,7 @@ INSTALL ( PROGRAMS buildtool
 		   build_version_file
                    genreflex-wrapper
 		   set_dev_products
+		   report_product_info
           DESTINATION ${product}/${version}/bin )
 
 INSTALL ( FILES cet_test_functions.sh
