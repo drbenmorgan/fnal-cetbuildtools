@@ -56,6 +56,17 @@ source `$cmd`
 test "$?" = 0 || return
 echo ----------------------------------------------------------------
 
+# need to add the source code bin directory to path
+echo
+echo Define PATH
+test -d "$CETPKG_SOURCE/bin" || mkdir -p $CETPKG_SOURCE/bin
+tnotnull CETPKG_SOURCE && setenv PATH `echo :${PATH}: | sed -e "s|:${CETPKG_SOURCE}/bin:|:|" -e 's|^:||;s|:$||'`
+tnotnull CETPKG_SOURCE && setenv PATH ${CETPKG_SOURCE}/bin:${PATH}
+setenv PATH `dropit -D`
+echo PATH is now ${PATH}
+echo
+echo $CETPKG_SOURCE/bin has been added to PATH
+
 echo
 echo CETPKG_SOURCE=$CETPKG_SOURCE
 echo CETPKG_BUILD=$CETPKG_BUILD
