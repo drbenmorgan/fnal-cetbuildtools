@@ -9,13 +9,56 @@
 # cet_check_gcc()
 # 
 
+macro(_get_cetpkg_info)
+
+   # find $CETBUILDTOOLS_DIR/bin/
+   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+   if( NOT CETBUILDTOOLS_DIR )
+       #message(STATUS "_get_cetpkg_info: looking in path")
+       FIND_PROGRAM( GET_PRODUCT_INFO report_product_info $ENV{PATH} )
+   else()
+       #message(STATUS "_get_cetpkg_info: looking in ${CETBUILDTOOLS_DIR}/bin")
+       FIND_PROGRAM( GET_PRODUCT_INFO report_product_info
+                     ${CETBUILDTOOLS_DIR}/bin  )
+   endif ()
+   #message(STATUS "GET_PRODUCT_INFO: ${GET_PRODUCT_INFO}")
+   if( NOT GET_PRODUCT_INFO )
+       message(FATAL_ERROR "_get_cetpkg_info: Can't find report_product_info")
+   endif()
+
+   execute_process(COMMAND ${GET_PRODUCT_INFO} 
+			   ${CMAKE_CURRENT_BINARY_DIR}
+			   product
+                   OUTPUT_VARIABLE rproduct
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
+
+   execute_process(COMMAND ${GET_PRODUCT_INFO} 
+			   ${CMAKE_CURRENT_BINARY_DIR}
+			   version
+                   OUTPUT_VARIABLE rversion
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
+
+   execute_process(COMMAND ${GET_PRODUCT_INFO} 
+			   ${CMAKE_CURRENT_BINARY_DIR}
+			   qualifier
+                   OUTPUT_VARIABLE rqual
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
+
+   set(product ${rproduct} CACHE STRING "Package UPS name" FORCE)
+   set(version ${rversion} CACHE STRING "Package UPS version" FORCE)
+   set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
+   #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${full_qualifier}")
+
+endmacro(_get_cetpkg_info)
+
 macro(cet_cmake_env)
 
   set(arch "${ARGN}")
 
-  set(product $ENV{CETPKG_NAME} CACHE STRING "Package UPS name" FORCE)
-  set(version $ENV{CETPKG_VERSION} CACHE STRING "Package UPS version" FORCE)
-  set(full_qualifier $ENV{CETPKG_QUAL} CACHE STRING "Package UPS full_qualifier" FORCE)
+  _get_cetpkg_info()
 
   if( ${full_qualifier} )
     # extract base qualifier
