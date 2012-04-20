@@ -311,9 +311,9 @@ function check_status() {
 
 # Announce the next stage.
 function announce_stage() {
-  banner "INFO: Executing $stage${@}."
+  banner "INFO: Stage $stage${@}."
   if log_no_tee; then
-    report "INFO: Executing $stage${@}." 1>&3
+    report "INFO: Stage $stage${@}." 1>&3
   fi
 }
 
