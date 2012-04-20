@@ -306,4 +306,18 @@ sub find_default_qual {
   return ($defq);
 }
 
+sub cetpkg_info_file {
+  ## write a file to be processed by CetCMakeEnv
+  my @params = @_;
+  $cetpkgfile = "cetpkg_variable_report";
+  open(CPG, "> $cetpkgfile") or die "Couldn't open $cetpkgfile";
+  print CPG "\n";
+  print CPG "CETPKG_NAME     $params[0]\n";
+  print CPG "CETPKG_VERSION  $params[1]\n";
+  print CPG "CETPKG_QUAL     $params[2]\n";
+  print CPG "CETPKG_TYPE     $params[3]\n";
+  close(CPG);
+  return($cetpkgfile);  
+}
+
 1;

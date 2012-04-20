@@ -76,10 +76,10 @@ if ( $qual ) {
     $errfl2 = $builddir."/error-".$product."-".$version;
     open(ERR2, "> $errfl2") or die "Couldn't open $errfl2";
     print ERR2 "\n";
-    print ERR1 "unsetenv_ CETPKG_NAME\n";
-    print ERR1 "unsetenv_ CETPKG_VERSION\n";
-    print ERR1 "unsetenv_ CETPKG_QUAL\n";
-    print ERR1 "unsetenv_ CETPKG_TYPE\n";
+    print ERR2 "unsetenv_ CETPKG_NAME\n";
+    print ERR2 "unsetenv_ CETPKG_VERSION\n";
+    print ERR2 "unsetenv_ CETPKG_QUAL\n";
+    print ERR2 "unsetenv_ CETPKG_TYPE\n";
     print ERR2 "echo \"ERROR: no qualifiers specified\"\n";
     print ERR2 "echo \"ERROR: add a defaultqual line to $pfile\"\n";
     print ERR2 "echo \"ERROR: or specify the qualifier(s) on the command line\"\n";
@@ -90,6 +90,8 @@ if ( $qual ) {
     exit 0;
   }
 }
+
+$cetfl = cetpkg_info_file( $product, $version, $qual, $type );
 
 $match = 0;
 print TSET "setenv UPS_OPTIONS -B\n";
