@@ -47,13 +47,17 @@ setenv CETPKG_BUILD `pwd`
 echo The working build directory is $CETPKG_BUILD
 echo The source code directory is $CETPKG_SOURCE
 
+set_ msg5='ERROR: setup of required products has failed'
+unset fail
 
 echo ----------- check this block for errors -----------------------
 # now get the rest of the products
 set_ cmd="$CETPKG_SOURCE/bin/set_dev_products $CETPKG_SOURCE/ups $CETPKG_BUILD simple"
 #echo Ready to run $cmd
 source `$cmd`
-test "$?" = 0 || return
+test "$?" = 0 || set_ fail="true"
+test "$fail" = "true" && echo "$msg5"
+test "$fail" = "true" && return 1
 echo ----------------------------------------------------------------
 
 # need to add the source code bin directory to path
@@ -78,5 +82,5 @@ echo cmake -DCMAKE_INSTALL_PREFIX=/install/path \$CETPKG_SOURCE
 
 # cleanup before exiting
 test "$ss" = csh && unalias tnotnull nullout set_ vecho_ return
-unset ss db me thisdir msg1 msg2 msg3 msg4
+unset ss db me thisdir msg1 msg2 msg3 msg4 msg5 fail
 unset set_ setenv unsetenv_ tnotnull nullout vecho_
