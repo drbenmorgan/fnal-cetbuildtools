@@ -98,6 +98,11 @@
 #
 # * <env> may be omitted. If so and the CLEAR option is not specified,
 #   then cet_test_env() is a NOP.
+#
+# * If cet_test_env() is called in a directory to set the environment
+#   for tests then that will be propagated to tests defined in
+#   subdirectories unless include(CetTest) or cet_test_env(CLEAR ...) is
+#   invoked in that directory.
 ########################################################################
 
 # Need argument parser.
