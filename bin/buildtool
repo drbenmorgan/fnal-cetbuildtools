@@ -54,7 +54,7 @@ usage: ${prog} [<mode-options>] [<misc-options>] [--] <make-build-options>
        ${prog} --help|-h
 
 Mode options: [-C|--cmake-only|-A|--all|--info] ||
-              { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
+              { [-b|--build] [-i|--install] [-p|--package] [-t|--test] [-T|--test-all] }
 
 Misc options: [-D<CMake-definition>]+ [-I|--install-prefix <install-location>]
               [-c|--clean] [-f|--force-top] [-j #]
@@ -105,6 +105,10 @@ CMake stage (which is always executed in the CETPKG_BUILD directory).
 -C|--cmake-only
 
   Execute *only* the CMake stage.
+
+-T|--test-all
+
+  Equivalent to -t --test-groups=all.
 
 -b|--build
 
@@ -416,7 +420,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-groups: -o +AD:CI:bcfhij:l::pqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups: -o +ACD:I:Tbcfhij:l::pqt -- "${@}"`
 if (( $? )); then
   usage 1
 fi
@@ -445,6 +449,10 @@ while true; do
       install_prefix=$2
       shift
       shift
+      ;;
+    -T|--test-all)
+      shift
+      set -- -t --test-groups all "${@}"
       ;;
     -b|--build)
       (( do_build = 1 ))
@@ -509,7 +517,11 @@ while true; do
       shift
       ;;
     --test-groups|--groups)
-      cmake_defs="${cmake_defs}-DCET_TEST_GROUPS=${2} "
+      if [[ -n "$test_groups" ]]; then
+        test_groups="${test_groups};${2}"
+      else
+        test_groups="${2}"
+      fi
       shift
       shift
       ;;
@@ -540,7 +552,7 @@ fi
 
 # Make sure output will appear as we'd like.
 if (( ${tee:-0} )); then
-  # You asked for stuff to the scren -- that's what you'll get.
+  # You asked for stuff to the screen -- that's what you'll get.
   unset quiet
   unset report
 elif (( ${quiet:-0} )); then
@@ -594,6 +606,8 @@ else # Check consistency.
     exit 2
   fi
 fi
+
+cmake_defs="${cmake_defs}-DCET_TEST_GROUPS=${test_groups} "
 
 # Set install prefix from wherever we can get it.
 install_prefix=${install_prefix:-${CETPKG_INSTALL}}
