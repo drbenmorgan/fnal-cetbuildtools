@@ -38,7 +38,7 @@ cet_report_compiler_flags()
 #find_ups_product( libsigcpp v2_2_10 )
 #find_ups_product( clhep v2_1_1_0 )
 
-find_ups_product( cetbuildtools v1_17_00 )
+find_ups_product( cetbuildtools v2_00_00 )
 #find_ups_product( cpp0x v1_03_00 )
 #find_ups_product( cetlib v1_03_00 )
 #find_ups_product( fhiclcpp v2_16_00 )
@@ -56,8 +56,8 @@ cet_check_gcc()
 
 # include search path
 # notice use of ENV to invoke an external variable
-include_directories ( $ENV{LIBSIGCPP_INC}/sigc++-2.0 )
-include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
+#include_directories ( $ENV{LIBSIGCPP_INC}/sigc++-2.0 )
+#include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
 
 # define CLHEP
 #find_library( CLHEP  NAMES CLHEP   PATHS $ENV{CLHEP_BASE}/lib )
@@ -75,9 +75,6 @@ include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
 #find_library( CPPUNIT NAMES cppunit   PATHS $ENV{CPPUNIT_LIB}   NO_DEFAULT_PATH )
 
 #find_library(SQLITE3 NAMES sqlite3 PATHS $ENV{SQLITE_LIB} NO_DEFAULT_PATH)
-
-# define common flags
-# set( CMAKE_CXX_LINK_FLAGS "${CPPUNIT} -luuid -ldl" )
 
 # source
 add_subdirectory (ToyCmake)
