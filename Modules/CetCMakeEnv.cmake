@@ -60,7 +60,7 @@ macro(cet_cmake_env)
 
   _get_cetpkg_info()
 
-  if( ${full_qualifier} )
+  if( full_qualifier )
     # extract base qualifier
     STRING( REGEX REPLACE ":debug" "" Q1 "${full_qualifier}" )
     STRING( REGEX REPLACE ":opt" "" Q2 "${Q1}" )
