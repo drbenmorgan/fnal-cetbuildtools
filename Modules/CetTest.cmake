@@ -1,6 +1,6 @@
 ########################################################################
-# Provide a cet_test macro to specify tests in a concise and
-# transparent way.
+# cet_test: specify tests in a concise and transparent way (see also
+#           cet_test_env, below).
 ########################################################################
 #
 # Usage: cet_test(target [<options>] [<args>] [<data-files>])
@@ -82,6 +82,28 @@
 #    by ";" (escape or protect with quotes) or "," See explanation of
 #    the OPTIONAL_GROUPS variable above for more details.
 ########################################################################
+# cet_test_env: set environment for all tests here specified.
+########################################################################
+#
+# Usage: cet_test_env([<options] [<env>])
+#
+####################################
+# Options:
+#
+# CLEAR
+#   Clear the global test environment (ie anything previously set with
+#    cet_test_env()) before setting <env>.
+####################################
+# Notes:
+#
+# * <env> may be omitted. If so and the CLEAR option is not specified,
+#   then cet_test_env() is a NOP.
+#
+# * If cet_test_env() is called in a directory to set the environment
+#   for tests then that will be propagated to tests defined in
+#   subdirectories unless include(CetTest) or cet_test_env(CLEAR ...) is
+#   invoked in that directory.
+########################################################################
 
 # Need argument parser.
 include(CetParseArgs)
@@ -109,6 +131,11 @@ SET(CET_TEST_GROUPS "NONE"
 
 STRING(TOUPPER "${CET_TEST_GROUPS}" CET_TEST_GROUPS_UC)
 
+SET(CET_TEST_ENV ""
+  CACHE INTERNAL "Environment to add to every test"
+  FORCE
+  )
+
 FUNCTION(_check_want_test CET_OPTIONAL_GROUPS CET_WANT_TEST)
   IF(NOT CET_OPTIONAL_GROUPS)
     SET(${CET_WANT_TEST} YES PARENT_SCOPE)
@@ -135,7 +162,19 @@ FUNCTION(_check_want_test CET_OPTIONAL_GROUPS CET_WANT_TEST)
 ENDFUNCTION()
 
 ####################################
-# Main macro definition.
+# Main macro definitions.
+MACRO(cet_test_env)
+  CET_PARSE_ARGS(CET_TEST
+    ""
+    "CLEAR"
+    ${ARGN}
+    )
+  IF(CET_TEST_CLEAR)
+    SET(CET_TEST_ENV "")
+  ENDIF()
+  LIST(APPEND CET_TEST_ENV ${CET_TEST_DEFAULT_ARGS})
+ENDMACRO()
+
 MACRO(cet_test CET_TARGET)
   # Parse arguments
   IF(${CET_TARGET} MATCHES .*/.*)
@@ -251,6 +290,15 @@ MACRO(cet_test CET_TARGET)
     ENDIF()
     IF(CET_TEST_PROPERTIES)
       SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES ${CET_TEST_PROPERTIES})
+    ENDIF()
+    IF(CET_TEST_ENV)
+      # Set global environment.
+      GET_TEST_PROPERTY(${CET_TARGET} ENVIRONMENT CET_TEST_ENV_TMP)
+      IF(CET_TEST_ENV_TMP)
+        SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES ENVIRONMENT "${CET_TEST_ENV};${CET_TEST_ENV_TMP}")
+      ELSE()
+        SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES ENVIRONMENT "${CET_TEST_ENV}")
+      ENDIF()
     ENDIF()
   ENDIF()
   IF(CET_INSTALL_EXAMPLE)
