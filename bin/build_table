@@ -135,18 +135,13 @@ sub create_table_bottom {
   print TBL "    prodDir( _FQ_DIR, \${\${UPS_PROD_NAME_UC}_FQ} )\n";
   }
   if( $include_directory eq "default" ) {
-  print TBL "    # faking out unsetup\n";
-  print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC,\"\") \n";
-  print TBL "    execute( \"find-path include \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_INC)\n";
-  print TBL "\n";
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, \${UPS_PROD_DIR}/include) \n";
   } elsif ( $include_directory eq "none" )   {
   } else {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, $include_directory) \n";
   }
   if( $lib_directory eq "default" ) {
-  print TBL "    # faking out unsetup\n";
-  print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB,\"\") \n";
-  print TBL "    execute( \"find-path lib \${\${UPS_PROD_NAME_UC}_FQ_DIR} \${UPS_PROD_DIR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_LIB)\n";
+  print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib) \n";
   print TBL "    pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
   print TBL "\n";
   } elsif ( $lib_directory eq "none" )   {
@@ -156,8 +151,7 @@ sub create_table_bottom {
   print TBL "\n";
   }
   if( $bin_directory eq "default" ) {
-  print TBL "    # add the bin directory to the path if it exists\n";
-  print TBL "    pathPrepend(PATH, \${UPS_PROD_DIR}/bin )\n";
+  print TBL "    # add the bin directory to the path\n";
   print TBL "    pathPrepend(PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/bin )\n";
   print TBL "    # dropit -E removes non-existent directories\n";
   print TBL "    Execute(dropit -E, NO_UPS_ENV, PATH)\n";
