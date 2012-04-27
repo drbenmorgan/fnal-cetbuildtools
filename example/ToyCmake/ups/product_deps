@@ -5,7 +5,7 @@ defaultqual a7
 product		version
 gcc		v4_6_1
 
-only_for_build cetbuildtools	v2_00_02
+only_for_build cetbuildtools	v2_00_03
 
 # Matrix of qualifiers versus dependent products
 qualifier	gcc	notes
