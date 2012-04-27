@@ -1,10 +1,6 @@
 
-echo
-echo Define LD_LIBRARY_PATH
 test -d "$CETPKG_BUILD/lib" || mkdir -p $CETPKG_BUILD/lib
 tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH `echo :${LD_LIBRARY_PATH}: | sed -e "s|:${CETPKG_BUILD}/lib:|:|" -e 's|^:||;s|:$||'`
 tnotnull CETPKG_BUILD && setenv LD_LIBRARY_PATH ${CETPKG_BUILD}/lib:${LD_LIBRARY_PATH}
 setenv LD_LIBRARY_PATH `dropit -D -p "$LD_LIBRARY_PATH"`
-echo LD_LIBRARY_PATH is now ${LD_LIBRARY_PATH}
-echo
 echo $CETPKG_BUILD/lib has been added to LD_LIBRARY_PATH
