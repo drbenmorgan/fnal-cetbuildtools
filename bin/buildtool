@@ -600,7 +600,7 @@ else # Check consistency.
     echo "ERROR: Build type has changed from $check_build_type to $CETPKG_TYPE: need clean build." 1>&2
     exit 2
   fi
-  check_qual="$(cmake_var qualifier)"
+  check_qual="$(cmake_var full_qualifier)"
   if [[ -n "$check_qual" ]] && [[ "$check_qual" != "$CETPKG_QUAL" ]]; then
     echo "ERROR: Qualifier has changed from \"$check_qual\" to \"$CETPKG_QUAL\": need clean build." 1>&2
     exit 2
