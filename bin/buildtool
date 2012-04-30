@@ -595,6 +595,14 @@ if (( ${clean:-0} )); then
   popd >/dev/null || cd "$CETPKG_BUILD" # 2>&1
   trap 2
 else # Check consistency.
+  # product_deps is read and acted upon during source of
+  # setup_for_development. If it's changed since then, we have a
+  # problem.
+  if [[ "$CETPKG_SOURCE/ups/product_deps" -nt "$CETPKG_BUILD/cetpkg_variable_reports" ]]; then
+    printf "ERROR: product_deps has changed since the last time setup_for_development\n"
+    printf "       was sourced: re-source before building.\n" 1>&2
+    exit 2
+  fi
   check_build_type="$(cmake_var CMAKE_BUILD_TYPE)"
   if [[ -n "$check_build_type" ]] && [[ "$check_build_type" != "$CETPKG_TYPE" ]]; then
     echo "ERROR: Build type has changed from $check_build_type to $CETPKG_TYPE: need clean build." 1>&2
