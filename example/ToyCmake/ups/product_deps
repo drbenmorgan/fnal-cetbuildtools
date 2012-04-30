@@ -1,10 +1,20 @@
+# See $CETBUILDTOOLS_DIR/templates/product_deps.template for a more
+# fully annotated product_deps file.
+
+# Product specification
 parent toycmake v1_01_00
 defaultqual a7
-#
+
+# Table-file variable setup specification.
+incdir      product_dir include
+libdir      fq_dir      lib
+bindir      fq_dir      bin
+
 # define product/version pairs
 product		version
 gcc		v4_6_1
 
+# Build-only dependencies.
 only_for_build cetbuildtools	v2_00_03
 
 # Matrix of qualifiers versus dependent products
@@ -12,3 +22,11 @@ qualifier	gcc	notes
 a7:debug	-nq-
 a7:opt		-nq-
 a7:prof		-nq-
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:
+
+# vi:set ts=8 noexpandtab:

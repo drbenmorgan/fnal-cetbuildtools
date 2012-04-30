@@ -3,14 +3,17 @@
 parent xxx	v1_00_11
 defaultqual	a7
 
-# These optional lines define the installed directories where
-# headers, libraries, and executables will be found
-# Use them only if your product does not conform to the defaults
+# These optional lines define the installed directories where headers,
+# libraries, and executables will be found.
+#
 # Format: directory_type directory_path directory_name
+#
 # The only recognized values of the first field are incdir, libdir, and bindir
 # The only recognized values of the second field are product_dir and fq_dir
-# The third field is not constrained
-# The examples here reflect the defaults
+# The third field is not constrained.
+#
+# If a particular directory_type is not specified that item will not be
+# set up in the UPS table file.
 incdir      product_dir include
 libdir      fq_dir      lib
 bindir      fq_dir      bin
@@ -48,3 +51,11 @@ mu2e:prof	a7:prof		mu2e:prof	gcc46:prof	gcc46:prof	gcc46:prof	gcc46	gcc46	gcc46:
 nova:debug	a7:debug	nova:debug	gcc46:debug	gcc46:debug	gcc46:debug	gcc46	gcc46	gcc46:debug	-nq-
 nova:opt	a7:opt		nova:opt	gcc46:opt	gcc46:opt	gcc46:opt	gcc46	gcc46	gcc46:opt	-nq-
 nova:prof	a7:prof		nova:prof	gcc46:prof	gcc46:prof	gcc46:prof	gcc46	gcc46	gcc46:prof	-nq-
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:
+
+# vi:set ts=8 noexpandtab:

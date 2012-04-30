@@ -1,5 +1,4 @@
-# There should be as little as possible here,
-# with most of the heavy lifting done by other small scripts
+# NO USER-SERVICEABLE PARTS BELOW.
 #
 # When sourcing this file from a script, you may have to tell this
 # source file where it is via the fw_db shell (or env) variable.
