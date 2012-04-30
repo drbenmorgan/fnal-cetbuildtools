@@ -598,7 +598,7 @@ else # Check consistency.
   # product_deps is read and acted upon during source of
   # setup_for_development. If it's changed since then, we have a
   # problem.
-  if [[ "$CETPKG_SOURCE/ups/product_deps" -nt "$CETPKG_BUILD/cetpkg_variable_reports" ]]; then
+  if [[ "$CETPKG_SOURCE/ups/product_deps" -nt "$CETPKG_BUILD/cetpkg_variable_report" ]]; then
     printf "ERROR: product_deps has changed since the last time setup_for_development\n"
     printf "       was sourced: re-source before building.\n" 1>&2
     exit 2
