@@ -92,6 +92,7 @@ if ( $qual ) {
 }
 
 $cetfl = cetpkg_info_file( $product, $version, $qual, $type );
+(%ohash) = find_optional_products( $pfile );
 
 $match = 0;
 print TSET "setenv UPS_OPTIONS -B\n";
@@ -111,16 +112,19 @@ foreach $i ( 1 .. $#qlist ) {
     foreach $j ( 1 .. $ndeps ) {
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
-	print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
+        print_setup_noqual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ohash{$qlist[0][$j]}, TSET );
+	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
       } elsif ( $qlist[$i][$j] eq "-b-" ) {
-	print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
+        print_setup_noqual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ohash{$qlist[0][$j]}, TSET );
+	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
       } else {
 	@qwords = split(/:/,$qlist[$i][$j]);
 	$ql="+".$qwords[0];
 	foreach $j ( 1 .. $#qwords ) {
 	  $ql = $ql.":+".$qwords[$j];
 	}
-	print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
+        print_setup_qual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ql, $ohash{$qlist[0][$j]}, TSET );
+	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
       }
     }
   }

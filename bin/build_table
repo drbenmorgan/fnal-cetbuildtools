@@ -29,6 +29,7 @@ $pfile=$inputdir."/product_deps";
 ($product, $version, $default_qual, %phash) = parse_product_list( $pfile );
 ($ndeps, @qlist) = parse_qualifier_list( $pfile );
 $have_fq = check_fq_dir( $pfile );
+(%ohash) = find_optional_products( $pfile );
 
 print "creating table file for $product $version\n";
 $table = $outputdir."/".$product.".table";
@@ -65,7 +66,11 @@ sub no_quals {
     foreach $j ( 1 .. $ndeps ) {
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
-        print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
+        if( $ohash{$qlist[0][$j]} eq "optional" ) {
+          print TBL "    setupOptional( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
+        } else {
+          print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
+	}
       } elsif ( $qlist[$i][$j] eq "-b-" ) {
       } else {
         @qwords = split(/:/,$qlist[$i][$j]);
@@ -73,7 +78,11 @@ sub no_quals {
 	foreach $j ( 1 .. $#qwords ) {
 	  $ql = $ql.":+".$qwords[$j];
 	}
-        print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql )\n";
+        if( $ohash{$qlist[0][$j]} eq "optional" ) {
+          print TBL "    setupOptional( $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql )\n";
+        } else {
+          print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql )\n";
+	}
       }
     }
   }
@@ -100,7 +109,11 @@ sub create_quals {
     foreach $j ( 1 .. $ndeps ) {
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
-        print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
+        if( $ohash{$qlist[0][$j]} eq "optional" ) {
+          print TBL "    setupOptional( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
+        } else {
+          print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} )\n";
+	}
       } elsif ( $qlist[$i][$j] eq "-b-" ) {
       } else {
         @qwords = split(/:/,$qlist[$i][$j]);
@@ -108,7 +121,11 @@ sub create_quals {
 	foreach $j ( 1 .. $#qwords ) {
 	  $ql = $ql.":+".$qwords[$j];
 	}
-        print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql )\n";
+        if( $ohash{$qlist[0][$j]} eq "optional" ) {
+          print TBL "    setupOptional( $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql )\n";
+        } else {
+          print TBL "    setupRequired( $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql )\n";
+	}
       }
     }
     print TBL "\n";
