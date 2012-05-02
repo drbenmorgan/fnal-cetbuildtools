@@ -15,7 +15,7 @@ product		version
 gcc		v4_6_1
 
 # Build-only dependencies.
-only_for_build cetbuildtools	v2_00_06
+only_for_build cetbuildtools	v2_01_00
 
 # Matrix of qualifiers versus dependent products
 qualifier	gcc	notes
