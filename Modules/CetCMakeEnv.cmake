@@ -51,6 +51,9 @@ macro(_get_cetpkg_info)
    set(version ${rversion} CACHE STRING "Package UPS version" FORCE)
    set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
    #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${full_qualifier}")
+   STRING( REGEX REPLACE ":" ";" qlist "${full_qualifier}" )
+   set(qualifier_as_list ${qlist} CACHE STRING "Package UPS qualifiers as a cmake list" FORCE)
+   #message(STATUS "_get_cetpkg_info: qual list ${qualifier_as_list}")
 
 endmacro(_get_cetpkg_info)
 
