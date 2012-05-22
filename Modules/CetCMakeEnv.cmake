@@ -8,6 +8,11 @@
 # make sure gcc has been setup
 # cet_check_gcc()
 # 
+# search for a particular qualifier string 
+# (e.g. "a7" in "a7:debug")
+# returns ${CET_HAVE_QUAL}
+# cet_have_qual( <qualifier> )
+
 
 macro(_get_cetpkg_info)
 
@@ -51,9 +56,6 @@ macro(_get_cetpkg_info)
    set(version ${rversion} CACHE STRING "Package UPS version" FORCE)
    set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
    #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${full_qualifier}")
-   STRING( REGEX REPLACE ":" ";" qlist "${full_qualifier}" )
-   set(qualifier_as_list ${qlist} CACHE STRING "Package UPS qualifiers as a cmake list" FORCE)
-   #message(STATUS "_get_cetpkg_info: qual list ${qualifier_as_list}")
 
 endmacro(_get_cetpkg_info)
 
@@ -126,3 +128,15 @@ macro(cet_check_gcc)
   #message(STATUS "GCC version is ${GCC_VERSION}")
 
 endmacro(cet_check_gcc)
+
+macro( cet_have_qual findq )
+   STRING( REGEX REPLACE ":" ";" qualifier_as_list "${full_qualifier}" )
+   set( CET_HAVE_QUAL "TRUE")
+   #message(STATUS "cet_have_qual: qual list ${qualifier_as_list}")
+   list(FIND qualifier_as_list ${findq} qual_index)
+   #message(STATUS "cet_have_qual: qual_index is ${qual_index}")
+   if( ${qual_index} LESS 0 ) 
+     set( CET_HAVE_QUAL "FALSE")
+   endif()
+   #message(STATUS "cet_have_qual: returning ${CET_HAVE_QUAL}")
+endmacro(cet_have_qual)
