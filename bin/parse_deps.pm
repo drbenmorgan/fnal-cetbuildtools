@@ -414,4 +414,21 @@ sub print_setup_qual {
   return 0;
 }
 
+sub compare_qual {
+  my @params = @_;
+  my @ql1 = split(/:/,$params[0]);
+  my @ql2 = split(/:/,$params[1]);
+  my $retval = 0;
+  if( $#ql1 != $#ql2 ) { return $retval; }
+  my $size = $#ql2 + 1;
+  $qmatch = 0;
+  foreach $i ( 0 .. $#ql1 ) {
+    foreach $j ( 0 .. $#ql2 ) {
+      if( $ql1[$i] eq $ql2[$j] )  { $qmatch++; }
+    }
+  }
+  if( $qmatch == $size ) { $retval = 1; }
+  return $retval;
+}
+
 1;

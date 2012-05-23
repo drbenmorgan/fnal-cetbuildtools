@@ -107,7 +107,7 @@ if ( $simple ) {
 }
 print TSET "setup cetpkgsupport \n";
 foreach $i ( 1 .. $#qlist ) {
-  if ( $qlist[$i][0] eq $qual ) {
+  if ( compare_qual( $qlist[$i][0], $qual ) ) {
     $match++;
     foreach $j ( 1 .. $ndeps ) {
       if ( $qlist[$i][$j] eq "-" ) {
