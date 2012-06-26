@@ -1,4 +1,4 @@
-#!/bin/env perl
+#!/usr/bin/env perl
 #
 # setup products for the build environment
 # use product_deps and qualifier_deps
