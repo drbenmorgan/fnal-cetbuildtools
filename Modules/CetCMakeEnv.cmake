@@ -71,6 +71,9 @@ macro(cet_cmake_env)
     STRING( REGEX REPLACE ":opt" "" Q2 "${Q1}" )
     STRING( REGEX REPLACE ":prof" "" Q3 "${Q2}" )
     set(qualifier ${Q3} CACHE STRING "Package UPS qualifier" FORCE)
+    if(qualifier)
+      # NOP to quell warning
+    endif()
     #message( STATUS "full qual ${full_qualifier} reduced to ${qualifier}")
   endif()
 
