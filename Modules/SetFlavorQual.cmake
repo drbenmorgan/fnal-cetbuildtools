@@ -16,10 +16,10 @@ set(arch "${ARGN}")
 # sl5 is 2.6.18
 # sl4 is 2.6.9
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
-   # set sltype
+   # set OSTYPE
    FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name )
    execute_process(COMMAND ${CETB_GET_DIRECTORY_NAME} os 
-                   OUTPUT_VARIABLE SLTYPE 
+                   OUTPUT_VARIABLE OSTYPE
 		   OUTPUT_STRIP_TRAILING_WHITESPACE
 		   )
    # find ups flavor
@@ -63,37 +63,26 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
        endif()
    endif ()
 endif ()
+# CHG 2012/06/22 - Changed this since uname now produces Darwin version
+# for Snow Leopard and (hopefully) later.
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-   if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^10.4.*" )
-       set( SLTYPE d8 )
-       set( UPSFLAVOR Darwin+8 )
-   endif()
-   if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^10.5.*" )
-       set( SLTYPE d9 )
-       set( UPSFLAVOR Darwin+9 )
-   endif()
-   if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^10.6.*" )
-       set( SLTYPE d10 )
-       set( UPSFLAVOR Darwin+10 )
-   endif()
-   if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^10.7.*" )
-       set( SLTYPE d11 )
-       set( UPSFLAVOR Darwin+11 )
-   endif()
+   STRING(REGEX MATCH "^([0-9]+)" DARWIN_VERSION "${CMAKE_HOST_SYSTEM_VERSION}")
+   set( OSTYPE "d${DARWIN_VERSION}" )
+   set( UPSFLAVOR "Darwin+${DARWIN_VERSION}" )
 endif ()
-message(STATUS "Building for ${CMAKE_SYSTEM_NAME} ${SLTYPE} ${CMAKE_SYSTEM_PROCESSOR}" )
+message(STATUS "Building for ${CMAKE_SYSTEM_NAME} ${OSTYPE} ${CMAKE_SYSTEM_PROCESSOR}" )
 
 if ( arch )
-   set( SLTYPE ${arch} )
+   set( OSTYPE ${arch} )
    set( UPSFLAVOR ${arch} )
    if( ${arch} MATCHES "noarch" )
-       set( SLTYPE ${arch} )
+       set( OSTYPE ${arch} )
        set( UPSFLAVOR NULL )
    endif ()
 endif ()
-# require SLTYPE
-if ( NOT SLTYPE )
-  message(FATAL_ERROR "Can't determine system type")
+# require OSTYPE
+if ( NOT OSTYPE )
+  message(FATAL_ERROR "Can't determine system type from ${CMAKE_HOST_SYSTEM_VERSION}")
 endif ()
 
 # all qualifiers are passed
@@ -101,9 +90,9 @@ STRING( REGEX REPLACE ":" "." QUAL_SUBDIR "${full_qualifier}" )
 #message(STATUS "qualifiers: ${full_qualifier} ${QUAL_SUBDIR}")
 
 if( ${arch} MATCHES "noarch" )
-    SET (flavorqual ${SLTYPE}.${QUAL_SUBDIR} )
+    SET (flavorqual ${OSTYPE}.${QUAL_SUBDIR} )
 else ()
-    SET (flavorqual ${SLTYPE}.${CMAKE_SYSTEM_PROCESSOR}.${QUAL_SUBDIR})
+    SET (flavorqual ${OSTYPE}.${CMAKE_SYSTEM_PROCESSOR}.${QUAL_SUBDIR})
 endif ()
 SET (flavorqual_dir ${product}/${version}/${flavorqual} )
 
