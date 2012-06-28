@@ -50,7 +50,7 @@ function usage() {
   fi
   (( exitval = ${1:-1} ))
   cat 1>&2 <<EOF
-usage: ${prog} [<mode-options>] [<misc-options>] [--] <make-build-options>
+usage: ${prog} [<mode-options>] [<misc-options>] [--] [<make-build-options>]
        ${prog} --help|-h
 
 Mode options: [-C|--cmake-only|-A|--all|--info] ||
