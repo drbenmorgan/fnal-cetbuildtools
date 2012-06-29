@@ -75,6 +75,7 @@ sub mark_for_update {
       error("mark_for_update: bad package / version $cetpackage / $version.");
       return 1;
     }
+    $version =~ s&^v&&;   # Strip any leading "v."
   }
   $bumped_versions{$cetpackage} = $version;
 }
