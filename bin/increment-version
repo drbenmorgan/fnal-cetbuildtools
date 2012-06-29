@@ -21,7 +21,8 @@ my %bumped_versions = ();
 my $wanted_version;
 
 GetOptions($options,
-           "dir|d=s@",
+           "debug|d",
+           "client-dir|c=s@",
            "dry-run|n",
            "help|h|?",
            "M|major", \&set_mode,
@@ -35,8 +36,14 @@ GetOptions($options,
 
 $options->{help} and pod2usage(-exitval => 1, -verbose => 3);
 
-unless (scalar keys %bumped_versions) {
+$options->{"dry-run"} and report("Dry run: no actual changes made!");
+
+if (scalar keys %bumped_versions) { # update-only.
+  $options->{"client-dir"} = ( "." )
+    unless exists $options->{"client-dir"};
+} else { # Normal mode
   if (not defined $options->{mode}) {
+    error("Expected exactly one mode specification.");
     pod2usage(-exitval => 2);
   }
   foreach my $loc ((scalar @ARGV)?@ARGV:(".")) {
@@ -135,13 +142,14 @@ sub inc_version {
   close(OUT);
   if (system("diff -qwu \"$deps_file\" \"$tmp\" >/dev/null 2>&1")) {
     unless ($options->{"dry-run"}) {
-      if (system("mv", "$tmp", "$deps_file")) {
+      if (system("cp", "$tmp", "$deps_file")) {
         ERROR("Updating $deps_file from $tmp: $!");
         exit(1);
       }
     }
     mark_for_update($cetpackage, $new_version);
   }
+  unlink($tmp) unless $options->{debug};
 }
 
 sub maybe_new_version {
@@ -166,7 +174,7 @@ sub update_one_client {
   my ($stem, $cetpackage, $version, @v, $new_version);
   while (<IN>) {
     chomp;
-    m&^\s*#& and next;
+    m&^\s*(?:#|$)& and next;
     ($stem, $cetpackage, $version, @v) =
       (m&^(\s*parent\s+(\S+)\s+v)((\d+)_(\d+)(?:_(\d+)(?:p(\d+))?)?(.*))$&)
         unless $cetpackage;
@@ -177,7 +185,9 @@ sub update_one_client {
       if ($found_prod and $found_version) {
         my $new_version = maybe_new_version($found_prod);
         if ($new_version and $found_version ne $new_version) {
-          report "Updating ${cetpackage}'s use of $found_prod from $found_version to $new_version.";
+          report "Updating ${cetpackage}'s use of $found_prod from $found_version to $new_version in ",
+            dirname($File::Find::dir),
+              ".";
           s&^\Q$stem$found_version&${stem}$new_version&;
         }
       } else {
@@ -192,24 +202,19 @@ sub update_one_client {
   close(OUT);
   if (system("diff -qwu \"$file_to_update\" \"$tmp\" >/dev/null 2>&1")) {
     unless ($options->{"dry-run"}) {
-      if (system("mv", "$tmp", "$file_to_update")) {
+      if (system("cp", "$tmp", "$file_to_update")) {
         error("Updating $file_to_update from $tmp: $!");
         exit(1);
       }
     }
   }
+  unlink($tmp) unless $options->{debug};
 }
 
 sub update_clients {
-  File::Find::find({wanted => \&wanted}, @{$options->{dir}})
-      if (defined $options->{dir} and scalar keys %bumped_versions);
+  File::Find::find({wanted => \&wanted}, @{$options->{"client-dir"}})
+      if (defined $options->{"client-dir"} and scalar keys %bumped_versions);
 }
-
-# for the convenience of &wanted calls, including -eval statements:
-use vars qw/*name *dir *prune/;
-*name   = *File::Find::name;
-*dir    = *File::Find::dir;
-*prune  = *File::Find::prune;
 
 sub wanted {
     my ($dev,$ino,$mode,$nlink,$uid,$gid);
@@ -225,10 +230,9 @@ __END__
 
 =head1 NAME
 
-increment-version: Increment the current version of a
-                   cetbuildtools-style package.
+increment-version: Increment the current version of a cetbuildtools-style package.
 
-=head1 SYNOPSIS.
+=head1 SYNOPSIS
 
 B<increment-version> I<mode> [I<options>] [--] [I<package-loc>+]
 
@@ -239,8 +243,8 @@ I<mode>: [ B<-M> | B<--major>] | [ B<-m> | B<--minor> ] |
       [ B<--update-only> I<package>,I<version> |
         B<-U> I<package>,I<version> ]
 
-I<options>: [ B<-d> I<package-client-search-path> |
-           B<--dir> I<package-client-search-path> ]+ |
+I<options>: [ B<--client-dir> I<package-client-search-path> |
+           B<-c> I<package-client-search-path> ]+ |
          [ B<--dry-run> | B<-n> ] |
          [ B<--verbose> | B<-v> ]
 
@@ -257,13 +261,14 @@ I<increment-version> will increment the current version of a
 cetbuildtools-style package. Optionally find all other package where
 said package is listed as a dependency and update the required version.
 
+
 =head2 ARGUMENTS
 
 =over
 
 =item I<package-loc>
 
-Path to top directory of package whose version should be
+Path to top directory of package whose version should be bumped.
 
 =back
 
@@ -309,7 +314,7 @@ Increment the patch number.
 =item B<-U> I<package>,I<version>
 
 Do not increment any version numbers; simply navigate the directories
-specified with the B<--dir> option (or ./ if not specified) to update
+specified with the B<--client-dir> option (or ./ if not specified) to update
 any references to the named package(s) to use the specified version(s)
 thereof.
 
@@ -319,13 +324,20 @@ thereof.
 
 =over
 
-=item B<--dir> I<package-client-search-path>
+=item B<--client-dir> I<package-client-search-path>
 
-=item B<-d> I<package-client-search-path>
+=item B<-c> I<package-client-search-path>
 
 Specify a directory to search for I<product_deps> files in which to
 update the set-up versions of the updated prodoct(s); or those of
 products specified with B<-U>.
+
+
+=item B<--debug>
+
+=item B<-d>
+
+Debug mode: leave temporary files available.
 
 
 =item B<--dry-run>
