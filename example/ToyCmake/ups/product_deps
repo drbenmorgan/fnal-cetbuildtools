@@ -12,10 +12,10 @@ bindir      fq_dir      bin
 
 # define product/version pairs
 product		version
-gcc		v4_6_1
+gcc		v4_7_1
 
 # Build-only dependencies.
-only_for_build cetbuildtools	v2_01_01
+only_for_build cetbuildtools	v2_01_02
 
 # Matrix of qualifiers versus dependent products
 qualifier	gcc	notes
