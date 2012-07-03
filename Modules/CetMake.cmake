@@ -4,10 +4,11 @@
 # Users may opt to just include cet_make() in their CMakeLists.txt
 # This implementation is intended to be called NO MORE THAN ONCE per subdirectory.
 #
-# cet_make( [LIBRARY_NAME <library name>]  
-#           [LIBRARIES <library list>]  
-#           [EXEC <exec source>] 
-#           [TEST <test source>] )
+# cet_make( [LIBRARY_NAME <library name>]
+#           [LIBRARIES <library list>]
+#           [EXEC <exec source>]
+#           [TEST <test source>]
+#           [EXCLUDE <ignore these files>] )
 #
 
 include(CetParseArgs)
