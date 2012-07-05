@@ -20,14 +20,22 @@
 # Plus the diagnostic option set indicated by the DIAG option.
 #
 # Optional arguments
-#    DIAGS
+#    DIAGS <diag-level>
 #      This option may be CAVALIER, CAUTIOUS, VIGILANT or PARANOID.
 #      Default is CAUTIOUS.
-#    EXTRA_FLAGS (applied to both C and CXX)
-#    EXTRA_C_FLAGS
-#    EXTRA_CXX_FLAGS
-#    EXTRA_DEFINITIONS
+#    ENABLE_ASSERTS
+#      Enable asserts regardless of debug level (default is to disable
+#      asserts for PROF and OPT levels).
+#    EXTRA_FLAGS (applied to both C and CXX) <flags>
+#    EXTRA_C_FLAGS <flags>
+#    EXTRA_CXX_FLAGS <flags>
+#    EXTRA_DEFINITIONS <flags>
 #      This list parameters will append tbe appropriate items.
+#    NO_UNRESOLVED
+#      Unresolved symbols will cause an error when making a shared
+#      library.
+#    WERROR
+#      All warnings are flagged as errors.
 #
 ####################################
 # cet_enable_asserts()
@@ -205,7 +213,7 @@ endmacro(cet_remove_compiler_flag)
 macro( cet_set_compiler_flags )
   CET_PARSE_ARGS(CSCF
     "DIAGS;EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
-    "ENABLE_ASSERTS;WERROR"
+    "ENABLE_ASSERTS;NO_UNRESOLVED;WERROR"
     ${ARGN}
     )
 
@@ -231,8 +239,12 @@ macro( cet_set_compiler_flags )
     SET(CSCF_DIAGS "CAUTIOUS")
   endif()
 
+  if (CSCF_NO_UNRESOLVED)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-unresolved")
+  endif()
+
   if (CSCF_WERROR)
-    SET(CSCF_WERROR "-Werror")
+    set(CSCF_WERROR "-Werror")
   else()
     set(CSCF_WERROR "")
   endif()
