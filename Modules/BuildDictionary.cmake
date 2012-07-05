@@ -23,7 +23,9 @@ set( GENREFLEX_FLAGS
   -DGNU_SOURCE
   -DGNU_GCC
   -DPROJECT_NAME="${PROJECT_NAME}"
-  -DPROJECT_VERSION="${version}" )
+  -DPROJECT_VERSION="${version}"
+  -D__STRICT_ANSI__
+)
 
 macro( _set_dictionary_name )
    if( PACKAGE_TOP_DIRECTORY )
