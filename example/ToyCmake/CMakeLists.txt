@@ -38,7 +38,7 @@ cet_report_compiler_flags()
 #find_ups_product( libsigcpp v2_2_10 )
 #find_ups_product( clhep v2_1_1_0 )
 
-find_ups_product( cetbuildtools v2_00_00 )
+find_ups_product( cetbuildtools v2_01_00 )
 #find_ups_product( cpp0x v1_03_00 )
 #find_ups_product( cetlib v1_03_00 )
 #find_ups_product( fhiclcpp v2_16_00 )
