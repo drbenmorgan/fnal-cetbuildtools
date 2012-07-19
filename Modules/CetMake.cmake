@@ -4,27 +4,38 @@
 # Users may opt to just include cet_make() in their CMakeLists.txt
 # This implementation is intended to be called NO MORE THAN ONCE per subdirectory.
 #
-# cet_make( [LIBRARY_NAME <library name>]
-#           [LIBRARIES <library list>]
+# cet_make( [LIBRARY_NAME <library name>]  
+#           [LIBRARIES <library list>]  
+#           [SUBDIRS <source subdirectory>] (e.g., detail)
 #           [EXEC <exec source>]
 #           [TEST <test source>]
 #           [EXCLUDE <ignore these files>] )
 #
+# NOTE: if your code includes art plugins, you MUST use art_make instead of cet_make.
+# cet_make will ignore all plugin code
+#
+# cet_make_exec( name liblist )
+# -- build a regular executable
+# -- used by art_make and cet_make
+#
+# cet_make_test_exec( name liblist )
+# -- build a test executable
+# -- used by art_make and cet_make
 
 include(CetParseArgs)
 include(InstallSource)
 
-macro( _cet_exec name liblist )
-  #message(STATUS "debug: _cet_exec called with ${name} ${liblist}")
+macro( cet_make_exec name liblist )
+  #message(STATUS "debug: cet_make_exec called with ${name} ${liblist}")
   get_filename_component(name_ext ${name} EXT)
   STRING( REGEX REPLACE "(.*)${name_ext}" "\\1" base_name "${name}" )
-  #message(STATUS "debug: _cet_exec base name is ${base_name} ")
+  #message(STATUS "debug: cet_make_exec base name is ${base_name} ")
   add_executable( ${base_name} ${name} )
   target_link_libraries( ${base_name} ${liblist} )
   install( TARGETS ${base_name} DESTINATION ${flavorqual_dir}/bin )
-endmacro( _cet_exec )
+endmacro( cet_make_exec )
 
-macro( _cet_test_exec name liblist )
+macro( cet_make_test_exec name liblist )
   #message(STATUS "debug: _cet_test called with ${name} ${liblist}")
   get_filename_component(name_ext ${name} EXT)
   STRING( REGEX REPLACE "(.*)${name_ext}" "\\1" base_name "${name}" )
@@ -32,19 +43,13 @@ macro( _cet_test_exec name liblist )
   add_executable( ${base_name} ${name} )
   target_link_libraries( ${base_name} ${liblist} )
   ADD_TEST(${base_name} ${EXECUTABLE_OUTPUT_PATH}/${base_name})
-endmacro( _cet_test_exec )
-
-macro( _cet_simple_plugin file type liblist )
-    STRING( REGEX REPLACE "^${CMAKE_CURRENT_SOURCE_DIR}/(.*)_${type}.cc" "\\1" plugbase "${file}" )
-    message(STATUS "cet_make: have ${type} plugin ${plugbase} from ${file}")
-    simple_plugin( ${plugbase} ${type} ${liblist} )
-endmacro( _cet_simple_plugin )
+endmacro( cet_make_test_exec )
 
 macro( cet_make )
   set(cet_file_list "")
   set(cet_make_usage "USAGE: cet_make( [LIBRARIES <library list>] [EXEC <exec source>]  [TEST <test source>] [EXCLUDE <ignore these files>] )")
   #message(STATUS "cet_make debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CM "LIBRARY_NAME;LIBRARIES;EXEC;TEST;EXCLUDE" "" ${ARGN})
+  cet_parse_args( CM "LIBRARY_NAME;LIBRARIES;EXEC;SUBDIRS;TEST;EXCLUDE" "" ${ARGN})
   # there are no default arguments
   if( CM_DEFAULT_ARGS )
      message("CET_MAKE: Incorrect arguments. ${ARGV}")
@@ -68,11 +73,22 @@ macro( cet_make )
   # now look for other source files in this directory
   #message(STATUS "cet_make debug: listed files ${cet_file_list}")
   FILE( GLOB src_files *.c *.cc *.cpp *.C *.cxx )
-  FILE( GLOB plugin_sources  *_source.cc )
-  FILE( GLOB plugin_services *_service.cc )
-  FILE( GLOB plugin_modules  *_module.cc )
-  if( plugin_sources OR plugin_services OR plugin_modules )
-    LIST( REMOVE_ITEM src_files ${plugin_sources} ${plugin_services} ${plugin_modules} )
+  FILE( GLOB ignore_plugins  *_source.cc *_service.cc  *_module.cc )
+  # also check subdirectories
+  if( CM_SUBDIRS )
+     foreach( sub ${CM_SUBDIRS} )
+	FILE( GLOB subdir_src_files ${sub}/*.c ${sub}/*.cc ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx )
+	FILE( GLOB subdir_ignore_plugins  ${sub}/*_source.cc ${sub}/*_service.cc  ${sub}/*_module.cc )
+        if( subdir_src_files )
+	  list(APPEND  src_files ${subdir_src_files})
+        endif( subdir_src_files )
+        if( subdir_ignore_plugins )
+	  list(APPEND  ignore_plugins ${subdir_ignore_plugins})
+        endif( subdir_ignore_plugins )
+     endforeach(sub)
+  endif( CM_SUBDIRS )
+  if( ignore_plugins )
+    LIST( REMOVE_ITEM src_files ${ignore_plugins} )
   endif()
   #message(STATUS "cet_make debug: exclude files ${CM_EXCLUDE}")
   if(CM_EXCLUDE)
@@ -121,17 +137,6 @@ macro( cet_make )
     message( STATUS "cet_make: no library for ${CMAKE_CURRENT_SOURCE_DIR}")
   endif( )
 
-  # process plugin lists
-  foreach( plugin_file ${plugin_sources} )
-    _cet_simple_plugin( ${plugin_file} "source" ${cet_liblist} )
-  endforeach( plugin_file )
-  foreach( plugin_file ${plugin_services} )
-    _cet_simple_plugin( ${plugin_file} "service" ${cet_liblist} )
-  endforeach( plugin_file )
-  foreach( plugin_file ${plugin_modules} )
-    _cet_simple_plugin( ${plugin_file} "module" ${cet_liblist} )
-  endforeach( plugin_file )
-
   # is there a dictionary?
   FILE(GLOB dictionary_header classes.h )
   FILE(GLOB dictionary_xml classes_def.xml )
@@ -148,12 +153,12 @@ macro( cet_make )
   # OK - now build the executables
   if(CM_EXEC)
      foreach( exec_file ${CM_EXEC} )
-        _cet_exec( ${exec_file} "${cet_liblist}" "${cet_make_library_name}" )
+        cet_make_exec( ${exec_file} "${cet_liblist}" "${cet_make_library_name}" )
      endforeach( exec_file )
   endif()
   if(CM_TEST)
      foreach( test_file ${CM_TEST} )
-        _cet_test_exec( ${test_file} "${cet_liblist}" "${cet_make_library_name}" )
+        cet_make_test_exec( ${test_file} "${cet_liblist}" "${cet_make_library_name}" )
      endforeach( test_file )
   endif()
 
