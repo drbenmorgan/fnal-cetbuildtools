@@ -13,6 +13,6 @@ setup -B sqlite v3_07_08_00 -q +$compilerqual$extraqual
 # set up CET products
 # you need cetpkgsupport and cetbuildtools
 setup cetpkgsupport
-setup -B cetbuildtools v1_15_09
+setup -B cetbuildtools v1_15_10
 # use if your package includes art
 setup -B art v1_00_08 -q +$CETPKG_QUAL$extraqual
