@@ -29,6 +29,7 @@ GetOptions($options,
            "m|minor", \&set_mode,
            "p|patch", \&set_mode,
            "s|set-version=s", \&set_mode,
+	   "tag",
            "verbose|v",
            "u|micro", \&set_mode,
            "update-only|U=s", \&mark_for_update
@@ -53,6 +54,8 @@ if (scalar keys %bumped_versions) { # update-only.
 
 update_clients();
 
+maybe_commit_and_tag();
+
 1;
 
 sub set_mode {
@@ -68,16 +71,17 @@ sub set_mode {
 }
 
 sub mark_for_update {
-  my ($cetpackage, $version) = @_;
+  my ($cetpackage, $version, $loc) = @_;
   if ($cetpackage eq "update-only") { # Argument processing.
-    ($cetpackage, $version) = split /,/, $version;
+      ($cetpackage, $version) = split /,/, $version;
     unless ($cetpackage and $version) {
       error("mark_for_update: bad package / version $cetpackage / $version.");
       return 1;
     }
     $version =~ s&^v&&;   # Strip any leading "v."
   }
-  $bumped_versions{$cetpackage} = $version;
+  $bumped_versions{$cetpackage} = { version => $version };
+  $bumped_versions{$cetpackage}->{loc} = $loc if $loc;
 }
 
 sub info {
@@ -148,7 +152,7 @@ sub inc_version {
         exit(1);
       }
     }
-    mark_for_update($cetpackage, $new_version);
+    mark_for_update($cetpackage, $new_version, $loc);
   }
   unlink($tmp) unless $options->{debug};
 }
@@ -156,7 +160,7 @@ sub inc_version {
 sub maybe_new_version {
   my $cetpackage = shift;
   if (exists $bumped_versions{$cetpackage}) {
-    return $bumped_versions{$cetpackage};
+    return $bumped_versions{$cetpackage}->{version};
   } else {
     return;
   }
@@ -225,6 +229,23 @@ sub wanted {
         update_one_client($_);
 }
 
+sub maybe_commit_and_tag {
+    foreach my $cetpackage (keys %bumped_versions) {
+	my $loc = $bumped_versions{$cetpackage}->{loc} or next;
+	my $cmd =
+	    sprintf("pwd; cd \"%s\" && git commit -m 'Bump version to %s' ups/product_deps && git tag -fam 'Bump version for release' v%s",
+		    $loc,
+		    $bumped_versions{$cetpackage}->{version},
+		    $bumped_versions{$cetpackage}->{version}
+	    );
+	if (system($cmd) != 0) {
+	    error("Unable to commit and tag update to $cetpackage at version ",
+		  $bumped_versions{$cetpackage}->{version},
+		  " in $loc.");
+        }
+    }
+}
+
 __END__
 
 =pod
@@ -247,6 +268,7 @@ I<mode>: [ B<-M> | B<--major>] | [ B<-m> | B<--minor> ] |
 I<options>: [ B<--client-dir> I<package-client-search-path> |
            B<-c> I<package-client-search-path> ]+ |
          [ B<--dry-run> | B<-n> ] |
+         [ B<--tag> ] |
          [ B<--verbose> | B<-v> ]
 
 Options marked with B<+> are repeatable and cumulative.
@@ -348,7 +370,13 @@ Debug mode: leave temporary files available.
 Do not actually update anything: just say what would be done.
 
 
-=item B<--versbose>
+=item B<--tag>
+
+Commit changes to product_deps and tag all updated packages with their
+new versions.
+
+
+=item B<--verbose>
 
 =item B<-v>
 
