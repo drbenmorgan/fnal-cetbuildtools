@@ -240,7 +240,7 @@ macro( cet_set_compiler_flags )
   endif()
 
   if (CSCF_NO_UNRESOLVED)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-unresolved")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
   endif()
 
   if (CSCF_WERROR)
