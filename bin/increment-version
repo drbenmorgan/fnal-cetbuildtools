@@ -29,7 +29,7 @@ GetOptions($options,
            "m|minor", \&set_mode,
            "p|patch", \&set_mode,
            "s|set-version=s", \&set_mode,
-	   "tag",
+           "tag",
            "verbose|v",
            "u|micro", \&set_mode,
            "update-only|U=s", \&mark_for_update
@@ -230,20 +230,25 @@ sub wanted {
 }
 
 sub maybe_commit_and_tag {
-    foreach my $cetpackage (keys %bumped_versions) {
-	my $loc = $bumped_versions{$cetpackage}->{loc} or next;
-	my $cmd =
-	    sprintf("pwd; cd \"%s\" && git commit -m 'Bump version to %s' ups/product_deps && git tag -fam 'Bump version for release' v%s",
-		    $loc,
-		    $bumped_versions{$cetpackage}->{version},
-		    $bumped_versions{$cetpackage}->{version}
-	    );
-	if (system($cmd) != 0) {
-	    error("Unable to commit and tag update to $cetpackage at version ",
-		  $bumped_versions{$cetpackage}->{version},
-		  " in $loc.");
-        }
+  return unless $options->{tag};
+  foreach my $cetpackage (keys %bumped_versions) {
+    my $loc = $bumped_versions{$cetpackage}->{loc} or next;
+    my $cmd =
+      sprintf("pwd; cd \"%s\" && git commit -m 'Bump version to %s' ups/product_deps && git tag -fam 'Bump version for release' v%s",
+              $loc,
+              $bumped_versions{$cetpackage}->{version},
+              $bumped_versions{$cetpackage}->{version}
+             );
+    if ($options->{"dry-run"}) {
+      report("Would tag package $cetpackage at version ",
+             $bumped_versions{$cetpackage}->{version},
+             " in $loc.");
+    } elsif (system($cmd) != 0) {
+      error("Unable to commit and tag update to $cetpackage at version ",
+            $bumped_versions{$cetpackage}->{version},
+            " in $loc.");
     }
+  }
 }
 
 __END__
