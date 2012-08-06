@@ -31,7 +31,7 @@
 #    EXTRA_CXX_FLAGS <flags>
 #    EXTRA_DEFINITIONS <flags>
 #      This list parameters will append tbe appropriate items.
-#    NO_UNRESOLVED
+#    NO_UNDEFINED
 #      Unresolved symbols will cause an error when making a shared
 #      library.
 #    WERROR
@@ -213,7 +213,7 @@ endmacro(cet_remove_compiler_flag)
 macro( cet_set_compiler_flags )
   CET_PARSE_ARGS(CSCF
     "DIAGS;EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
-    "ENABLE_ASSERTS;NO_UNRESOLVED;WERROR"
+    "ENABLE_ASSERTS;NO_UNDEFINED;WERROR"
     ${ARGN}
     )
 
@@ -239,7 +239,7 @@ macro( cet_set_compiler_flags )
     SET(CSCF_DIAGS "CAUTIOUS")
   endif()
 
-  if (CSCF_NO_UNRESOLVED)
+  if (CSCF_NO_UNDEFINED)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
   endif()
 
