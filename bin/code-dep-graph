@@ -56,6 +56,55 @@ function find_paths_helper() {
     sed -e "s&${prefix}"'/\{0,1\}\(CMakeLists\.txt\|SConscript\|\(GNUm\|[Mm]\)akefile\)$&&'
 }
 
+function package_name() {
+  local path=${1}
+  local pathfrag=${2}
+  if [[ $(basename "${pathfrag}") == "${pathfrag}" ]]; then
+    local file=${pathfrag}
+    local ppath=${path}
+    local pfile=${file}
+  else
+    local pfile=${pathfrag}
+    local ppath="${path}/$(dirname ${pathfrag})"
+    local file=$(basename "${pathfrag}")
+  fi
+  local sanitized_path=`echo "${path}" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)&&g; s&/$&&;'`
+  if [[ -r "${TMP}.int_packages" ]] && ! grep -e "^${sanitized_path}\$" "${TMP}.int_packages" >/dev/null 2>&1; then
+    # Not interested in external packages
+    echo "${sanitized_path}"
+    return
+  fi
+  local opwd=`/bin/pwd`
+  cd "${topdir}/${path}">/dev/null 2>&1
+  local plugin=$(echo "${pfile}" | perl -wne '
+chomp;
+my $count = 0;
+my ($stem) = m&^(?:.*/+)?(.*)_(?:generator|module|service|source)\.(?:cc)(\.in)?$&;
+if (${stem}) {
+  print "$stem\n";
+  exit;
+}
+s&\b(?:interface|inc|include)/&src/&;
+s&\.(?:h|H|hh|hpp|hxx)(?:\.in)?$&& or exit; # Expensive -- only for headers.
+foreach my $plugin_ext qw(generator module service source) {
+  # print STDERR "INFO: looking for ${_}_${plugin_ext}.cc or ${_}_${plugin_ext}.cc.in in ",`pwd`;
+  if (-f "${_}_${plugin_ext}.cc" or -f "${_}_${plugin_ext}.cc.in") {
+    ($stem) = m&^(?:.*/+)?(.*)$&;
+    print "$stem\n";
+    exit;
+  }
+}' );
+  cd "$opwd" >/dev/null 2>&1
+  local result
+  if [[ -z "${plugin}" ]]; then
+    result=`echo "${path}" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)&&g; s&/$&&;'`
+  else
+    result=`echo "${ppath}/$plugin" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)&&g; s&/$&&; s&/+&_&g;'`
+    echo "${result}" >> "${TMP}.modules"
+  fi
+  echo "${result}"
+}
+
 function find_int_packages() {
   local prefix
   find . -mindepth 1 -maxdepth 1 -type d -printf "%P\n" | while read dir; do (
@@ -87,7 +136,15 @@ function find_int_packages() {
         echo "${dir}"
       fi
     done
-    ) | sort -u
+    )
+  done | sort -u | while read path; do # Find packages.
+    ( cd $path
+      echo $path >>  "${TMP}.int_packages.tmp"
+      echo $path
+      for file in `ack -a -f -G '_(generator|module|service|source)\.cc(?:\.in)?$' </dev/null 2>/dev/null`; do
+        package_name "${path}" "${file}" >> "${TMP}.int_packages.tmp"
+      done
+    )
   done
   sort -u "${TMP}.int_packages.tmp" > "${TMP}.int_packages"
 }
@@ -123,6 +180,7 @@ shift $[ OPTIND - 1 ]
 
 cd "$topdir" || { echo "Unable to cd to \"$topdir\"" 1>&2; exit 1; }
 
+topdir=`/bin/pwd` # Absolute, for reference later.
 TMP=`mktemp "${TMPDIR:-/tmp}/code-dep-graph.XXXXXXXXXX"`
 [[ -n "$TMP" ]] || { echo "ERROR: could not open temporary file for write" 1>&2; exit 1; }
 trap "rm -f \"$TMP\"* 2>/dev/null" EXIT
@@ -134,46 +192,54 @@ EOF
 find_int_packages > "$TMP"
 cat "${TMP}" | while read path; do
   ( cd $path
-    package=${path}
-    echo "INFO: Examining package $package." 1>&2 
+    echo "INFO: Examining directory ${path}." 1>&2
     declare -a dirs=( . src inc include interface )
-    ack -l -f -n "${dirs[@]}" </dev/null 2>/dev/null | \
-     xargs grep -he '^[ \t]*#include[ \t]*"' \
-                -e '^[ \t]*#include[ \t]*<.*/.*>' | \
-     grep -e / | \
-     sed -e 's/^[ \t]*#include[ \t]*["<]\(.*\)[">].*$/\1/' | \
-     grep -e '/' | \
-     sed -e 's/interface\///' \
-         -e 's/inc\///' \
-         -e 's/include\///' \
-         -e 's/\/[^\/]*$//' \
-         -e 's/\/src$//' \
-         -e 's/\/cxx$//' \
-         -e 's/\/detail$//' | \
-     sort -u | while read dep; do
-       if [[ "$package" == "$dep" ]]; then
-         continue # Self-dependency
-       fi
-       (( ${verbose:-0} )) && echo "INFO: -> Found dependency $dep in $package." 1>&2 
-       dep_top=${dep%%/*}
-       if ! grep -e "^${dep_top}\$" "${TMP}.int_packages" >/dev/null 2>&1; then
-         if (( want_ext_deps == 0 )) || \
-            { (( want_ext_deps == 1 )) && ignore_dep "${dep}"; }; then
-           (( ${verbose:-0} )) && echo "INFO: Ignoring external dependency $package -> $dep." 1>&2
-           continue
-         else
-           echo "${dep}" >> "$TMP.deps"
-         fi
-       fi
-       if [[ "$package_top" == "FWCore" ]]; then
-         old_fw=1 # Special instructions
-       fi
-       echo "  \"$package\" -> \"$dep\";"
-     done
+    ack -f -n -G '\.(h|H|hh|hpp|hxx|C|cc|cpp|cxx)(\.in)?$' "${dirs[@]}" </dev/null 2>/dev/null | \
+     while read file; do
+      package=$(package_name "${path}" "${file}")
+      (( ${verbose:-0} )) && echo "INFO: -> Dependencies of file $file in package $package." 1>&2
+      grep -he '^[ \t]*#include[ \t]*"' \
+           -e '^[ \t]*#include[ \t]*<.*/.*>' "${file}" | \
+       sed -e 's/^[ \t]*#include[ \t]*["<]\(.*\)[">].*$/\1/' | \
+       grep -e '/' | \
+       sort -u | while read dep; do
+         pa=`dirname "${dep}"`
+         pb=`basename "${dep}"`
+#         set -x
+         result=$(package_name "${pa}" "${pb}")
+#         set +x
+#         (( ${verbose:-0} )) && echo "INFO:    -> pa, pb -> result -- $pa, $pb = $result" 1>&2
+         echo $result
+       done | sort -u | while read dep; do
+        if [[ "$package" == "$dep" ]]; then
+          continue # Self-dependency
+        fi
+        dep_top=${dep%%/*}
+        if ! grep -e "^${dep_top}\$" "${TMP}.int_packages" >/dev/null 2>&1; then
+          if (( want_ext_deps == 0 )) || \
+             { (( want_ext_deps == 1 )) && ignore_dep "${dep}"; }; then
+            (( ${verbose:-0} )) && echo "INFO:    -> Ignoring external dependency $package -> $dep." 1>&2
+            continue
+          else
+            (( ${verbose:-0} )) && echo "INFO:    -> Found dependency $dep in $package." 1>&2
+            echo "${dep}" >> "$TMP.deps"
+          fi
+        fi
+        if [[ "$package_top" == "FWCore" ]]; then
+          old_fw=1 # Special instructions
+        fi
+        (( ${verbose:-0} )) && echo "INFO:    -> Found dependency $dep in $package." 1>&2
+        echo "  \"$package\" -> \"$dep\";"
+      done
+    done | sort -u
   ); done
 
 [[ -f "$TMP.deps" ]] && sort -u "$TMP.deps" | while read dep; do
   echo "  \"$dep\" [ shape=rectangle; style=\"rounded,filled\"; color=pink; ]"
+done
+
+[[ -f "$TMP.modules" ]] && sort -u "$TMP.modules" | while read module; do
+  echo "  \"$module\" [ shape=rectangle; style=\"filled\"; color=cyan; ]"
 done
 
 if (( ${old_fw:-0} )); then
