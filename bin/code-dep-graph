@@ -47,7 +47,7 @@ EOF
 
 function find_paths_helper() {
   local prefix="${1}"
-  find . \( \( -name .git -o -name .svn -o -name CVS -o -name test -o -name unittest -o -name java -o -name job \) -prune \) -o \
+  find . \( \( -name .git -o -name .svn -o -name CVS -o -name exe -o -name test -o -name unittest -o -name java -o -name job \) -prune \) -o \
          -type f \
          \( -path "*/${prefix}CMakeLists.txt" -o \
             -path "*/${prefix}SConscript" -o \
@@ -112,6 +112,7 @@ function find_int_packages() {
       [[ "$dir" == "."* ]] || \
       [[ "$dir" = "bin" ]] || \
       [[ "$dir" = "doc" ]] || \
+      [[ "$dir" = "exe" ]] || \
       [[ "$dir" = "include" ]] || \
       [[ "$dir" = "job" ]] || \
       [[ "$dir" = "lib" ]] || \
@@ -193,9 +194,10 @@ find_int_packages > "$TMP"
 cat "${TMP}" | while read path; do
   ( cd $path
     echo "INFO: Examining directory ${path}." 1>&2
-    declare -a dirs=( . src inc include interface )
+    declare -a dirs=( . src inc include interface detail )
     ack -f -n -G '\.(h|H|hh|hpp|hxx|C|cc|cpp|cxx)(\.in)?$' "${dirs[@]}" </dev/null 2>/dev/null | \
      while read file; do
+      [[ `basename "${file}"` == "classes.h" ]] && continue
       package=$(package_name "${path}" "${file}")
       (( ${verbose:-0} )) && echo "INFO: -> Dependencies of file $file in package $package." 1>&2
       grep -he '^[ \t]*#include[ \t]*"' \
@@ -205,6 +207,7 @@ cat "${TMP}" | while read path; do
        sort -u | while read dep; do
          pa=`dirname "${dep}"`
          pb=`basename "${dep}"`
+         [[ "${pb}" == "fwd.h" ]] && continue; # Assume no link dependencies.
 #         set -x
          result=$(package_name "${pa}" "${pb}")
 #         set +x
@@ -235,11 +238,11 @@ cat "${TMP}" | while read path; do
   ); done
 
 [[ -f "$TMP.deps" ]] && sort -u "$TMP.deps" | while read dep; do
-  echo "  \"$dep\" [ shape=rectangle; style=\"rounded,filled\"; color=pink; ]"
+  echo "  \"$dep\" [ shape=rectangle, style=\"rounded,filled\", color=pink ]"
 done
 
 [[ -f "$TMP.modules" ]] && sort -u "$TMP.modules" | while read module; do
-  echo "  \"$module\" [ shape=rectangle; style=\"filled\"; color=cyan; ]"
+  echo "  \"$module\" [ shape=rectangle, style=\"filled\", color=cyan ]"
 done
 
 if (( ${old_fw:-0} )); then
