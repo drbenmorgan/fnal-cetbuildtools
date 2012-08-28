@@ -22,6 +22,10 @@
 # USE_BOOST_UNIT
 #   This test uses the Boost Unit Test Framework.
 #
+# INSTALL_BIN
+#   Install this test's script / exec in the product's binary directory
+#   (ignored for HANDBUILT).
+#
 # INSTALL_EXAMPLE
 #   Install this test and all its data files into the examples area of the
 #    product.
@@ -183,7 +187,7 @@ MACRO(cet_test CET_TARGET)
   ENDIF()
   CET_PARSE_ARGS(CET
     "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;SOURCES;TEST_ARGS;TEST_EXEC;TEST_PROPERTIES"
-    "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_EXAMPLE;INSTALL_SOURCE"
+    "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE"
     ${ARGN}
     )
   IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
@@ -299,6 +303,15 @@ MACRO(cet_test CET_TARGET)
       ELSE()
         SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES ENVIRONMENT "${CET_TEST_ENV}")
       ENDIF()
+    ENDIF()
+  ENDIF()
+  IF(CET_INSTALL_BIN)
+    IF(CET_HANDBUILT)
+      MESSAGE(WARNING "INSTALL_BIN option ignored for HANDBUILT tests.")
+    ELSEIF(CET_PREBUILT)
+      INSTALL(PROGRAMS ${CET_TARGET} DESTINATION ${flavorqual_dir}/bin)
+    ELSE()
+      INSTALL(TARGETS ${CET_TARGET} DESTINATION ${flavorqual_dir}/bin)
     ENDIF()
   ENDIF()
   IF(CET_INSTALL_EXAMPLE)
