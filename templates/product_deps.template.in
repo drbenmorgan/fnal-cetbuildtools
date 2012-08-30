@@ -1,0 +1,57 @@
+# The parent line must be the first non-comment line in the file
+# This line defines the product name and version
+parent xxx	v1_07_11
+defaultqual	e2
+
+# These optional lines define the installed directories where headers,
+# libraries, and executables will be found.
+#
+# Format: directory_type directory_path directory_name
+#
+# The only recognized values of the first field are incdir, libdir, and bindir
+# The only recognized values of the second field are product_dir and fq_dir
+# The third field is not constrained.
+#
+# If a particular directory_type is not specified that item will not be
+# set up in the UPS table file.
+incdir      product_dir include
+libdir      fq_dir      lib
+bindir      fq_dir      bin
+
+#
+product		version
+gcc		v4_7_1
+clhep		v2_1_2_4
+cppunit		v1_12_1
+libsigcpp	v2_2_10
+gccxml		v0_9_20120702
+python		v2_7_3
+root		v5_34_01
+sqlite		v3_07_13_00
+messagefacility	v1_10_13
+
+# list products required ONLY for the build
+# any products here must NOT have qualifiers
+only_for_build	cetbuildtools	@version@
+ 
+# e2  - with gcc 4.7.1 and -std=c++0x
+# -nq- here means there is no qualifier
+# a - here means the dependent product is not required by the parent and will not be setup
+qualifier	messagefacility	root		clhep		cppunit		libsigcpp	gccxml	python	sqlite		gcc	notes
+e2:debug	e2:debug	e2:debug	e2:debug	e2:debug	e2:debug	gcc47	gcc47	gcc47:debug	-nq-	-std=c++0x
+e2:opt		e2:opt		e2:opt	        e2:opt	        e2:opt		e2:opt	        gcc47	gcc47	gcc47:opt	-nq-	-std=c++0x
+e2:prof		e2:prof		e2:prof	        e2:prof	        e2:prof		e2:prof	        gcc47	gcc47	gcc47:prof	-nq-	-std=c++0x
+mu2e:e2:debug	e2:debug	e2:mu2e:debug	e2:debug	e2:debug	e2:debug	gcc47	gcc47	gcc47:debug	-nq-	-std=c++0x
+mu2e:e2:opt	e2:opt		e2:mu2e:opt	e2:opt		e2::opt		e2:opt		gcc47	gcc47	gcc47:opt	-nq-	-std=c++0x
+mu2e:e2:prof	e2:prof		e2:mu2e:prof	e2:prof		e2:prof		e2:prof		gcc47	gcc47	gcc47:prof	-nq-	-std=c++0x
+nu:e2:debug	e2:debug	e2:nu:debug	e2:debug	e2:debug	e2:debug	gcc47	gcc47	gcc47:debug	-nq-	-std=c++0x
+nu:e2:opt	e2:opt		e2:nu:opt	e2:opt		e2:opt		e2:opt		gcc47	gcc47	gcc47:opt	-nq-	-std=c++0x
+nu:e2:prof	e2:prof		e2:nu:prof	e2:prof		e2:prof		e2:prof		gcc47	gcc47	gcc47:prof	-nq-	-std=c++0x
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:
+
+# vi:set ts=8 noexpandtab:

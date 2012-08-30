@@ -1,8 +1,11 @@
 # we install all the example files here
 # All cmake files below this directory are part of the example
 
+configure_file ( ${CMAKE_CURRENT_SOURCE_DIR}/ToyCmake/ups/product_deps.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/ToyCmake/ups/product_deps @ONLY )
+
 set( installUPSfiles ToyCmake/ups/CMakeLists.txt
-		     ToyCmake/ups/product_deps
+		     ${CMAKE_CURRENT_BINARY_DIR}/ToyCmake/ups/product_deps
 		     ToyCmake/ups/setup_for_development )
 
 set( installTestFiles ToyCmake/test/CMakeLists.txt
