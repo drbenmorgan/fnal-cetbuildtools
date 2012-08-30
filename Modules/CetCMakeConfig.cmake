@@ -19,12 +19,12 @@ macro( cet_cmake_config  )
   cet_parse_args( CCC "" "NO_FLAVOR" ${ARGN})
 
   if( CCC_NO_FLAVOR )
-    set( distdir "${product}/${version}/include/${product}/cmake" )
+    set( distdir "${product}/${version}/cmake" )
   else()
     set( distdir "${flavorqual_dir}/lib/${product}/cmake" )
   endif()
 
-  message(STATUS "will install in ${distdir}")
+  #message(STATUS "will install cmake configure files in ${distdir}")
 
   configure_package_config_file( 
              ${CMAKE_CURRENT_SOURCE_DIR}/${product}-config.cmake.in
