@@ -93,12 +93,14 @@ macro(cet_cmake_env)
   # Useful includes.
   include(SetCompilerFlags)
   include(FindUpsPackage)
+  include(FindCetPackage)
   include(FindUpsBoost)
   include(FindUpsRoot)
   include(ParseUpsVersion)
   include(SetFlavorQual)
   include(InstallSource)
   include(CetMake)
+  include(CetCMakeConfig)
 
   #set package version from ups version
   set_version_from_ups( ${version} )

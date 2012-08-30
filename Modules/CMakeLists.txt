@@ -6,9 +6,11 @@ INSTALL(FILES
 	CetParseArgs.cmake
 	CetTest.cmake
 	CetMake.cmake
+	CetCMakeConfig.cmake
 	CetCMakeEnv.cmake
 	CheckUpsVersion.cmake
 	EnsureOutOfSourceBuild.cmake
+	FindCetPackage.cmake
 	FindCompilerVersion.cmake
 	FindUpsBoost.cmake
 	FindUpsPackage.cmake
