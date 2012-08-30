@@ -22,10 +22,18 @@ endif ()
 # replace all underscores with dots
 STRING( REGEX REPLACE "_" "." dotver1 "${version}" )
 STRING( REGEX REPLACE "v(.*)" "\\1" dotver "${dotver1}" )
-find_package( ${PRODUCTNAME} ${dotver}  )
+# define the cmake search path
+set( ${PRODUCTNAME_UC}_SEARCH_PATH $ENV{${PRODUCTNAME_UC}_FQ_DIR} )
+if( NOT ${PRODUCTNAME_UC}_SEARCH_PATH )
+  find_package( ${PRODUCTNAME} ${dotver} PATHS ${${PRODUCTNAME_UC}_DIR} )
+else()
+  find_package( ${PRODUCTNAME} ${dotver} PATHS $ENV{${PRODUCTNAME_UC}_FQ_DIR} )
+endif()
+# make sure we found the product
 if( NOT ${${PRODUCTNAME}_FOUND} )
   message(FATAL_ERROR "ERROR: ${PRODUCTNAME} was NOT found ")
 endif()
+# make sure the version numbers match
 if(  ${${PRODUCTNAME_UC}_VERSION} MATCHES ${${PRODUCTNAME}_UPS_VERSION})
   #message(STATUS "${PRODUCTNAME} versions match: ${${PRODUCTNAME_UC}_VERSION} ${${PRODUCTNAME}_UPS_VERSION} ")
 else()
