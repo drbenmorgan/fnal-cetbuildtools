@@ -10,7 +10,6 @@ INSTALL(FILES
 	CetCMakeEnv.cmake
 	CheckUpsVersion.cmake
 	EnsureOutOfSourceBuild.cmake
-	FindCetPackage.cmake
 	FindCompilerVersion.cmake
 	FindUpsBoost.cmake
 	FindUpsPackage.cmake

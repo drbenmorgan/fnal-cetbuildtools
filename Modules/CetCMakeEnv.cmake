@@ -93,7 +93,6 @@ macro(cet_cmake_env)
   # Useful includes.
   include(SetCompilerFlags)
   include(FindUpsPackage)
-  include(FindCetPackage)
   include(FindUpsBoost)
   include(FindUpsRoot)
   include(ParseUpsVersion)
