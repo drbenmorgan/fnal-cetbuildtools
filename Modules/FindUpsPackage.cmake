@@ -3,8 +3,43 @@
 # find_ups_product( PRODUCTNAME version )
 #  PRODUCTNAME - product name
 #  version - minimum version required
+#
+# cet_cmake_config() will put ${PRODUCTNAME}-config.cmake in 
+#  $ENV{${PRODUCTNAME_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake or $ENV{${PRODUCTNAME_UC}_DIR}/cmake
+# check these directories for ${PRODUCTNAME}-config.cmake 
+# call find_package() if we find the config file
+# if the config file is not found, call _check_version()
+
 
 include(CheckUpsVersion)
+
+macro( _use_find_package PNAME PNAME_UC PVER )
+
+# we use find package to check the version
+
+_get_dotver( ${PVER} )
+#message(STATUS "_use_find_package: dotver is ${dotver}")
+
+# define the cmake search path
+set( ${PNAME_UC}_SEARCH_PATH $ENV{${PNAME_UC}_FQ_DIR} )
+if( NOT ${PNAME_UC}_SEARCH_PATH )
+  find_package( ${PNAME} ${dotver} PATHS $ENV{${PNAME_UC}_DIR} )
+else()
+  find_package( ${PNAME} ${dotver} PATHS $ENV{${PNAME_UC}_FQ_DIR} )
+endif()
+# make sure we found the product
+if( NOT ${${PNAME}_FOUND} )
+  message(FATAL_ERROR "ERROR: ${PNAME} was NOT found ")
+endif()
+# make sure the version numbers match
+if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
+  #message(STATUS "${PNAME} versions match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+else()
+  message(STATUS "ERROR: There is an inconsistency between the ${PNAME} table and config files ")
+  message(FATAL_ERROR "${PNAME} versions DO NOT match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+endif()
+
+endmacro( _use_find_package )
 
 # since variables are passed, this is implemented as a macro
 macro( find_ups_product PRODUCTNAME version )
@@ -19,7 +54,16 @@ if ( NOT ${PRODUCTNAME_UC}_VERSION )
   message(FATAL_ERROR "${PRODUCTNAME_UC} has not been setup")
 endif ()
 
-_check_version( ${PRODUCTNAME} ${${PRODUCTNAME_UC}_VERSION} ${version} )
+# MUST use a unique variable name for the config path
+find_file( ${PRODUCTNAME_UC}_CONFIG_PATH ${PRODUCTNAME}-config.cmake $ENV{${PRODUCTNAME_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${PRODUCTNAME_UC}_DIR}/cmake )
+if(${PRODUCTNAME_UC}_CONFIG_PATH)
+  #message(STATUS "find_ups_product: found ${PRODUCTNAME}-config.cmake in ${${PRODUCTNAME_UC}_CONFIG_PATH}")
+  _use_find_package( ${PRODUCTNAME} ${PRODUCTNAME_UC} ${version} )
+else()
+  #message(STATUS "find_ups_product: ${PRODUCTNAME}-config.cmake NOT FOUND")
+  _check_version( ${PRODUCTNAME} ${${PRODUCTNAME_UC}_VERSION} ${version} )
+endif()
+
 
 SET ( ${PRODUCTNAME_UC}_STRING $ENV{SETUP_${PRODUCTNAME_UC}} )
 STRING( REGEX MATCH "[-][q]" has_qual  "${${PRODUCTNAME_UC}_STRING}" )

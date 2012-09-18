@@ -1,4 +1,11 @@
-# This macro is used by the FindUps modules
+# These macros are used by the FindUps modules
+
+#internal macro
+macro(_get_dotver version )
+   # replace all underscores with dots
+   STRING( REGEX REPLACE "_" "." dotver1 "${version}" )
+   STRING( REGEX REPLACE "v(.*)" "\\1" dotver "${dotver1}" )
+endmacro(_get_dotver version )
 
 #internal macro
 macro(_parse_version version )
@@ -9,9 +16,8 @@ macro(_parse_version version )
    # convert vx_y to x.y
    
    # replace all underscores with dots
-   STRING( REGEX REPLACE "_" "." dotver1 "${version}" )
-   STRING( REGEX REPLACE "v(.*)" "\\1" dotver "${dotver1}" )
-   #message( STATUS "_parse_version: ${version} becomes ${dotver}" )
+   _get_dotver( ${version} )
+   ##message( STATUS "_parse_version: ${version} becomes ${dotver}" )
    string(REGEX MATCHALL "_" nfound ${version} )
    ##message( STATUS "_parse_version: matchall returns ${nfound}" )
    list(LENGTH nfound nfound)
