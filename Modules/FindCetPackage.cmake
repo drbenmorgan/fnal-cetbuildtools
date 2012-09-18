@@ -22,10 +22,19 @@ endif ()
 # replace all underscores with dots
 STRING( REGEX REPLACE "_" "." dotver1 "${version}" )
 STRING( REGEX REPLACE "v(.*)" "\\1" dotver "${dotver1}" )
+
+find_file( ${PRODUCTNAME_UC}_CONFIG_PATH ${PRODUCTNAME}-config.cmake $ENV{${PRODUCTNAME_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${PRODUCTNAME_UC}_DIR}/cmake )
+if(${PRODUCTNAME_UC}_CONFIG_PATH)
+  message(STATUS "find_cet_product: found ${PRODUCTNAME}-config.cmake file in ${${PRODUCTNAME_UC}_CONFIG_PATH}")
+else()
+  message(STATUS "find_cet_product: ${PRODUCTNAME}-config.cmake NOT FOUND")
+endif()
+message(STATUS "find_cet_product: search path $ENV{${PRODUCTNAME_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${PRODUCTNAME_UC}_DIR}/cmake")
+
 # define the cmake search path
 set( ${PRODUCTNAME_UC}_SEARCH_PATH $ENV{${PRODUCTNAME_UC}_FQ_DIR} )
 if( NOT ${PRODUCTNAME_UC}_SEARCH_PATH )
-  find_package( ${PRODUCTNAME} ${dotver} PATHS ${${PRODUCTNAME_UC}_DIR} )
+  find_package( ${PRODUCTNAME} ${dotver} PATHS $ENV{${PRODUCTNAME_UC}_DIR} )
 else()
   find_package( ${PRODUCTNAME} ${dotver} PATHS $ENV{${PRODUCTNAME_UC}_FQ_DIR} )
 endif()
