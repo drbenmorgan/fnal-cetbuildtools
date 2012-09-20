@@ -323,7 +323,7 @@ function announce_stage() {
 
 function check_curdir_in_build_tree() {
   if [[ $(real_dir .) != $(real_dir "$CETPKG_BUILD")* ]]; then
-    error "WARNING: current directory $(real_dir .) is not in the current build tree
+    error "INFO: current directory $(real_dir .) is not in the current build tree
          ($(real_dir "$CETPKG_BUILD")). Executing stage $stage from \$CETPKG_BUILD."
     cd "$(real_dir "$CETPKG_BUILD")"
   fi
