@@ -75,8 +75,10 @@ function package_name() {
     return
   fi
   local opwd=`/bin/pwd`
+  local plugin
+  local type
   cd "${topdir}/${path}">/dev/null 2>&1
-  local plugin=$(echo "${pfile}" | perl -wne '
+  local rec_output=$(echo "${pfile}" | perl -wne '
 chomp;
 my $count = 0;
 my ($stem) = m&^(?:.*/+)?(.*)_(?:generator|module|service|source)\.(?:cc)(\.in)?$&;
@@ -90,17 +92,22 @@ foreach my $plugin_ext qw(generator module service source) {
   # print STDERR "INFO: looking for ${_}_${plugin_ext}.cc or ${_}_${plugin_ext}.cc.in in ",`pwd`;
   if (-f "${_}_${plugin_ext}.cc" or -f "${_}_${plugin_ext}.cc.in") {
     ($stem) = m&^(?:.*/+)?(.*)$&;
-    print "$stem\n";
+    print "${stem} ${plugin_ext}\n";
     exit;
   }
-}' );
+}' )
+  local plugin=$(echo "$rec_output" | cut -d' ' -f 1)
+  local type=$(echo "$rec_output" | cut -d' ' -f 2)
+  if [[ "$type" = "$plugin" ]]; then
+    unset type
+  fi
   cd "$opwd" >/dev/null 2>&1
   local result
   if [[ -z "${plugin}" ]]; then
     result=`echo "${path}" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)&&g; s&/$&&;'`
   else
     result=`echo "${ppath}/$plugin" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)&&g; s&/$&&; s&/+&_&g;'`
-    echo "${result}" >> "${TMP}.modules"
+    echo "${result} ${type}" >> "${TMP}.plugins"
   fi
   echo "${result}"
 }
@@ -245,8 +252,25 @@ cat "${TMP}" | while read path; do
   echo "  \"$dep\" [ shape=rectangle, style=\"rounded,filled\", color=pink ]"
 done
 
-[[ -f "$TMP.modules" ]] && sort -u "$TMP.modules" | while read module; do
-  echo "  \"$module\" [ shape=rectangle, style=\"filled\", color=cyan ]"
+[[ -f "$TMP.plugins" ]] && sort -u "$TMP.plugins" | while read module type; do
+    case $type in
+        "module"|"generator")
+        color=olivedrab2
+        ;;
+        "service")
+        color=cyan
+        ;;
+        "source")
+        color=goldenrod3
+        ;;
+        "")
+        continue
+        ;;
+        *)
+        echo "WARNING: Unrecognized plugin type $type" 1>&2
+        color=white
+    esac
+  echo "  \"${module}\" [ shape=rectangle, style=\"filled\", color=${color} ]"
 done
 
 if (( ${old_fw:-0} )); then
