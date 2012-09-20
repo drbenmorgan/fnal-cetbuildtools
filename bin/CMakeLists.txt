@@ -3,7 +3,6 @@ INSTALL ( PROGRAMS buildtool
  		   build_table
 		   build_version_file
 		   code-dep-graph
-                   genreflex-wrapper
 		   increment-version
 		   set_dev_products
 		   report_product_info
