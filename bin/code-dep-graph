@@ -47,7 +47,7 @@ EOF
 
 function find_paths_helper() {
   local prefix="${1}"
-  find . \( \( -name .git -o -name .svn -o -name CVS -o -name exe -o -name test -o -name unittest -o -name java -o -name job \) -prune \) -o \
+  find . \( -type d \( -name .git -o -name .svn -o -name CVS -o -name exe -o -name test -o -name unittest -o -name java -o -name job -o -name safe -o -name '*[-.]safe' -o -name '*[-.]new' -o -name '*[-.]old' \) -prune \) -o \
          -type f \
          \( -path "*/${prefix}CMakeLists.txt" -o \
             -path "*/${prefix}SConscript" -o \
@@ -85,7 +85,7 @@ if (${stem}) {
   exit;
 }
 s&\b(?:interface|inc|include)/&src/&;
-s&\.(?:h|H|hh|hpp|hxx)(?:\.in)?$&& or exit; # Expensive -- only for headers.
+s&\.(?:h|H|hh|hpp|hxx)(?:\.in)?$&& and not -f "${_}.cxx" or exit; # Expensive -- only for headers.
 foreach my $plugin_ext qw(generator module service source) {
   # print STDERR "INFO: looking for ${_}_${plugin_ext}.cc or ${_}_${plugin_ext}.cc.in in ",`pwd`;
   if (-f "${_}_${plugin_ext}.cc" or -f "${_}_${plugin_ext}.cc.in") {
@@ -120,7 +120,11 @@ function find_int_packages() {
       [[ "$dir" = "results" ]] || \
       [[ "$dir" = "test" ]] || \
       [[ "$dir" = "tmp" ]] || \
-      [[ "$dir" = "ups" ]]; } && continue
+      [[ "$dir" = "ups" ]] || \
+      [[ "$dir" == *[-.]new ]] || \
+      [[ "$dir" == *[-.]safe ]] || \
+      [[ "$dir" == *[-.]old ]] || \
+      [[ "$dir" == *[-.]bak ]]; } && continue
     cd "$dir"
     if [[ -d "cxx/src" ]]; then
       prefix="cxx/src/"
