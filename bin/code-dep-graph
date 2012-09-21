@@ -81,9 +81,9 @@ function package_name() {
   local rec_output=$(echo "${pfile}" | perl -wne '
 chomp;
 my $count = 0;
-my ($stem) = m&^(?:.*/+)?(.*)_(?:generator|module|service|source)\.(?:cc)(\.in)?$&;
+my ($stem, $plugin_ext) = m&^(?:.*/+)?(.*)_(generator|module|service|source)\.(?:cc)(\.in)?$&;
 if (${stem}) {
-  print "$stem\n";
+  print "${stem} ${plugin_ext}\n";
   exit;
 }
 s&\b(?:interface|inc|include)/&src/&;
