@@ -23,6 +23,11 @@ a7:debug	-nq-
 a7:opt		-nq-
 a7:prof		-nq-
 
+table_fragment_begin
+# this is a table file fragment
+# it will be copied verbatim
+table_fragment_end
+
 # Preserve tabs and formatting in emacs and vi / vim:
 
 ### Local Variables:
