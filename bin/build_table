@@ -30,6 +30,7 @@ $pfile=$inputdir."/product_deps";
 ($ndeps, @qlist) = parse_qualifier_list( $pfile );
 $have_fq = check_fq_dir( $pfile );
 (%ohash) = find_optional_products( $pfile );
+($have_fragment, @flist) = check_for_fragment( $pfile );
 
 print "creating table file for $product $version\n";
 $table = $outputdir."/".$product.".table";
@@ -180,6 +181,11 @@ sub create_table_bottom {
   }
   print TBL "    exeActionRequired(GetProducts)\n";
   print TBL "\n";
+  if( $have_fragment ) {
+    foreach $i ( 0 .. $#flist ) {
+       print TBL "$flist[$i]\n";
+    }
+  }
   print TBL "End:\n";
   print TBL "# End Group definition\n";
   print TBL "#*************************************************\n";

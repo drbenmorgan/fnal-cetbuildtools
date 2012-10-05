@@ -38,6 +38,7 @@ sub parse_product_list {
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
   $get_phash="";
   $get_quals="";
+  $get_fragment="";
   while ( $line=<PIN> ) {
     chop $line;
     if ( index($line,"#") == 0 ) {
@@ -80,7 +81,16 @@ sub parse_product_list {
 	} else {
           $phash{ $words[0] } = $words[1];
 	}
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_fragment="true";
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "table_fragment_end" ) {
+         $get_fragment="";
+	 $get_phash="";
+         $get_quals="";
       } elsif( $get_quals ) {
+      } elsif( $get_fragment ) {
       } else {
         print "ignoring $line\n";
       }
@@ -98,6 +108,7 @@ sub parse_qualifier_list {
   $irow=0;
   $get_phash="";
   $get_quals="";
+  $get_fragment="";
   open(QIN, "< $params[0]") or die "Couldn't open $params[0]";
   while ( $line=<QIN> ) {
     chop $line;
@@ -130,6 +141,14 @@ sub parse_qualifier_list {
       } elsif( $words[0] eq "product" ) {
 	 $get_phash="true";
          $get_quals="";
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_fragment="true";
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "table_fragment_end" ) {
+         $get_fragment="";
+	 $get_phash="";
+         $get_quals="";
       } elsif( $words[0] eq "qualifier" ) {
 	 $qlen = $#words;
 	 $get_phash="";
@@ -150,6 +169,7 @@ sub parse_qualifier_list {
 	 }
 	 $irow++;
       } elsif( $get_phash ) {
+      } elsif( $get_fragment ) {
       } elsif( $get_quals ) {
 	 ##print "$params[0] qualifier $words[0]\n";
 	 if( ! $qlen ) {
@@ -166,8 +186,10 @@ sub parse_qualifier_list {
 	   $qlist[$irow][$i] = $words[$i];
 	 }
 	 $irow++;
+      } elsif( $get_fragment ) {
+	 print "$params[0] qualifier $words[0]\n";
       } else {
-        #print "ignoring $line\n";
+        print "ignoring $line\n";
       }
     }
   }
@@ -181,6 +203,7 @@ sub find_optional_products {
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
   $get_phash="";
   $get_quals="";
+  $get_fragment="";
   while ( $line=<PIN> ) {
     chop $line;
     if ( index($line,"#") == 0 ) {
@@ -212,6 +235,14 @@ sub find_optional_products {
       } elsif( $words[0] eq "product" ) {
 	 $get_phash="true";
          $get_quals="";
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_fragment="true";
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "table_fragment_end" ) {
+         $get_fragment="";
+	 $get_phash="";
+         $get_quals="";
       } elsif( $words[0] eq "qualifier" ) {
 	 $get_phash="";
          $get_quals="true";
@@ -225,6 +256,7 @@ sub find_optional_products {
 	} else {
           $opthash{ $words[0] } = "";
 	}
+      } elsif( $get_fragment ) {
       } elsif( $get_quals ) {
       } else {
         print "ignoring $line\n";
@@ -333,6 +365,14 @@ sub check_fq_dir {
     chop $line;
     if ( index($line,"#") == 0 ) {
     } elsif ( $line !~ /\w+/ ) {
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_fragment="true";
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "table_fragment_end" ) {
+         $get_fragment="";
+	 $get_phash="";
+         $get_quals="";
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "no_fq_dir" ) {
@@ -343,6 +383,48 @@ sub check_fq_dir {
   close(PIN);
   ##print "defining library directory $libdir\n";
   return ($fq);
+}
+
+sub check_for_fragment {
+  my @params = @_;
+  $frag = "";
+  $get_fragment="";
+  $nfrag=0;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+      # comments might be part of a table fragment
+      if ( $get_fragment ) {
+	#print "found fragment $line\n";
+	$fraglines[$nfrag] = $line;
+	++$nfrag;
+      }
+    } elsif ( $line !~ /\w+/ ) {
+      # empty lines might be part of a table fragment
+      if ( $get_fragment ) {
+	#print "found fragment $line\n";
+	$fraglines[$nfrag] = $line;
+	++$nfrag;
+      }
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "table_fragment_begin" ) {
+         $get_fragment="true";
+         $frag = "true";
+      } elsif( $words[0] eq "table_fragment_end" ) {
+         $get_fragment="";
+      } elsif( $get_fragment ) {
+	#print "found fragment $line\n";
+	$fraglines[$nfrag] = $line;
+	++$nfrag;
+      } else {
+      }
+    }
+  }
+  close(PIN);
+  #print "found $nfrag table fragment lines\n";
+  return ($frag,@fraglines);
 }
 
 sub find_default_qual {
