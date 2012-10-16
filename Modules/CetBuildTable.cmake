@@ -22,6 +22,17 @@ macro( cet_build_table )
        message(FATAL_ERROR "Can't find build_table")
    endif()
 
+   cet_base_flags()
+   # make a temporary file with the variables
+   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/cet_base_flags
+"CET_BASE_CXX_FLAG_DEBUG: ${CET_BASE_CXX_FLAG_DEBUG}
+CET_BASE_CXX_FLAG_OPT:   ${CET_BASE_CXX_FLAG_OPT}
+CET_BASE_CXX_FLAG_PROF:  ${CET_BASE_CXX_FLAG_PROF}
+CET_BASE_C_FLAG_DEBUG:   ${CET_BASE_C_FLAG_DEBUG}
+CET_BASE_C_FLAG_OPT:     ${CET_BASE_C_FLAG_OPT}
+CET_BASE_C_FLAG_PROF:    ${CET_BASE_C_FLAG_PROF}
+" )
+
    execute_process(COMMAND ${BUILD_TABLE_NAME} 
                            ${CMAKE_CURRENT_SOURCE_DIR} 
 			   ${CMAKE_CURRENT_BINARY_DIR}

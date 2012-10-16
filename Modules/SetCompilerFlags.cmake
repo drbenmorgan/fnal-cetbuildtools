@@ -101,6 +101,57 @@ macro( cet_report_compiler_flags )
   message( STATUS "   C   FLAGS:   ${CMAKE_C_FLAGS_${BTYPE_UC}}")
 endmacro( cet_report_compiler_flags )
 
+macro( _cet_process_flags PTYPE_UC )
+   # turn a space separated string into a colon separated list
+  STRING( REGEX REPLACE " " ";" tmp_cxx_flags "${CMAKE_CXX_FLAGS_${PTYPE_UC}}")
+  STRING( REGEX REPLACE " " ";" tmp_c_flags "${CMAKE_C_FLAGS_${PTYPE_UC}}")
+  ##message( STATUS "tmp_cxx_flags: ${tmp_cxx_flags}")
+  ##message( STATUS "tmp_c_flags: ${tmp_c_flags}")
+  foreach( flag ${tmp_cxx_flags} )
+     if( ${flag} MATCHES "^-W(.*)" )
+        ##message( STATUS "Warning: ${flag}" )
+     elseif( ${flag} MATCHES "-pedantic" )
+        ##message( STATUS "Ignoring: ${flag}" )
+     elseif( ${flag} MATCHES "-std[=]c[+][+]98" )
+        ##message( STATUS "Ignoring: ${flag}" )
+     else()
+        ##message( STATUS "keep ${flag}" )
+        list(APPEND TMP_CXX_FLAGS_${PTYPE_UC} ${flag} )
+     endif()
+  endforeach( flag )
+  foreach( flag ${tmp_c_flags} )
+     if( ${flag} MATCHES "^-W(.*)" )
+        ##message( STATUS "Warning: ${flag}" )
+     elseif( ${flag} MATCHES "-pedantic" )
+        ##message( STATUS "Ignoring: ${flag}" )
+     else()
+        ##message( STATUS "keep ${flag}" )
+        list(APPEND TMP_C_FLAGS_${PTYPE_UC} ${flag} )
+     endif()
+  endforeach( flag )
+  ##message( STATUS "TMP_CXX_FLAGS_${PTYPE_UC}: ${TMP_CXX_FLAGS_${PTYPE_UC}}")
+  ##message( STATUS "TMP_C_FLAGS_${PTYPE_UC}: ${TMP_C_FLAGS_${PTYPE_UC}}")
+
+endmacro( _cet_process_flags )
+
+macro( cet_base_flags )
+  foreach( mytype DEBUG;OPT;PROF )
+     ##message( STATUS "checking ${mytype}" )
+     _cet_process_flags( ${mytype} )
+     ##message( STATUS "${mytype} C   flags: ${TMP_C_FLAGS_${mytype}}")
+     ##message( STATUS "${mytype} CXX flags: ${TMP_CXX_FLAGS_${mytype}}")
+     set( CET_BASE_CXX_FLAG_${mytype} ${TMP_CXX_FLAGS_${mytype}}
+          CACHE STRING "base CXX ${mytype} flags for ups table"
+	  FORCE)
+     set( CET_BASE_C_FLAG_${mytype} ${TMP_C_FLAGS_${mytype}}
+          CACHE STRING "base C ${mytype} flags for ups table"
+	  FORCE)
+  endforeach( mytype )
+  ##message( STATUS "CET_BASE_CXX_FLAG_DEBUG: ${CET_BASE_CXX_FLAG_DEBUG}")
+  ##message( STATUS "CET_BASE_CXX_FLAG_OPT:   ${CET_BASE_CXX_FLAG_OPT}")
+  ##message( STATUS "CET_BASE_CXX_FLAG_PROF:  ${CET_BASE_CXX_FLAG_PROF}")
+endmacro( cet_base_flags )
+
 macro( _cet_add_build_types )
   SET( CMAKE_CXX_FLAGS_OPT "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
     "Flags used by the C++ compiler for optimized builds."
@@ -184,10 +235,14 @@ macro( cet_add_compiler_flags )
   STRING(REGEX REPLACE ";" " " CSCF_CXX "${CSCF_CXX}")
   STRING(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   IF (CSCF_C)
-    SET(CMAKE_C_FLAGS_${BTYPE_UC} "${CMAKE_C_FLAGS_${BTYPE_UC}} ${CSCF_C}")
+    SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${CSCF_C}")
+    SET(CMAKE_C_FLAGS_OPT   "${CMAKE_C_FLAGS_OPT} ${CSCF_C}")
+    SET(CMAKE_C_FLAGS_PROF  "${CMAKE_C_FLAGS_PROF} ${CSCF_C}")
   ENDIF()
   IF (CSCF_CXX)
-    SET(CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}} ${CSCF_CXX}")
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CSCF_CXX}")
+    SET(CMAKE_CXX_FLAGS_OPT   "${CMAKE_CXX_FLAGS_OPT} ${CSCF_CXX}")
+    SET(CMAKE_CXX_FLAGS_PROF  "${CMAKE_CXX_FLAGS_PROF} ${CSCF_CXX}")
   ENDIF()
 endmacro( cet_add_compiler_flags )
 
@@ -220,7 +275,7 @@ macro( cet_set_compiler_flags )
   if (CSCF_DEFAULT_ARGS)
     message(FATAL "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider EXTRA_FLAGS, EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
   endif()
-  
+
   # turn a colon separated list into a space separated string
   STRING( REGEX REPLACE ";" " " CSCF_EXTRA_CXX_FLAGS "${CSCF_EXTRA_CXX_FLAGS}")
   STRING( REGEX REPLACE ";" " " CSCF_EXTRA_C_FLAGS "${CSCF_EXTRA_C_FLAGS}")
@@ -301,7 +356,7 @@ macro( cet_set_compiler_flags )
   if( CSCF_CD )
     message( STATUS "   DEFINE (-D): ${CSCF_CD}")
   endif()
-
+ 
 endmacro( cet_set_compiler_flags )
 
 macro( cet_query_system )

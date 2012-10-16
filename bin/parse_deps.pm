@@ -513,4 +513,23 @@ sub compare_qual {
   return $retval;
 }
 
+sub check_flags {
+  my @params = @_;
+  my $type = uc $params[1];
+  my $cxxflg = "";
+  my $cflg = "";
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    @words = split(/\s+/,$line);
+    if ( $words[0] eq "CET_BASE_CXX_FLAG_${type}:" ) {
+       $cxxflg = $words[1];
+    } elsif ( $words[0] eq "CET_BASE_C_FLAG_${type}:" ) {
+       $cflg = $words[1];
+    }
+  }
+  close(PIN);
+  return ($cxxflg,$cflg);
+}
+
 1;

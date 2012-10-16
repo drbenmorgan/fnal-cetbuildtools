@@ -25,6 +25,7 @@ if( $#ARGV >= 0 ) {
 require parse_deps;
 
 $pfile=$inputdir."/product_deps";
+$flagfile=$outputdir."/cet_base_flags";
 
 ($product, $version, $default_qual, %phash) = parse_product_list( $pfile );
 ($ndeps, @qlist) = parse_qualifier_list( $pfile );
@@ -97,6 +98,19 @@ sub create_quals {
     foreach $j ( 1 .. $#words ) {
       $qdot = $qdot.".".$words[$j];
     }
+    my $cxxflag = "";
+    my $cflag = "";
+    foreach $j ( 0 .. $#words ) {
+      if( $words[$j] eq "debug" ) {
+         ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
+      } elsif( $words[$j] eq "opt" ) {
+         ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
+      } elsif( $words[$j] eq "prof" ) {
+         ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
+      }
+    }
+    $cxxflag =~ s/;/ /g;
+    $cflag =~ s/;/ /g;
     print TBL "Flavor     = ANY\n";
     print TBL "Qualifiers = \"$qlist[$i][0]\"\n";
     print TBL "\n";
@@ -107,6 +121,8 @@ sub create_quals {
     print TBL "       fileTest( \${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ}, -d, \"\${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED\")\n";
     print TBL "\n";
     print TBL "  Action = GetProducts\n";
+    print TBL "    envSet( \${UPS_PROD_NAME_UC}_CXXFLAGS, \"$cxxflag\" )\n";
+    print TBL "    envSet( \${UPS_PROD_NAME_UC}_CFLAGS, \"$cflag\" )\n";
     foreach $j ( 1 .. $ndeps ) {
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
