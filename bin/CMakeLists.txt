@@ -12,6 +12,7 @@ INSTALL ( FILES cet_test_functions.sh
                 parse_deps.pm
 		set_dev_bin
 		set_dev_check
+		set_dev_check_report
 		set_dev_fhicl
 		set_dev_lib
 		set_dev_report

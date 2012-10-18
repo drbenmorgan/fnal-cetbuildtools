@@ -114,12 +114,14 @@ sub create_quals {
     print TBL "Flavor     = ANY\n";
     print TBL "Qualifiers = \"$qlist[$i][0]\"\n";
     print TBL "\n";
-    print TBL "  Action = GetFQDir\n";
-    print TBL "       # faking out unsetup\n";
-    print TBL "       envSet( \${UPS_PROD_NAME_UC}_FQ, \"\" )\n";
-    print TBL "       execute( \"get-directory-name subdir $qdot \${UPS_PROD_FLAVOR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_FQ )\n";
-    print TBL "       fileTest( \${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ}, -d, \"\${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED\")\n";
-    print TBL "\n";
+    if( $have_fq ) {
+      print TBL "  Action = GetFQDir\n";
+      print TBL "       # faking out unsetup\n";
+      print TBL "       envSet( \${UPS_PROD_NAME_UC}_FQ, \"\" )\n";
+      print TBL "       execute( \"get-directory-name subdir $qdot \${UPS_PROD_FLAVOR}\", UPS_ENV, \${UPS_PROD_NAME_UC}_FQ )\n";
+      print TBL "       fileTest( \${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ}, -d, \"\${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED\")\n";
+      print TBL "\n";
+    }
     print TBL "  Action = GetProducts\n";
     print TBL "    envSet( \${UPS_PROD_NAME_UC}_CXXFLAGS, \"$cxxflag\" )\n";
     print TBL "    envSet( \${UPS_PROD_NAME_UC}_CFLAGS, \"$cflag\" )\n";

@@ -1,0 +1,34 @@
+
+test -z "$1" &&  set_ have_simple="false"
+test "$1" = "simple" && set_ have_simple="true"
+
+# check to make sure we don't have empty variables
+set_ merr1='ERROR: CETPKG_SOURCE is undefined'
+set_ merr2='ERROR: CETPKG_BUILD is undefined'
+set_ merr3='ERROR: CETPKG_NAME is undefined'
+set_ merr4='ERROR: CETPKG_VERSION is undefined'
+set_ merr5='ERROR: CETPKG_QUAL is undefined'
+set_ merr6='ERROR: CETPKG_TYPE is undefined'
+
+test -z "$CETPKG_SOURCE" && ( echo ""; echo "$merr1"; echo "" ) 
+test -z "$CETPKG_BUILD" && ( echo ""; echo "$merr2"; echo "" ) 
+test -z "$CETPKG_NAME" && ( echo ""; echo "$merr3"; echo "" ) 
+test -z "$CETPKG_VERSION" && ( echo ""; echo "$merr4"; echo "" ) 
+test $have_simple = "false" && test -z "$CETPKG_QUAL" && ( echo ""; echo "$merr5"; echo "" ) 
+test $have_simple = "false" && test -z "$CETPKG_TYPE" && ( echo ""; echo "$merr6"; echo "" ) 
+
+# cleanup
+unset merr1 merr2 merr3 merr4 merr5 merr6
+
+# Show what we've done
+echo
+echo CETPKG_SOURCE=$CETPKG_SOURCE
+echo CETPKG_BUILD=$CETPKG_BUILD
+echo CETPKG_NAME=$CETPKG_NAME
+echo CETPKG_VERSION=$CETPKG_VERSION
+test $have_simple = "false" && echo CETPKG_QUAL=$CETPKG_QUAL
+test $have_simple = "false" && echo CETPKG_TYPE=$CETPKG_TYPE
+echo
+echo Please use this cmake command:
+test $have_simple = "false" && echo cmake -DCMAKE_INSTALL_PREFIX=/install/path -DCMAKE_BUILD_TYPE=\$CETPKG_TYPE \$CETPKG_SOURCE
+test $have_simple = "true" && echo cmake -DCMAKE_INSTALL_PREFIX=/install/path \$CETPKG_SOURCE

@@ -129,17 +129,21 @@ foreach $i ( 1 .. $#qlist ) {
     }
   }
 }
+# allow for the case where there are no dependencies
 if ( $match == 0 ) {
-   print TSET "\n";
-   print TSET "echo \"ERROR: failed to find any dependent products for $product $version -q $qual\"\n";
-   print TSET "echo \"       The following qualifier combinations are recognized:\"\n";
-   foreach $i ( 1 .. $#qlist ) {
-       print TSET "echo \"         $qlist[$i][0] \"\n";
+   if( $phash{none} = "none" ) {
+     #print "this package has no dependencies\n";
+   } else {
+     print TSET "\n";
+     print TSET "echo \"ERROR: failed to find any dependent products for $product $version -q $qual\"\n";
+     print TSET "echo \"       The following qualifier combinations are recognized:\"\n";
+     foreach $i ( 1 .. $#qlist ) {
+	 print TSET "echo \"         $qlist[$i][0] \"\n";
+     }
+     print TSET "return 1\n";
+     print TSET "\n";
    }
-   print TSET "return 1\n";
-   print TSET "\n";
 }
-
 
 close(TSET);
 print "$tmpfl\n";
