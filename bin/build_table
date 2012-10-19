@@ -27,7 +27,7 @@ require parse_deps;
 $pfile=$inputdir."/product_deps";
 $flagfile=$outputdir."/cet_base_flags";
 
-($product, $version, $default_qual, %phash) = parse_product_list( $pfile );
+($product, $version, $default_ver, $default_qual, %phash) = parse_product_list( $pfile );
 ($ndeps, @qlist) = parse_qualifier_list( $pfile );
 $have_fq = check_fq_dir( $pfile );
 (%ohash) = find_optional_products( $pfile );

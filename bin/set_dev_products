@@ -53,7 +53,7 @@ require parse_deps;
 
 $pfile=$inputdir."/product_deps";
 
-($product, $version, $default_qual, %phash) = parse_product_list( $pfile );
+($product, $version, $default_ver, $default_qual, %phash) = parse_product_list( $pfile );
 
 $tmpfl = $builddir."/".$product."-".$version;
 open(TSET, "> $tmpfl") or die "Couldn't open $tmpfl";
@@ -91,7 +91,7 @@ if ( $qual ) {
   }
 }
 
-$cetfl = cetpkg_info_file( $product, $version, $qual, $type );
+$cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type );
 (%ohash) = find_optional_products( $pfile );
 
 $match = 0;

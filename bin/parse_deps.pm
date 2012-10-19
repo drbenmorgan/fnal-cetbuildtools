@@ -39,6 +39,7 @@ sub parse_product_list {
   $get_phash="";
   $get_quals="";
   $get_fragment="";
+  my $extra="none";
   while ( $line=<PIN> ) {
     chop $line;
     if ( index($line,"#") == 0 ) {
@@ -48,6 +49,7 @@ sub parse_product_list {
       if( $words[0] eq "parent" ) {
 	 $prod=$words[1];
 	 $ver=$words[2];
+	 if( $words[3] ) { $extra=$words[3]; }
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "no_fq_dir" ) {
@@ -92,12 +94,12 @@ sub parse_product_list {
       } elsif( $get_quals ) {
       } elsif( $get_fragment ) {
       } else {
-        print "ignoring $line\n";
+        print "parse_product_list: ignoring $line\n";
       }
     }
   }
   close(PIN);
-  return ($prod, $ver, $dq, %phash);
+  return ($prod, $ver, $extra, $dq, %phash);
 }
 
 sub parse_qualifier_list {
@@ -189,7 +191,7 @@ sub parse_qualifier_list {
       } elsif( $get_fragment ) {
 	 print "$params[0] qualifier $words[0]\n";
       } else {
-        print "ignoring $line\n";
+        print "parse_qualifier_list: ignoring $line\n";
       }
     }
   }
@@ -259,7 +261,7 @@ sub find_optional_products {
       } elsif( $get_fragment ) {
       } elsif( $get_quals ) {
       } else {
-        print "ignoring $line\n";
+        print "find_optional_products: ignoring $line\n";
       }
     }
   }
@@ -455,8 +457,9 @@ sub cetpkg_info_file {
   print CPG "\n";
   print CPG "CETPKG_NAME     $params[0]\n";
   print CPG "CETPKG_VERSION  $params[1]\n";
-  print CPG "CETPKG_QUAL     $params[2]\n";
-  print CPG "CETPKG_TYPE     $params[3]\n";
+  print CPG "CETPKG_DEFAULT_VERSION  $params[2]\n";
+  print CPG "CETPKG_QUAL     $params[3]\n";
+  print CPG "CETPKG_TYPE     $params[4]\n";
   close(CPG);
   return($cetpkgfile);  
 }

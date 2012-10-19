@@ -47,6 +47,13 @@ macro(_get_cetpkg_info)
 
    execute_process(COMMAND ${GET_PRODUCT_INFO} 
 			   ${CMAKE_CURRENT_BINARY_DIR}
+			   default_version
+                   OUTPUT_VARIABLE rdefault_version
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
+
+   execute_process(COMMAND ${GET_PRODUCT_INFO} 
+			   ${CMAKE_CURRENT_BINARY_DIR}
 			   qualifier
                    OUTPUT_VARIABLE rqual
 		   OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -54,6 +61,7 @@ macro(_get_cetpkg_info)
 
    set(product ${rproduct} CACHE STRING "Package UPS name" FORCE)
    set(version ${rversion} CACHE STRING "Package UPS version" FORCE)
+   set(default_version ${rdefault_version} CACHE STRING "Package UPS default version" FORCE)
    set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
    #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${full_qualifier}")
 

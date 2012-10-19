@@ -23,6 +23,8 @@ while ( $line=<PIN> ) {
        $product = $words[1];
     } elsif( $words[0] eq "CETPKG_VERSION" ) {
        $version = $words[1];
+    } elsif( $words[0] eq "CETPKG_DEFAULT_VERSION" ) {
+       $default_version = $words[1];
     } elsif( $words[0] eq "CETPKG_QUAL" ) {
        if( $words[1] eq "-nq-" ) { 
          $qual = ""; 
@@ -40,6 +42,8 @@ if( $info_type eq "product" ) {
     print "$product\n";
 } elsif( $info_type eq "version" ) {
     print "$version\n";
+} elsif( $info_type eq "default_version" ) {
+    print "$default_version\n";
 } elsif( $info_type eq "qualifier" ) {
     print "$qual\n";
 } elsif( $info_type eq "type" ) {
