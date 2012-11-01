@@ -4,52 +4,91 @@
 # Users may opt to just include cet_make() in their CMakeLists.txt
 # This implementation is intended to be called NO MORE THAN ONCE per subdirectory.
 #
-# cet_make( [LIBRARY_NAME <library name>]  
-#           [LIBRARIES <library list>]  
+# NOTE: cet_make_exec and cet_make_test_exec are no longer part of cet_make 
+# or art_make and must be called explicitly.
+#
+# cet_make( LIBRARY_NAME <library name> 
+#           [LIBRARIES <library link list>]
 #           [SUBDIRS <source subdirectory>] (e.g., detail)
-#           [EXEC <exec source>]
-#           [TEST <test source>]
 #           [EXCLUDE <ignore these files>] )
 #
 # NOTE: if your code includes art plugins, you MUST use art_make instead of cet_make.
 # cet_make will ignore all plugin code
 #
-# cet_make_exec( name liblist )
-# -- build a regular executable
-# -- used by art_make and cet_make
+# cet_make_library( [LIBRARY_NAME <library name>]  
+#                   [SOURCE <source code list>] 
+#                   [LIBRARIES <library list>] )
 #
-# cet_make_test_exec( name liblist )
+# cet_make_exec( NAME <executable name>  
+#                [SOURCE <source code list>] 
+#                [LIBRARIES <library link list>] )
+# -- build a regular executable
+#
+# cet_make_test_exec( NAME <executable name>
+#                     [SOURCE <source code list>] 
+#                     [LIBRARIES <library link list>] )
 # -- build a test executable
-# -- used by art_make and cet_make
 
 include(CetParseArgs)
 include(InstallSource)
 
-macro( cet_make_exec name liblist )
-  #message(STATUS "debug: cet_make_exec called with ${name} ${liblist}")
-  get_filename_component(name_ext ${name} EXT)
-  STRING( REGEX REPLACE "(.*)${name_ext}" "\\1" base_name "${name}" )
+macro( cet_make_exec )
+  set(cet_exec_file_list "")
+  set(cet_make_exec_usage "USAGE: cet_make_exec( NAME <executable name> [SOURCE <exec source>] [LIBRARIES <library list>] )")
+  #message(STATUS "cet_make_exec debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
+  cet_parse_args( CME "NAME;LIBRARIES;SOURCE" "" ${ARGN})
+  # there are no default arguments
+  if( CME_DEFAULT_ARGS )
+     message("CET_MAKE_EXEC: Incorrect arguments. ${ARGV}")
+     message(SEND_ERROR  ${cet_make_exec_usage})
+  endif()
+  #message(STATUS "debug: cet_make_exec called with ${CME_NAME} ${CME_LIBRARIES}")
+  get_filename_component(name_ext ${CME_NAME} EXT)
+  STRING( REGEX REPLACE "(.*)${name_ext}" "\\1" base_name "${CME_NAME}" )
   #message(STATUS "debug: cet_make_exec base name is ${base_name} ")
-  add_executable( ${base_name} ${name} )
-  target_link_libraries( ${base_name} ${liblist} )
+  if( CME_SOURCE )
+    set( exec_source_list "${CME_NAME} ${CME_SOURCE}" )
+  else()
+    set( exec_source_list ${CME_NAME} )
+  endif()
+  add_executable( ${base_name} ${exec_source_list} )
+  if(CME_LIBRARIES)
+     target_link_libraries( ${base_name} ${CME_LIBRARIES} )
+  endif()
   install( TARGETS ${base_name} DESTINATION ${flavorqual_dir}/bin )
 endmacro( cet_make_exec )
 
-macro( cet_make_test_exec name liblist )
-  #message(STATUS "debug: _cet_test called with ${name} ${liblist}")
-  get_filename_component(name_ext ${name} EXT)
-  STRING( REGEX REPLACE "(.*)${name_ext}" "\\1" base_name "${name}" )
-  #message(STATUS "debug: _cet_test base name is ${base_name} ")
-  add_executable( ${base_name} ${name} )
-  target_link_libraries( ${base_name} ${liblist} )
+macro( cet_make_test_exec )
+  set(cet_test_exec_file_list "")
+  set(cet_make_test_exec_usage "USAGE: cet_make_test_exec( NAME <executable name> [SOURCE <exec source>] [LIBRARIES <library list>] )")
+  #message(STATUS "cet_make_test_exec debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
+  cet_parse_args( CMT "NAME;LIBRARIES;SOURCE" "" ${ARGN})
+  # there are no default arguments
+  if( CMT_DEFAULT_ARGS )
+     message("CET_MAKE_TEST_EXEC: Incorrect arguments. ${ARGV}")
+     message(SEND_ERROR  ${cet_make_test_exec_usage})
+  endif()
+  #message(STATUS "debug: cet_make_test_exec called with ${CMT_NAME} ${CMT_LIBLIST}")
+  get_filename_component(name_ext ${CMT_NAME} EXT)
+  STRING( REGEX REPLACE "(.*)${name_ext}" "\\1" base_name "${CMT_NAME}" )
+  #message(STATUS "debug: cet_make_test_exec base name is ${base_name} ")
+  if( CMT_SOURCE )
+    set( exec_source_list "${CMT_NAME} ${CMT_SOURCE}" )
+  else()
+    set( exec_source_list ${CMT_NAME} )
+  endif()
+  add_executable( ${base_name} ${exec_source_list} )
+  if(CMT_LIBRARIES)
+     target_link_libraries( ${base_name} ${CMT_LIBRARIES} )
+  endif()
   ADD_TEST(${base_name} ${EXECUTABLE_OUTPUT_PATH}/${base_name})
 endmacro( cet_make_test_exec )
 
 macro( cet_make )
   set(cet_file_list "")
-  set(cet_make_usage "USAGE: cet_make( [LIBRARIES <library list>] [EXEC <exec source>]  [TEST <test source>] [EXCLUDE <ignore these files>] )")
+  set(cet_make_usage "USAGE: cet_make( LIBRARY_NAME <library name> [LIBRARIES <library list>] [SUBDIRS <source subdirectory>] [EXCLUDE <ignore these files>] )")
   #message(STATUS "cet_make debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CM "LIBRARY_NAME;LIBRARIES;EXEC;SUBDIRS;TEST;EXCLUDE" "" ${ARGN})
+  cet_parse_args( CM "LIBRARY_NAME;LIBRARIES;SUBDIRS;EXCLUDE" "" ${ARGN})
   # there are no default arguments
   if( CM_DEFAULT_ARGS )
      message("CET_MAKE: Incorrect arguments. ${ARGV}")
@@ -58,17 +97,6 @@ macro( cet_make )
   # check for extra link libraries
   if(CM_LIBRARIES)
      set(cet_liblist ${CM_LIBRARIES})
-  endif()
-  # add executables to the list of known files 
-  if(CM_EXEC)
-     foreach( exec_file ${CM_EXEC} )
-        set(cet_file_list ${cet_file_list} ${exec_file} )
-     endforeach( exec_file )
-  endif()
-  if(CM_TEST)
-     foreach( test_file ${CM_TEST} )
-        set(cet_file_list ${cet_file_list} ${test_file} )
-     endforeach( test_file )
   endif()
   # now look for other source files in this directory
   #message(STATUS "cet_make debug: listed files ${cet_file_list}")
@@ -150,16 +178,29 @@ macro( cet_make )
      endif()
   endif()
 
-  # OK - now build the executables
-  if(CM_EXEC)
-     foreach( exec_file ${CM_EXEC} )
-        cet_make_exec( ${exec_file} "${cet_liblist}" "${cet_make_library_name}" )
-     endforeach( exec_file )
-  endif()
-  if(CM_TEST)
-     foreach( test_file ${CM_TEST} )
-        cet_make_test_exec( ${test_file} "${cet_liblist}" "${cet_make_library_name}" )
-     endforeach( test_file )
-  endif()
-
 endmacro( cet_make )
+
+macro( cet_make_library )
+  set(cet_file_list "")
+  set(cet_make_library_usage "USAGE: cet_make_library( LIBRARY_NAME <library name> SOURCE <source code list> [LIBRARIES <library link list>] )")
+  #message(STATUS "cet_make_library debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
+  cet_parse_args( CML "LIBRARY_NAME;LIBRARIES;SOURCE" "" ${ARGN})
+  # there are no default arguments
+  if( CML_DEFAULT_ARGS )
+     message("CET_MAKE_LIBRARY: Incorrect arguments. ${ARGV}")
+     message(SEND_ERROR  ${cet_make_library_usage})
+  endif()
+  # check for a source code list
+  if(CML_SOURCE)
+     set(cet_src_list ${CML_SOURCE})
+  else()
+     message("CET_MAKE_LIBRARY: Incorrect arguments. ${ARGV}")
+     message(SEND_ERROR  ${cet_make_library_usage})
+  endif()
+  add_library( ${CML_LIBRARY_NAME} SHARED ${cet_src_list} )
+  if(CML_LIBRARIES)
+     target_link_libraries( ${CML_LIBRARY_NAME} ${CML_LIBRARIES} )
+  endif()
+  install( TARGETS  ${CML_LIBRARY_NAME} 
+           DESTINATION ${flavorqual_dir}/lib )
+endmacro( cet_make_library )
