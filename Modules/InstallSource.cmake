@@ -1,9 +1,11 @@
 # install_source() 
 # install_headers()
+# install_scripts()
 #
 # Use the install_source macro to install source code for debugging
 # The default implementation will pick up the following file extensions:
 #      .cc .c .cpp .C .cxx .h .hh .H .hpp .icc .xml
+#      script extensions: .sh
 # For other files, use the EXTRAS option
 #
 # The SUBDIRS option allows you to search subdirectories (e.g. a detail subdirectory)
@@ -22,6 +24,9 @@
 #
 # install_headers( [SUBDIRS subdirectory_list] [EXTRAS extra_file_list] )
 # install_headers( LIST file_list )
+#
+# install_scripts( [SUBDIRS subdirectory_list] [EXTRAS extra_file_list] )
+# install_scripts( LIST file_list )
 #
 # set_install_root() defines PACKAGE_TOP_DIRECTORY 
 
@@ -58,7 +63,8 @@ macro( _cet_check_build_directory )
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.H 
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.hpp 
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.icc
-	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.xml  )
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.xml
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.sh   )
   FILE(GLOB build_directory_headers  
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.h 
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.hh 
@@ -100,7 +106,7 @@ macro( _cet_install_without_list   )
   FILE(GLOB src_files 
             [^.]*.cc [^.]*.c [^.]*.cpp [^.]*.C [^.]*.cxx 
 	    [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc 
-	    [^.]*.xml )
+	    [^.]*.xml [^.]*.sh )
   if( src_files )
     INSTALL( FILES ${src_files} 
              DESTINATION ${source_install_dir} )
@@ -115,7 +121,7 @@ macro( _cet_install_without_list   )
 	FILE(GLOB subdir_src_files 
 	         ${sub}/[^.]*.cc ${sub}/[^.]*.c ${sub}/[^.]*.cpp ${sub}/[^.]*.C ${sub}/[^.]*.cxx
 		 ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc
-		 ${sub}/[^.]*.xml  )
+		 ${sub}/[^.]*.xml ${sub}/[^.]*.sh )
         if( subdir_src_files )
 	  INSTALL( FILES ${subdir_src_files} 
         	   DESTINATION ${source_install_dir}/${sub} )
@@ -165,6 +171,28 @@ macro( _cet_install_header_from_list header_list  )
             DESTINATION ${header_install_dir} )
 endmacro( _cet_install_header_from_list )
 
+macro( _cet_install_script_without_list   )
+  #message( STATUS "scripts will be installed in ${script_install_dir}" )
+  FILE(GLOB scripts [^.]*.sh )
+  if( scripts )
+    #message( STATUS "installing scripts ${scripts} in ${script_install_dir}")
+    INSTALL ( PROGRAMS ${scripts} 
+             DESTINATION ${script_install_dir} )
+  endif( scripts )
+  # now check subdirectories
+  if( IS_SUBDIRS )
+     foreach( sub ${IS_SUBDIRS} )
+	FILE(GLOB subdir_scripts 
+		 ${sub}/[^.]*.sh )
+        if( subdir_scripts )
+	  INSTALL ( PROGRAMS ${subdir_scripts} 
+        	   DESTINATION ${script_install_dir} )
+        endif( subdir_scripts )
+     endforeach(sub)
+     #message( STATUS "also installing in subdirectories: ${IS_SUBDIRS}")
+  endif( IS_SUBDIRS )
+endmacro( _cet_install_script_without_list )
+
 macro( install_source   )
   cet_parse_args( ISRC "SUBDIRS;LIST;EXTRAS" "" ${ARGN})
   #message( STATUS "install_source: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
@@ -211,3 +239,23 @@ macro( install_headers   )
      _cet_install_header_without_list()
   endif()
 endmacro( install_headers )
+
+macro( install_scripts   )
+  cet_parse_args( IS "SUBDIRS;LIST;EXTRAS" "" ${ARGN})
+  set(script_install_dir ${product}/${version}/bin )
+  #message( STATUS "install_scripts: scripts will be installed in ${script_install_dir}" )
+  if( IS_LIST )
+     if( IS_SUBDIRS )
+        message( FATAL_ERROR 
+	         "ERROR: call install_scripts with EITHER LIST or SUBDIRS but not both")
+     endif( IS_SUBDIRS )
+     INSTALL ( PROGRAMS  ${IS_LIST}
+               DESTINATION ${script_install_dir} )
+  else()
+     if( IS_EXTRAS )
+	INSTALL ( PROGRAMS  ${IS_EXTRAS}
+        	  DESTINATION ${script_install_dir} )
+     endif( IS_EXTRAS )
+     _cet_install_script_without_list()
+  endif()
+endmacro( install_scripts )
