@@ -70,7 +70,7 @@ macro( cet_version_file )
 ##                    OUTPUT_STRIP_TRAILING_WHITESPACE )
 
    STRING( REGEX REPLACE ":" "_" VQUAL "${full_qualifier}" )
-   message( STATUS "calling ${BUILD_VERSION_FILE_NAME} with ${product} ${version} ${default_version} ${UPSFLAVOR}")
+   ##message( STATUS "calling ${BUILD_VERSION_FILE_NAME} with ${product} ${version} ${default_version} ${UPSFLAVOR}")
    execute_process(COMMAND ${BUILD_VERSION_FILE_NAME} 
 			   ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}
 			   ${product}
@@ -81,7 +81,7 @@ macro( cet_version_file )
                    OUTPUT_VARIABLE MSG
 		   OUTPUT_STRIP_TRAILING_WHITESPACE
 		   )
-   message( STATUS "${BUILD_VERSION_FILE_NAME} returned ${MSG}")
+   ##message( STATUS "${BUILD_VERSION_FILE_NAME} returned ${MSG}")
    # check to see if we have a current chain
    if( ${default_version} MATCHES "current" )
       install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} 
