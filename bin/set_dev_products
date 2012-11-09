@@ -93,6 +93,7 @@ if ( $qual ) {
 
 $cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type );
 (%ohash) = find_optional_products( $pfile );
+($ecount, @ehash) = find_only_for_build_products( $pfile );
 
 $match = 0;
 print TSET "setenv UPS_OPTIONS -B\n";
@@ -105,7 +106,13 @@ if ( $simple ) {
   print TSET "setenv CETPKG_QUAL $qual\n";
   print TSET "setenv CETPKG_TYPE $type\n";
 }
-print TSET "setup cetpkgsupport \n";
+print TSET "setup -B cetpkgsupport \n";
+foreach $i ( 1 .. $ecount ) {
+  if( $ehash[$i][0] eq "cetbuildtools" ) {
+  } else {
+    print TSET "setup -B $ehash[$i][0] $ehash[$i][1]\n";
+  }
+}
 foreach $i ( 1 .. $#qlist ) {
   if ( compare_qual( $qlist[$i][0], $qual ) ) {
     $match++;

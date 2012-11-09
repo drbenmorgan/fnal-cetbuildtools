@@ -269,6 +269,31 @@ sub find_optional_products {
   return (%opthash);
 }
 
+sub find_only_for_build_products {
+  my @params = @_;
+  my $count = 0;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "only_for_build" ) {
+        ++$count;
+	$ephash[$count][0] = $words[1];  
+	if( $words[2] eq "-" ) {
+	  $ephash[$count][1] = "";
+	} else {
+          $ephash[$count][1] = $words[2];
+	}
+      }
+    }
+  }
+  close(PIN);
+  return ($count,@ephash);
+}
+
 sub get_include_directory {
   my @params = @_;
   $incdir = "default";
