@@ -17,7 +17,8 @@
 #
 # cet_make_library( [LIBRARY_NAME <library name>]  
 #                   [SOURCE <source code list>] 
-#                   [LIBRARIES <library list>] )
+#                   [LIBRARIES <library list>] 
+#                   [WITH_STATIC_LIBRARY] )
 #
 # cet_make_exec( NAME <executable name>  
 #                [SOURCE <source code list>] 
@@ -84,7 +85,7 @@ macro( cet_make )
   set(cet_file_list "")
   set(cet_make_usage "USAGE: cet_make( LIBRARY_NAME <library name> [LIBRARIES <library list>] [SUBDIRS <source subdirectory>] [EXCLUDE <ignore these files>] )")
   #message(STATUS "cet_make debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CM "LIBRARY_NAME;LIBRARIES;SUBDIRS;EXCLUDE" "" ${ARGN})
+  cet_parse_args( CM "LIBRARY_NAME;LIBRARIES;SUBDIRS;EXCLUDE" "WITH_STATIC_LIBRARY" ${ARGN})
   # there are no default arguments
   if( CM_DEFAULT_ARGS )
      message("CET_MAKE: Incorrect arguments. ${ARGV}")
@@ -180,7 +181,7 @@ macro( cet_make_library )
   set(cet_file_list "")
   set(cet_make_library_usage "USAGE: cet_make_library( LIBRARY_NAME <library name> SOURCE <source code list> [LIBRARIES <library link list>] )")
   #message(STATUS "cet_make_library debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CML "LIBRARY_NAME;LIBRARIES;SOURCE" "" ${ARGN})
+  cet_parse_args( CML "LIBRARY_NAME;LIBRARIES;SOURCE" "WITH_STATIC_LIBRARY" ${ARGN})
   # there are no default arguments
   if( CML_DEFAULT_ARGS )
      message("CET_MAKE_LIBRARY: Incorrect arguments. ${ARGV}")
@@ -198,5 +199,23 @@ macro( cet_make_library )
      target_link_libraries( ${CML_LIBRARY_NAME} ${CML_LIBRARIES} )
   endif()
   install( TARGETS  ${CML_LIBRARY_NAME} 
-           DESTINATION ${flavorqual_dir}/lib )
+	   RUNTIME DESTINATION ${flavorqual_dir}/bin
+	   LIBRARY DESTINATION ${flavorqual_dir}/lib
+	   ARCHIVE DESTINATION ${flavorqual_dir}/lib
+           )
+  if( CML_WITH_STATIC_LIBRARY )
+    add_library( ${CML_LIBRARY_NAME}S STATIC ${cet_src_list} )
+    if(CML_LIBRARIES)
+       target_link_libraries( ${CML_LIBRARY_NAME}S ${CML_LIBRARIES} )
+    endif()
+    set_target_properties( ${CML_LIBRARY_NAME}S PROPERTIES OUTPUT_NAME ${CML_LIBRARY_NAME} )
+    set_target_properties( ${CML_LIBRARY_NAME}  PROPERTIES OUTPUT_NAME ${CML_LIBRARY_NAME} )
+    set_target_properties( ${CML_LIBRARY_NAME}S PROPERTIES CLEAN_DIRECT_OUTPUT 1 )
+    set_target_properties( ${CML_LIBRARY_NAME}  PROPERTIES CLEAN_DIRECT_OUTPUT 1 )
+    install( TARGETS  ${CML_LIBRARY_NAME}S 
+	     RUNTIME DESTINATION ${flavorqual_dir}/bin
+	     LIBRARY DESTINATION ${flavorqual_dir}/lib
+	     ARCHIVE DESTINATION ${flavorqual_dir}/lib
+             )
+  endif( CML_WITH_STATIC_LIBRARY )
 endmacro( cet_make_library )
