@@ -68,7 +68,7 @@ function package_name() {
     local ppath="${path}/$(dirname ${pathfrag})"
     local file=$(basename "${pathfrag}")
   fi
-  local sanitized_path=`echo "${path}" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)&&g; s&/$&&;'`
+  local sanitized_path=`echo "${path}" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)\b&&g; s&/$&&;'`
   if [[ -r "${TMP}.int_packages" ]] && ! grep -e "^${sanitized_path}\$" "${TMP}.int_packages" >/dev/null 2>&1; then
     # Not interested in external packages
     echo "${sanitized_path}"
@@ -104,9 +104,9 @@ foreach my $plugin_ext qw(generator module service source) {
   cd "$opwd" >/dev/null 2>&1
   local result
   if [[ -z "${plugin}" ]]; then
-    result=`echo "${path}" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)&&g; s&/$&&;'`
+    result=`echo "${path}" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)\b&&g; s&/$&&;'`
   else
-    result=`echo "${ppath}/$plugin" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)&&g; s&/$&&; s&/+&_&g;'`
+    result=`echo "${ppath}/$plugin" | perl -wpe 's&\b(?:interface|inc|include|src|cxx|detail)\b&&g; s&/$&&; s&/+&_&g;'`
     echo "${result} ${type}" >> "${TMP}.plugins"
   fi
   echo "${result}"
@@ -116,6 +116,7 @@ function find_int_packages() {
   local prefix
   find . -mindepth 1 -maxdepth 1 -type d -printf "%P\n" | while read dir; do (
     { [[ "$dir" == "CVS" ]] || \
+      [[ "$dir" == "External"* ]] || \
       [[ "$dir" == "."* ]] || \
       [[ "$dir" = "bin" ]] || \
       [[ "$dir" = "doc" ]] || \
