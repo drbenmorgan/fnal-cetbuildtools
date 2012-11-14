@@ -582,6 +582,11 @@ if (( ${clean:-0} )); then
     echo "ERROR: Clean operation would remove the current directory!" 1>&2
     exit 2
   fi
+  if (( $(ls -1 "${CETPKG_BUILD}" | wc -l) )) && ! [[ -f "${CETPKG_BUILD}/cetpkg_variable_report" ]]; then
+    echo "ERROR: Refusing to clean suspect non-empty build directory \"${CETPKG_BUILD}\"" 1>&2
+    echo "       Double-check value and contents of \$CETPKG_BUILD." 1>&2
+    exit 2
+  fi
   trap "f=$?; printf \"\nAborted\n\" 1>&2; cleanup; exit $f" 2
   printf "INFO: About to clean \"$CETPKG_BUILD\": ctrl-C to abort within 5 seconds "
   for i in 1 2 3 4 5; do printf "."; sleep 1; done
