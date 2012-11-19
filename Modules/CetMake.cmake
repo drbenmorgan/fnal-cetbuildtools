@@ -22,13 +22,10 @@
 #
 # cet_make_exec( NAME <executable name>  
 #                [SOURCE <source code list>] 
-#                [LIBRARIES <library link list>] )
+#                [LIBRARIES <library link list>]
+#                [USE_BOOST_UNIT]
+#                [NO_INSTALL] )
 # -- build a regular executable
-#
-# cet_make_test_exec( NAME <executable name>
-#                     [SOURCE <source code list>] 
-#                     [LIBRARIES <library link list>] )
-# -- build a test executable
 
 include(CetParseArgs)
 include(InstallSource)
@@ -37,7 +34,7 @@ macro( cet_make_exec )
   set(cet_exec_file_list "")
   set(cet_make_exec_usage "USAGE: cet_make_exec( NAME <executable name> [SOURCE <exec source>] [LIBRARIES <library list>] )")
   #message(STATUS "cet_make_exec debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CME "NAME;LIBRARIES;SOURCE" "" ${ARGN})
+  cet_parse_args( CME "NAME;LIBRARIES;SOURCE" "USE_BOOST_UNIT;NO_INSTALL" ${ARGN})
   # there are no default arguments
   if( CME_DEFAULT_ARGS )
      message("CET_MAKE_EXEC: Incorrect arguments. ${ARGV}")
@@ -51,35 +48,29 @@ macro( cet_make_exec )
     set( exec_source_list ${exec_src} )
   endif()
   add_executable( ${CME_NAME} ${exec_source_list} )
+  IF(CME_USE_BOOST_UNIT)
+    # Make sure we have the correct library available.
+    IF (NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
+      MESSAGE(SEND_ERROR "cet_make_exec: target ${CME_NAME} has USE_BOOST_UNIT "
+        "option set but Boost Unit Test Framework Library cannot be found: is "
+        "boost set up?")
+    ENDIF()
+    # Compile options (-Dxxx) for simple-format unit tests.
+    SET_TARGET_PROPERTIES(${CME_NAME} PROPERTIES
+      COMPILE_DEFINITIONS BOOST_TEST_MAIN
+      COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK
+      )
+    TARGET_LINK_LIBRARIES(${CME_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+  ENDIF()
   if(CME_LIBRARIES)
      target_link_libraries( ${CME_NAME} ${CME_LIBRARIES} )
   endif()
-  install( TARGETS ${CME_NAME} DESTINATION ${flavorqual_dir}/bin )
-endmacro( cet_make_exec )
-
-macro( cet_make_test_exec )
-  set(cet_test_exec_file_list "")
-  set(cet_make_test_exec_usage "USAGE: cet_make_test_exec( NAME <executable name> [SOURCE <exec source>] [LIBRARIES <library list>] )")
-  #message(STATUS "cet_make_test_exec debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CMT "NAME;LIBRARIES;SOURCE" "" ${ARGN})
-  # there are no default arguments
-  if( CMT_DEFAULT_ARGS )
-     message("CET_MAKE_TEST_EXEC: Incorrect arguments. ${ARGV}")
-     message(SEND_ERROR  ${cet_make_test_exec_usage})
-  endif()
-  #message(STATUS "debug: cet_make_test_exec called with ${CMT_NAME} ${CMT_LIBLIST}")
-  FILE( GLOB exec_src ${CMT_NAME}.c ${CMT_NAME}.cc ${CMT_NAME}.cpp ${CMT_NAME}.C ${CMT_NAME}.cxx )
-  if( CMT_SOURCE )
-    set( exec_source_list "${exec_src} ${CMT_SOURCE}" )
+  if(CME_NO_INSTALL)
+    #message(STATUS "${CME_NAME} will not be installed")
   else()
-    set( exec_source_list ${exec_src} )
+    install( TARGETS ${CME_NAME} DESTINATION ${flavorqual_dir}/bin )
   endif()
-  add_executable( ${CMT_NAME} ${exec_source_list} )
-  if(CMT_LIBRARIES)
-     target_link_libraries( ${CMT_NAME} ${CMT_LIBRARIES} )
-  endif()
-  ADD_TEST(${CMT_NAME} ${EXECUTABLE_OUTPUT_PATH}/${CMT_NAME})
-endmacro( cet_make_test_exec )
+endmacro( cet_make_exec )
 
 macro( cet_make )
   set(cet_file_list "")
