@@ -156,7 +156,9 @@
 \begin{frame}\frametitle{Outline}
   \begin{itemize}
   \item Motivation.
+  \item Feature overview.
   \item Details.
+  \item Developer experience.
   \item Ongoing developments.
   \end{itemize}
 \end{frame}
@@ -164,25 +166,47 @@
 \begin{frame}\frametitle{Why more build tools?}
   \begin{itemize}
   \item Package / install. \\
-    \IF experiments want the switchability of UPS but without the \cmd{ups
-    declare} commands, and the ability to install multiple packages from tarball.
-  \item<2-> Build.
+    \IF experiments want the switchability of UPS but without the
+    \cmd{ups declare} commands, and the ability to install multiple
+    packages from tarball.
+  \item Build.
     \begin{itemize}
-    \item<3-> Parallel builds.
-    \item<4-> Support for testing.
-    \item<5-> Build consistency.
-    \item<6-> Ease of setup / use.
+    \item Parallel builds.
+    \item Support for testing: scripts, execs, packages, dependent
+      tests, pass / fail criteria.
+    \item Build consistency (very important).
+    \item Ease of setup / use.
+    \item Must be able to provide packages usable by other build system (vital).
     \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Feature overview}
+  \begin{itemize}
+  \item Use existing products as basis: \ups, \cmake,
+    \productname{CTest}, \make.
+  \item Hierarchical package system with rigid version and qualifier
+    dependency checking to ensure binary-compatible packages and
+    consistent applications (compiler version, debug, language
+    standard).
+  \item Easy install of all or part of linked packages via tarball.
+  \item Simple developer setup, tailored directives to specify build
+    products, dependencies, tests, \etc.
+  \item Seamless parallel build / test.
+  \item Non-viral: \art suite is \ups packages, use of \cmake not
+    required by experiments.
+  \item All builds out-of-source: same source supports co-existing debug
+    / profile builds.
   \end{itemize}
 \end{frame}
 
 \begin{frame}\frametitle{Details: \rups}
   \begin{itemize}
   \item Same \ups, new capabilities.
-  \item<2-> No \cmd{prd/}, \cmd{db/} directories
-  \item<3-> Each product version has a \cmd{\$\{PROD\_VER\}.version}
+  \item No \cmd{prd/}, \cmd{db/} directories
+  \item Each product version has a \cmd{\$\{PROD\_VER\}.version}
     directory instead.
-  \item<4-> Use product dependencies (with \cmd{-B} option, \cmd{+}
+  \item Use product dependencies (with \cmd{-B} option, \cmd{+}
     qualifiers) to ensure compatible products with error-on-failure.
   \end{itemize}
 \end{frame}
@@ -190,9 +214,9 @@
 \begin{frame}\frametitle{Details: \cmake}
   \begin{itemize}
   \item Built-in support for parallel builds, test.
-  \item<2-> Flexible, modular, higher-level than \make.
-  \item<3-> Excellent dependency management.
-  \item<4-> Install, package, package configuration facilities mesh well
+  \item Flexible, modular, higher-level than \make.
+  \item Excellent dependency management.
+  \item Install, package, package configuration facilities mesh well
     with \rups.
   \end{itemize}
 \end{frame}
@@ -200,30 +224,42 @@
 \begin{frame}\frametitle{Details: \productname{cetbuildtools}}
   \begin{itemize}
   \item \cmake-based.
-  \item<2-> Simple product configuration with \cmd{product\_deps} file,
+  \item Simple product configuration with \cmd{product\_deps} file,
     listing external package dependencies.
-  \item<3-> Straightforward \cmake macros to do most common things: libraries,
-    execs, \art plugins, \rootprod dictionaries, tests with pass /
-    fail criteria \etc.
-  \item<4-> Each package built separately and installed as a \rups product
+  \item Straightforward \cmake macros to do most common things:
+    libraries, execs, \art plugins, \rootprod dictionaries, tests with
+    pass / fail criteria \etc.
+  \item Each package built separately and installed as a \rups product
     to guarantee a consistent build.
-    \item<5->Auxiliary scripts for things like version bumps, release
-      builds, \etc.
+  \item Auxiliary scripts for things like version bumps, coherent
+    release builds, \etc.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Developer experience}
+  \begin{itemize}
+  \item Used to build, package and deliver the \art suite to \IF
+    experiments.
+  \item Being used on a small-scale by \mg.
+  \item Full \art suite build / test / install / package with $>200$
+    tests in 8:20 (vs 48:55 serial). A NOP build of \art only followed by
+    tests is 0:34 (4:04 serial). 
+  \item Able to specify unit tests up through integration tests very
+    easily, including arguments, dependent test chains, required files,
+    \etc.
   \end{itemize}
 \end{frame}
 
 \begin{frame}\frametitle{Ongoing development}
   \begin{itemize}
-  \item Used to build, package and deliver the \art suite to \IF
-    experiments.
-  \item<2-> Being used on a small-scale by \mg.
-  \item<3-> Need a couple more simple macros for common tasks.
-  \item<4-> Need a safe scheme for reliable simultaneous multiple
+  \item Automatic generation of a package's installed library list for
+    use by other packages.
+  \item A safe scheme for reliable simultaneous multi-package
     builds: test releases \textit{a la} \srt are notorious for allowing
-    inconsistent builds. May need:
-  \item<5-> Library versioning / checking scheme integral to the build
+    inconsistent builds. This in turn may necessitate:
+  \item Library versioning / checking scheme integral to the build
     system.
-    \item<6->Sell to \IF experiments.
+  \item Sell to \IF experiments.
   \end{itemize}
 \end{frame}
 
