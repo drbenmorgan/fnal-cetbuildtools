@@ -65,6 +65,9 @@ macro(_get_cetpkg_info)
    set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
    #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${full_qualifier}")
 
+   set( cet_ups_dir ${CMAKE_CURRENT_SOURCE_DIR}/ups CACHE STRING "Package UPS directory" FORCE )
+   ##message( STATUS "_get_cetpkg_info: cet_ups_dir is ${cet_ups_dir}")
+
 endmacro(_get_cetpkg_info)
 
 macro(cet_cmake_env)

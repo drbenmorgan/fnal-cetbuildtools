@@ -33,8 +33,9 @@ CET_BASE_C_FLAG_OPT:     ${CET_BASE_C_FLAG_OPT}
 CET_BASE_C_FLAG_PROF:    ${CET_BASE_C_FLAG_PROF}
 " )
 
+   ##message( STATUS "cet_build_table: cet_ups_dir is ${cet_ups_dir}")
    execute_process(COMMAND ${BUILD_TABLE_NAME} 
-                           ${CMAKE_CURRENT_SOURCE_DIR} 
+                           ${cet_ups_dir} 
 			   ${CMAKE_CURRENT_BINARY_DIR}
                    OUTPUT_VARIABLE MSG
 		   OUTPUT_STRIP_TRAILING_WHITESPACE

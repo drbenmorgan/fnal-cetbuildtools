@@ -5,6 +5,9 @@ INSTALL ( PROGRAMS buildtool
 		   code-dep-graph
 		   increment-version
 		   set_dev_products
+		   report_bindir
+		   report_incdir
+		   report_libdir
 		   report_product_info
           DESTINATION ${product}/${version}/bin )
 

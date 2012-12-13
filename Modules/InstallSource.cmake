@@ -81,6 +81,43 @@ macro( _cet_install_generated_code )
   endif( config_source_files )
 endmacro( _cet_install_generated_code )
 
+macro( _cet_find_inc_directory )
+  # find $CETBUILDTOOLS_DIR/bin/report_incdir
+  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+  if( ${product} MATCHES "cetbuildtools" )
+      # building cetbuildtools - use our copy
+      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+      FIND_PROGRAM( REPORT_INC_DIR report_incdir
+                    ${PROJECT_SOURCE_DIR}/bin  )
+  elseif( NOT CETBUILDTOOLS_DIR )
+      FIND_PROGRAM( REPORT_INC_DIR report_incdir )
+  else()
+      FIND_PROGRAM( REPORT_INC_DIR report_incdir
+                    ${CETBUILDTOOLS_DIR}/bin  )
+  endif ()
+  #message(STATUS "REPORT_INC_DIR: ${REPORT_INC_DIR}")
+  if( NOT REPORT_INC_DIR )
+      message(FATAL_ERROR "Can't find report_incdir")
+  endif()
+  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
+  execute_process(COMMAND ${REPORT_INC_DIR} 
+                          ${cet_ups_dir} 
+                  OUTPUT_VARIABLE REPORT_INC_DIR_MSG
+		  OUTPUT_STRIP_TRAILING_WHITESPACE
+		  )
+  #message( STATUS "${REPORT_INC_DIR} returned ${REPORT_INC_DIR_MSG}")
+  if( ${REPORT_INC_DIR_MSG} MATCHES "DEFAULT" )
+     set( cet_make_inc_dir "${product}/${version}/include" )
+  elseif( ${REPORT_INC_DIR_MSG} MATCHES "NONE" )
+     #message(FATAL_ERROR "Please specify an include directory in product_deps")
+     set( cet_make_inc_dir "${product}/${version}/include" )
+  elseif( ${REPORT_INC_DIR_MSG} MATCHES "ERROR" )
+     message(FATAL_ERROR "Invalid include directory in product_deps")
+  else()
+    set( cet_make_inc_dir "${REPORT_INC_DIR_MSG}" )
+  endif()
+endmacro( _cet_find_inc_directory )
+
 macro( _cet_check_build_directory )
   FILE(GLOB build_directory_files
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.cc
@@ -305,7 +342,8 @@ macro( install_headers   )
   else()
     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   endif()
-  set(header_install_dir ${product}/${version}/include${CURRENT_SUBDIR} )
+  _cet_find_inc_directory()
+  set(header_install_dir ${cet_make_inc_dir}${CURRENT_SUBDIR} )
   #message( STATUS "install_headers: headers will be installed in ${header_install_dir}" )
   if( IHDR_LIST )
     if( IHDR_SUBDIRS )
