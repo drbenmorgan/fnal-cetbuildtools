@@ -258,11 +258,11 @@ MACRO(cet_test CET_TARGET)
   FOREACH(datafile ${CET_DATAFILES})
     # Name the target so that tests in different directories can use the same
     # data file.
+    GET_FILENAME_COMPONENT(dfile_basename ${datafile} NAME)
+    STRING(REPLACE "/" "!" dtarget "${CET_TEST_WORKDIR}/${dfile_basename}")
     IF(IS_ABSOLUTE ${datafile})
-      STRING(REPLACE "/" "!" dtarget "${datafile}")
       SET(abs_datafile ${datafile})
     ELSE()
-      STRING(REPLACE "/" "!" dtarget "${CET_TEST_WORKDIR}/${datafile}")
       SET(abs_datafile ${CMAKE_CURRENT_SOURCE_DIR}/${datafile})
     ENDIF()
     IF (TARGET ${dtarget})
