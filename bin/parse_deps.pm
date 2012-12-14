@@ -577,9 +577,9 @@ sub get_cmake_inc_directory {
 	   $incsubdir = $words[2];
 	 }
          if( $words[1] eq "product_dir" ) {
-	    $incdir = "\${product}/\${version}/$incsubdir";
+	    $incdir = "product_dir/$incsubdir";
          } elsif( $words[1] eq "fq_dir" ) {
-	    $incdir = "\${flavorqual_dir}/$incsubdir";
+	    $incdir = "flavorqual_dir/$incsubdir";
          } elsif( $words[1] eq "-" ) {
 	    $incdir = "NONE";
 	 } else {
@@ -609,9 +609,9 @@ sub get_cmake_lib_directory {
 	   $libsubdir = $words[2];
 	 }
          if( $words[1] eq "product_dir" ) {
-	    $libdir = "\${product}/\${version}/$libsubdir";
+	    $libdir = "product_dir/$libsubdir";
          } elsif( $words[1] eq "fq_dir" ) {
-	    $libdir = "\${flavorqual_dir}/$libsubdir";
+	    $libdir = "flavorqual_dir/$libsubdir";
          } elsif( $words[1] eq "-" ) {
 	    $libdir = "NONE";
 	 } else {
@@ -641,9 +641,9 @@ sub get_cmake_bin_directory {
 	   $binsubdir = $words[2];
 	 }
          if( $words[1] eq "product_dir" ) {
-	    $bindir = "\${product}/\${version}/$binsubdir";
+	    $bindir = "product_dir/$binsubdir";
          } elsif( $words[1] eq "fq_dir" ) {
-	    $bindir = "\${flavorqual_dir}/$binsubdir";
+	    $bindir = "flavorqual_dir/$binsubdir";
          } elsif( $words[1] eq "-" ) {
 	    $bindir = "NONE";
 	 } else {

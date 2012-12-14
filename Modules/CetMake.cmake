@@ -30,77 +30,22 @@
 include(CetParseArgs)
 include(InstallSource)
 
-macro( _cet_find_lib_directory )
+macro( _cet_check_lib_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_libdir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_LIB_DIR report_libdir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_LIB_DIR report_libdir )
-  else()
-      FIND_PROGRAM( REPORT_LIB_DIR report_libdir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_LIB_DIR: ${REPORT_LIB_DIR}")
-  if( NOT REPORT_LIB_DIR )
-      message(FATAL_ERROR "Can't find report_libdir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_LIB_DIR} 
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
-  #message( STATUS "${REPORT_LIB_DIR} returned ${REPORT_LIB_DIR_MSG}")
-  if( ${REPORT_LIB_DIR_MSG} MATCHES "DEFAULT" )
-     set( cet_make_lib_dir "${flavorqual_dir}/lib" )
-  elseif( ${REPORT_LIB_DIR_MSG} MATCHES "NONE" )
+  if( ${cet_lib_dir} MATCHES "NONE" )
       message(FATAL_ERROR "Please specify a lib directory in product_deps")
-  elseif( ${REPORT_LIB_DIR_MSG} MATCHES "ERROR" )
+  elseif( ${cet_lib_dir} MATCHES "ERROR" )
       message(FATAL_ERROR "Invalid lib directory in product_deps")
-  else()
-     set( cet_make_lib_dir "${REPORT_LIB_DIR_MSG}" )
   endif()
-endmacro( _cet_find_lib_directory )
+endmacro( _cet_check_lib_directory )
 
-macro( _cet_find_bin_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_bindir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_BIN_DIR report_bindir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_BIN_DIR report_bindir )
-  else()
-      FIND_PROGRAM( REPORT_BIN_DIR report_bindir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_BIN_DIR: ${REPORT_BIN_DIR}")
-  if( NOT REPORT_BIN_DIR )
-      message(FATAL_ERROR "Can't find report_bindir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_BIN_DIR} 
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
-  #message( STATUS "${REPORT_BIN_DIR} returned ${REPORT_BIN_DIR_MSG}")
-  if( ${REPORT_BIN_DIR_MSG} MATCHES "DEFAULT" )
-     set( cet_make_bin_dir "${flavorqual_dir}/bin" )
-  elseif( ${REPORT_BIN_DIR_MSG} MATCHES "NONE" )
+macro( _cet_check_bin_directory )
+  if( ${cet_bin_dir} MATCHES "NONE" )
       message(FATAL_ERROR "Please specify a bin directory in product_deps")
-  elseif( ${REPORT_BIN_DIR_MSG} MATCHES "ERROR" )
+  elseif( ${cet_bin_dir} MATCHES "ERROR" )
       message(FATAL_ERROR "Invalid bin directory in product_deps")
-  else()
-     set( cet_make_bin_dir "${REPORT_BIN_DIR_MSG}" )
   endif()
-endmacro( _cet_find_bin_directory )
+endmacro( _cet_check_bin_directory )
 
 macro( cet_make_exec )
   set(cet_exec_file_list "")
@@ -140,9 +85,9 @@ macro( cet_make_exec )
   if(CME_NO_INSTALL)
     #message(STATUS "${CME_NAME} will not be installed")
   else()
-    _cet_find_bin_directory()
-    #message( STATUS "cet_make_exec: executables will be installed in ${cet_make_bin_dir}")
-    install( TARGETS ${CME_NAME} DESTINATION ${cet_make_bin_dir} )
+    _cet_check_bin_directory()
+    message( STATUS "cet_make_exec: executables will be installed in ${cet_bin_dir}")
+    install( TARGETS ${CME_NAME} DESTINATION ${cet_bin_dir} )
   endif()
 endmacro( cet_make_exec )
 
@@ -222,9 +167,9 @@ macro( cet_make )
     endif(CM_LIBRARIES) 
     #message( STATUS "cet_make debug: calling add_library with ${cet_make_library_name}  ${cet_make_library_src}") 
     add_library( ${cet_make_library_name} SHARED ${cet_make_library_src} )
-    _cet_find_lib_directory()
-    message( STATUS "cet_make: libraries will be installed in ${cet_make_lib_dir}")
-    install( TARGETS ${cet_make_library_name} DESTINATION ${cet_make_lib_dir} )
+    _cet_check_lib_directory()
+    message( STATUS "cet_make: library ${cet_make_library_name} will be installed in ${cet_lib_dir}")
+    install( TARGETS ${cet_make_library_name} DESTINATION ${cet_lib_dir} )
   else( )
     message( STATUS "cet_make: no library for ${CMAKE_CURRENT_SOURCE_DIR}")
   endif( )
@@ -265,12 +210,12 @@ macro( cet_make_library )
   if(CML_LIBRARIES)
      target_link_libraries( ${CML_LIBRARY_NAME} ${CML_LIBRARIES} )
   endif()
-  _cet_find_lib_directory()
-  message( STATUS "cet_make_library: libraries will be installed in ${cet_make_lib_dir}")
+  _cet_check_lib_directory()
+  message( STATUS "cet_make_library: library ${CML_LIBRARY_NAME}  will be installed in ${cet_lib_dir}")
   install( TARGETS  ${CML_LIBRARY_NAME} 
 	   RUNTIME DESTINATION ${flavorqual_dir}/bin
-	   LIBRARY DESTINATION ${cet_make_lib_dir}
-	   ARCHIVE DESTINATION ${cet_make_lib_dir}
+	   LIBRARY DESTINATION ${cet_lib_dir}
+	   ARCHIVE DESTINATION ${cet_lib_dir}
            )
   if( CML_WITH_STATIC_LIBRARY )
     add_library( ${CML_LIBRARY_NAME}S STATIC ${cet_src_list} )
@@ -283,8 +228,8 @@ macro( cet_make_library )
     set_target_properties( ${CML_LIBRARY_NAME}  PROPERTIES CLEAN_DIRECT_OUTPUT 1 )
     install( TARGETS  ${CML_LIBRARY_NAME}S 
 	     RUNTIME DESTINATION ${flavorqual_dir}/bin
-	     LIBRARY DESTINATION ${cet_make_lib_dir}
-	     ARCHIVE DESTINATION ${cet_make_lib_dir}
+	     LIBRARY DESTINATION ${cet_lib_dir}
+	     ARCHIVE DESTINATION ${cet_lib_dir}
              )
   endif( CML_WITH_STATIC_LIBRARY )
 endmacro( cet_make_library )

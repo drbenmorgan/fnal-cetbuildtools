@@ -116,6 +116,9 @@ macro(cet_cmake_env)
   set_version_from_ups( ${version} )
   #define flavorqual and flavorqual_dir
   set_flavor_qual( ${arch} )
+  cet_set_lib_directory()
+  cet_set_bin_directory()
+  cet_set_inc_directory()
 
   set(CETPKG_BUILD $ENV{CETPKG_BUILD})
   if(NOT CETPKG_BUILD)
@@ -163,3 +166,121 @@ macro( cet_have_qual findq )
    endif()
    #message(STATUS "cet_have_qual: returning ${CET_HAVE_QUAL}")
 endmacro(cet_have_qual)
+
+macro( cet_set_lib_directory )
+  # find $CETBUILDTOOLS_DIR/bin/report_libdir
+  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+  if( ${product} MATCHES "cetbuildtools" )
+      # building cetbuildtools - use our copy
+      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+      FIND_PROGRAM( REPORT_LIB_DIR report_libdir
+                    ${PROJECT_SOURCE_DIR}/bin  )
+  elseif( NOT CETBUILDTOOLS_DIR )
+      FIND_PROGRAM( REPORT_LIB_DIR report_libdir )
+  else()
+      FIND_PROGRAM( REPORT_LIB_DIR report_libdir
+                    ${CETBUILDTOOLS_DIR}/bin  )
+  endif ()
+  #message(STATUS "REPORT_LIB_DIR: ${REPORT_LIB_DIR}")
+  if( NOT REPORT_LIB_DIR )
+      message(FATAL_ERROR "Can't find report_libdir")
+  endif()
+  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
+  execute_process(COMMAND ${REPORT_LIB_DIR} 
+                          ${cet_ups_dir} 
+                  OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
+		  OUTPUT_STRIP_TRAILING_WHITESPACE
+		  )
+  #message( STATUS "${REPORT_LIB_DIR} returned ${REPORT_LIB_DIR_MSG}")
+  if( ${REPORT_LIB_DIR_MSG} MATCHES "DEFAULT" )
+     set( cet_lib_dir ${flavorqual_dir}/lib CACHE STRING "Package lib directory" FORCE )
+  elseif( ${REPORT_LIB_DIR_MSG} MATCHES "NONE" )
+     set( cet_lib_dir ${REPORT_LIB_DIR_MSG} CACHE STRING "Package lib directory" FORCE )
+  elseif( ${REPORT_LIB_DIR_MSG} MATCHES "ERROR" )
+     set( cet_lib_dir ${REPORT_LIB_DIR_MSG} CACHE STRING "Package lib directory" FORCE )
+  else()
+    STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" ldir1 "${REPORT_LIB_DIR_MSG}" )
+    STRING( REGEX REPLACE "product_dir" "${product}/${version}" ldir2 "${ldir1}" )
+    set( cet_lib_dir ${ldir2}  CACHE STRING "Package lib directory" FORCE )
+  endif()
+  message( STATUS "cet_set_lib_directory: cet_lib_dir is ${cet_lib_dir}")
+endmacro( cet_set_lib_directory )
+
+macro( cet_set_bin_directory )
+  # find $CETBUILDTOOLS_DIR/bin/report_bindir
+  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+  if( ${product} MATCHES "cetbuildtools" )
+      # building cetbuildtools - use our copy
+      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+      FIND_PROGRAM( REPORT_BIN_DIR report_bindir
+                    ${PROJECT_SOURCE_DIR}/bin  )
+  elseif( NOT CETBUILDTOOLS_DIR )
+      FIND_PROGRAM( REPORT_BIN_DIR report_bindir )
+  else()
+      FIND_PROGRAM( REPORT_BIN_DIR report_bindir
+                    ${CETBUILDTOOLS_DIR}/bin  )
+  endif ()
+  #message(STATUS "REPORT_BIN_DIR: ${REPORT_BIN_DIR}")
+  if( NOT REPORT_BIN_DIR )
+      message(FATAL_ERROR "Can't find report_bindir")
+  endif()
+  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
+  execute_process(COMMAND ${REPORT_BIN_DIR} 
+                          ${cet_ups_dir} 
+                  OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
+		  OUTPUT_STRIP_TRAILING_WHITESPACE
+		  )
+  #message( STATUS "${REPORT_BIN_DIR} returned ${REPORT_BIN_DIR_MSG}")
+  if( ${REPORT_BIN_DIR_MSG} MATCHES "DEFAULT" )
+     set( cet_bin_dir ${flavorqual_dir}/bin CACHE STRING "Package bin directory" FORCE )
+  elseif( ${REPORT_BIN_DIR_MSG} MATCHES "NONE" )
+     set( cet_bin_dir ${REPORT_BIN_DIR_MSG} CACHE STRING "Package bin directory" FORCE )
+  elseif( ${REPORT_BIN_DIR_MSG} MATCHES "ERROR" )
+     set( cet_bin_dir ${REPORT_BIN_DIR_MSG} CACHE STRING "Package bin directory" FORCE )
+  else()
+    STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" bdir1 "${REPORT_BIN_DIR_MSG}" )
+    STRING( REGEX REPLACE "product_dir" "${product}/${version}" bdir2 "${bdir1}" )
+    set( cet_bin_dir ${bdir2}  CACHE STRING "Package bin directory" FORCE )
+  endif()
+  message( STATUS "cet_set_bin_directory: cet_bin_dir is ${cet_bin_dir}")
+endmacro( cet_set_bin_directory )
+
+macro( cet_set_inc_directory )
+  # find $CETBUILDTOOLS_DIR/bin/report_incdir
+  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+  if( ${product} MATCHES "cetbuildtools" )
+      # building cetbuildtools - use our copy
+      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+      FIND_PROGRAM( REPORT_INC_DIR report_incdir
+                    ${PROJECT_SOURCE_DIR}/bin  )
+  elseif( NOT CETBUILDTOOLS_DIR )
+      FIND_PROGRAM( REPORT_INC_DIR report_incdir )
+  else()
+      FIND_PROGRAM( REPORT_INC_DIR report_incdir
+                    ${CETBUILDTOOLS_DIR}/bin  )
+  endif ()
+  #message(STATUS "REPORT_INC_DIR: ${REPORT_INC_DIR}")
+  if( NOT REPORT_INC_DIR )
+      message(FATAL_ERROR "Can't find report_incdir")
+  endif()
+  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
+  execute_process(COMMAND ${REPORT_INC_DIR} 
+                          ${cet_ups_dir} 
+                  OUTPUT_VARIABLE REPORT_INC_DIR_MSG
+		  OUTPUT_STRIP_TRAILING_WHITESPACE
+		  )
+  #message( STATUS "${REPORT_INC_DIR} returned ${REPORT_INC_DIR_MSG}")
+  if( ${REPORT_INC_DIR_MSG} MATCHES "DEFAULT" )
+     set( cet_inc_dir "${product}/${version}/include" CACHE STRING "Package include directory" FORCE )
+  elseif( ${REPORT_INC_DIR_MSG} MATCHES "NONE" )
+     set( cet_inc_dir ${REPORT_INC_DIR_MSG} CACHE STRING "Package include directory" FORCE )
+  elseif( ${REPORT_INC_DIR_MSG} MATCHES "ERROR" )
+     set( cet_inc_dir ${REPORT_INC_DIR_MSG} CACHE STRING "Package include directory" FORCE )
+  else()
+    STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" ldir1 "${REPORT_INC_DIR_MSG}" )
+    STRING( REGEX REPLACE "product_dir" "${product}/${version}" ldir2 "${ldir1}" )
+    set( cet_inc_dir ${ldir2}  CACHE STRING "Package include directory" FORCE )
+  endif()
+  message( STATUS "cet_set_inc_directory: cet_inc_dir is ${cet_inc_dir}")
+endmacro( cet_set_inc_directory )
+
