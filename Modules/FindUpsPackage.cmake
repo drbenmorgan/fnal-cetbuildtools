@@ -56,7 +56,7 @@ if ( NOT ${PRODUCTNAME_UC}_VERSION )
      message(FATAL_ERROR "${PRODUCTNAME_UC} has not been setup")
   endif ()
 endif ()
-message(STATUS "find_ups_product: ${PRODUCTNAME} version is ${${PRODUCTNAME_UC}_VERSION} ")
+#message(STATUS "find_ups_product: ${PRODUCTNAME} version is ${${PRODUCTNAME_UC}_VERSION} ")
 
 # MUST use a unique variable name for the config path
 find_file( ${PRODUCTNAME_UC}_CONFIG_PATH ${PRODUCTNAME}-config.cmake $ENV{${PRODUCTNAME_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${PRODUCTNAME_UC}_DIR}/cmake )
