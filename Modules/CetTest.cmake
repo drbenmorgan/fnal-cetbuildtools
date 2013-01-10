@@ -224,15 +224,22 @@ MACRO(cet_test CET_TARGET)
     MESSAGE(SEND_ERROR "cet_test: target ${CET_TARGET} cannot have both CET_HANDBUILT "
       "and CET_PREBUILT options set.")
   ELSEIF(CET_PREBUILT) # eg scripts.
-    ADD_CUSTOM_TARGET(${CET_TARGET} ALL
+    ADD_CUSTOM_TARGET(!${CET_TARGET} ALL
       COMMAND ${CMAKE_COMMAND} -E
       copy "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
       "${EXECUTABLE_OUTPUT_PATH}/"
       DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
       )
     if(CET_DEPENDENCIES)
-      ADD_DEPENDENCIES(${CET_TARGET} ${CET_DEPENDENCIES})
+      ADD_DEPENDENCIES(!${CET_TARGET} ${CET_DEPENDENCIES})
     ENDIF()
+    # Done this way to allow CUSTOM_COMMANDs using these scripts to be
+    # updated when the script changes: just list the script in the
+    # DEPENDS of the CUSTOM_COMMAND.
+    ADD_EXECUTABLE(${CET_TARGET} IMPORTED GLOBAL)
+    SET_TARGET_PROPERTIES(${CET_TARGET}
+      PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
+      )
   ELSEIF(NOT CET_HANDBUILT) # Normal build.
     # Build the executable.
     IF(NOT CET_SOURCES) # Useful default.
