@@ -1,3 +1,5 @@
+# NO USER-SERVICEABLE PARTS BELOW.
+#
 # There should be as little as possible here,
 # with most of the heavy lifting done by other small scripts
 #
@@ -48,16 +50,17 @@ echo The working build directory is $CETPKG_BUILD
 echo The source code directory is $CETPKG_SOURCE
 
 set_ msg5='ERROR: setup of required products has failed'
-unset fail
 
 echo ----------- check this block for errors -----------------------
+set_ setup_fail="false"
 # now get the rest of the products
-set_ cmd="$CETPKG_SOURCE/bin/set_dev_products $CETPKG_SOURCE/ups $CETPKG_BUILD simple"
+set_ cmd="$CETPKG_SOURCE/bin/set_dev_products $CETPKG_SOURCE $CETPKG_BUILD simple"
 #echo Ready to run $cmd
 source `$cmd`
-test "$?" = 0 || set_ fail="true"
-test "$fail" = "true" && echo "$msg5"
-test "$fail" = "true" && return 1
+#echo "$cmd returned $setup_fail"
+test "$setup_fail" = "true" && echo "$msg5"
+test "$setup_fail" = "true" && return 1
+test -e "debug_report" && cat debug_report
 echo ----------------------------------------------------------------
 
 # need to add the source code bin directory to path
@@ -71,16 +74,10 @@ echo PATH is now ${PATH}
 echo
 echo $CETPKG_SOURCE/bin has been added to PATH
 
-echo
-echo CETPKG_SOURCE=$CETPKG_SOURCE
-echo CETPKG_BUILD=$CETPKG_BUILD
-echo CETPKG_NAME=$CETPKG_NAME
-echo CETPKG_VERSION=$CETPKG_VERSION
-echo
-echo Please use this cmake command:
-echo cmake -DCMAKE_INSTALL_PREFIX=/install/path \$CETPKG_SOURCE
+# final sanity check and report
+source $CETPKG_SOURCE/bin/set_dev_check_report simple
 
 # cleanup before exiting
 test "$ss" = csh && unalias tnotnull nullout set_ vecho_ return
-unset ss db me thisdir msg1 msg2 msg3 msg4 msg5 fail
+unset ss db me thisdir msg1 msg2 msg3 msg4 msg5 setup_fail
 unset set_ setenv unsetenv_ tnotnull nullout vecho_

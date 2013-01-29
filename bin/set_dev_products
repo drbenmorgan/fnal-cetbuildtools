@@ -12,6 +12,11 @@
 use File::Basename;
 use lib dirname($0);
 
+# use this file for debugging
+$diagfl = "debug_report";
+open(DIAG, "> $diagfl") or die "Couldn't open $diagfl";
+
+
 if( $#ARGV < 2 ) {
     $errfl1 = "problem_report";
     open(ERR1, "> $errfl1") or die "Couldn't open $errfl1";
@@ -28,7 +33,7 @@ if( $#ARGV < 2 ) {
     exit 0;
 }
 
-$inputdir = $ARGV[0];
+$sourcedir = $ARGV[0];
 $builddir = $ARGV[1];
 $simple = "";
 for $i ( 2 .. $#ARGV ) {
@@ -48,6 +53,32 @@ for $i ( 2 .. $#ARGV ) {
       $qdir = $qdir.$ARGV[$i]."-";
     }
 }
+
+$srcbase = basename($sourcedir);
+if ( $srcbase eq "ups" ) {
+    $inputdir = $sourcedir;
+    ##print DIAG "set_dev_products debug info: have the old setup_for_development\n";
+    $errfl2 = "problem_report";
+    open(ERR2, "> $errfl2") or die "Couldn't open $errfl2";
+    print ERR2 "\n";
+    print ERR2 "unsetenv_ CETPKG_NAME\n";
+    print ERR2 "unsetenv_ CETPKG_VERSION\n";
+    print ERR2 "unsetenv_ CETPKG_QUAL\n";
+    print ERR2 "unsetenv_ CETPKG_TYPE\n";
+    print ERR2 "echo \"ERROR: \"\n";
+    print ERR2 "echo \"ERROR: you have an old copy of setup_for_development\"\n";
+    print ERR2 "echo \"ERROR: please issue the following command\"\n";
+    print ERR2 "echo \"ERROR: cp \$CETBUILDTOOLS_DIR/templates/setup_for_development.template $inputdir/setup_for_development\"\n";
+    print ERR2 "echo \"ERROR: \"\n";
+    print ERR2 "return 1\n";
+    close(ERR2);
+    print "$errfl2\n";
+    exit 0;
+} else {
+    $inputdir = $sourcedir."/ups";
+}
+##print DIAG "set_dev_products debug info: source dir is $sourcedir\n";
+##print DIAG "set_dev_products debug info: input dir is $inputdir\n";
 
 require parse_deps;
 
@@ -91,7 +122,7 @@ if ( $qual ) {
   }
 }
 
-$cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type );
+$cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type, $sourcedir, $builddir );
 (%ohash) = find_optional_products( $pfile );
 ($ecount, @ehash) = find_only_for_build_products( $pfile );
 
@@ -107,10 +138,13 @@ if ( $simple ) {
   print TSET "setenv CETPKG_TYPE $type\n";
 }
 print TSET "setup -B cetpkgsupport \n";
+print TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
 foreach $i ( 1 .. $ecount ) {
   if( $ehash[$i][0] eq "cetbuildtools" ) {
   } else {
     print TSET "setup -B $ehash[$i][0] $ehash[$i][1]\n";
+    print TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
+    print TSET " echo \$setup_fail \n"; 
   }
 }
 foreach $i ( 1 .. $#qlist ) {
@@ -136,6 +170,8 @@ foreach $i ( 1 .. $#qlist ) {
     }
   }
 }
+##print TSET " echo \$setup_fail \n"; 
+##print TSET "test \"\$setup_fail\" =  \"true\" && return 1\n"; 
 # allow for the case where there are no dependencies
 if ( $match == 0 ) {
    if( $phash{none} = "none" ) {
@@ -154,6 +190,7 @@ if ( $match == 0 ) {
 
 close(TSET);
 print "$tmpfl\n";
+close(DIAG);
 
 exit 0;
 

@@ -476,6 +476,9 @@ sub find_default_qual {
 
 sub cetpkg_info_file {
   ## write a file to be processed by CetCMakeEnv
+  ## add CETPKG_SOURCE and CETPKG_BUILD for ease of reference by the user
+  # if there is a cmake cache file, we could check for the install prefix
+  # cmake -N -L | grep CMAKE_INSTALL_PREFIX | cut -f2 -d=
   my @params = @_;
   $cetpkgfile = "cetpkg_variable_report";
   open(CPG, "> $cetpkgfile") or die "Couldn't open $cetpkgfile";
@@ -485,6 +488,9 @@ sub cetpkg_info_file {
   print CPG "CETPKG_DEFAULT_VERSION  $params[2]\n";
   print CPG "CETPKG_QUAL     $params[3]\n";
   print CPG "CETPKG_TYPE     $params[4]\n";
+  print CPG "CETPKG_SOURCE   $params[5]\n";
+  print CPG "CETPKG_BUILD    $params[6]\n";
+  print CPG "to check cmake cached variables, use cmake -N -L\n";
   close(CPG);
   return($cetpkgfile);  
 }
@@ -502,6 +508,7 @@ sub print_setup_noqual {
   print $efl "unset have_prod\n"; 
   } else {
   print $efl "setup -B $params[0] $params[1] \n";
+  print $efl "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
   }
   return 0;
 }
@@ -519,6 +526,7 @@ sub print_setup_qual {
   print $efl "unset have_prod\n"; 
   } else {
   print $efl "setup -B $params[0] $params[1] -q $params[2]\n";
+  print $efl "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
 	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
   }
   return 0;
