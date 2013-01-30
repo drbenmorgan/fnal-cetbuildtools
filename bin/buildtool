@@ -604,7 +604,7 @@ if (( ${clean:-0} )); then
   pushd /tmp >/dev/null # 2>&1
   report "INFO: Cleaning \"$CETPKG_BUILD\" ..."
   if ! { find "$CETPKG_BUILD" -mindepth 1 -maxdepth 1 | \
-         grep -v -e '/diag_report' -e '/cetpkg_variable_report$' | \
+         grep -v -e '/diag_report$' -e '/cetpkg_variable_report$' | \
          xargs rm -rf; }; then
     echo "ERROR: Unable to clean directory \"$CETPKG_BUILD\"" 1>&2
     exit 2
