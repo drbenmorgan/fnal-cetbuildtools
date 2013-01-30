@@ -60,7 +60,7 @@ source `$cmd`
 #echo "$cmd returned $setup_fail"
 test "$setup_fail" = "true" && echo "$msg5"
 test "$setup_fail" = "true" && return 1
-test -e "debug_report" && cat debug_report
+test -e "diag_report" && cat diag_report
 echo ----------------------------------------------------------------
 
 # need to add the source code bin directory to path

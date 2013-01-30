@@ -13,7 +13,7 @@ use File::Basename;
 use lib dirname($0);
 
 # use this file for debugging
-$diagfl = "debug_report";
+$diagfl = "diag_report";
 open(DIAG, "> $diagfl") or die "Couldn't open $diagfl";
 
 
