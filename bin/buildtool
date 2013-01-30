@@ -17,13 +17,23 @@ function real_dir() {
 
 # Basic safety checks.
 if [[ -z "$CETPKG_BUILD" ]] || [[ -z "$CETPKG_SOURCE" ]] || [[ -z "$CETPKG_TYPE" ]]; then
-  echo "ERROR: Expected CETPKG_BUILD and friends to be set." 1>&2
+  echo "ERROR: Expected CETPKG_BUILD and friends to be set: source setup_for_development?" 1>&2
   exit 1
 elif [[ ! -d "$CETPKG_BUILD" ]] || [[ ! -w "$CETPKG_BUILD" ]]; then
-  echo "ERROR: CETPKG_BUILD \"$CETPKG_BUILD\" does not exist, is not a directory or is not writable." 1>&2
+  echo "ERROR: CETPKG_BUILD \"$CETPKG_BUILD\" does not exist,
+is not a directory or is not writable." 1>&2
   exit 1
-elif [[ "$CETPKG_BUILD" == "$CETPKG_SOURCE" ]]; then
-  echo "ERROR: CETPKG_BUILD and CETPKG_SOURCE are identical: $CETPKG_BUILD." 1>&2
+elif [[ $(real_dir "$CETPKG_BUILD") == $(real_dir "$CETPKG_SOURCE") ]]; then
+  echo "ERROR: CETPKG_BUILD ($CETPKG_BUILD) is identical to
+CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
+  exit 1
+elif [[ $(real_dir "$CETPKG_BUILD") == $(real_dir "$CETPKG_SOURCE")/* ]]; then
+  echo "ERROR: CETPKG_BUILD ($CETPKG_BUILD) is a subdir of
+CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
+  exit 1
+elif [[ $(real_dir "$CETPKG_SOURCE") == $(real_dir "$CETPKG_BUILD")/* ]]; then
+  echo "ERROR: CETPKG_SOURCE ($CETPKG_SOURCE) is a subdir of
+CETPKG_BUILD (${CETPKG_BUILD})." 1>&2
   exit 1
 elif [[ "$CETPKG_BUILD" == "/" ]]; then
   echo "ERROR: CETPKG_BUILD == /" 1>&2
