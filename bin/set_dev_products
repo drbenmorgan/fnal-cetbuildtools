@@ -144,7 +144,7 @@ foreach $i ( 1 .. $ecount ) {
   } else {
     print TSET "setup -B $ehash[$i][0] $ehash[$i][1]\n";
     print TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
-    print TSET " echo \$setup_fail \n"; 
+    ##print TSET " echo \$setup_fail \n"; 
   }
 }
 foreach $i ( 1 .. $#qlist ) {
