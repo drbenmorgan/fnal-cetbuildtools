@@ -18,7 +18,8 @@
 # cet_make_library( [LIBRARY_NAME <library name>]  
 #                   [SOURCE <source code list>] 
 #                   [LIBRARIES <library list>] 
-#                   [WITH_STATIC_LIBRARY] )
+#                   [WITH_STATIC_LIBRARY]
+#                   [NO_INSTALL] )
 #
 # cet_make_exec( NAME <executable name>  
 #                [SOURCE <source code list>] 
@@ -193,7 +194,7 @@ macro( cet_make_library )
   set(cet_file_list "")
   set(cet_make_library_usage "USAGE: cet_make_library( LIBRARY_NAME <library name> SOURCE <source code list> [LIBRARIES <library link list>] )")
   #message(STATUS "cet_make_library debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CML "LIBRARY_NAME;LIBRARIES;SOURCE" "WITH_STATIC_LIBRARY" ${ARGN})
+  cet_parse_args( CML "LIBRARY_NAME;LIBRARIES;SOURCE" "WITH_STATIC_LIBRARY;NO_INSTALL" ${ARGN})
   # there are no default arguments
   if( CML_DEFAULT_ARGS )
      message("CET_MAKE_LIBRARY: Incorrect arguments. ${ARGV}")
@@ -210,13 +211,19 @@ macro( cet_make_library )
   if(CML_LIBRARIES)
      target_link_libraries( ${CML_LIBRARY_NAME} ${CML_LIBRARIES} )
   endif()
-  _cet_check_lib_directory()
-  #message( STATUS "cet_make_library: library ${CML_LIBRARY_NAME}  will be installed in ${cet_lib_dir}")
-  install( TARGETS  ${CML_LIBRARY_NAME} 
-	   RUNTIME DESTINATION ${flavorqual_dir}/bin
-	   LIBRARY DESTINATION ${cet_lib_dir}
-	   ARCHIVE DESTINATION ${cet_lib_dir}
-           )
+  #message( STATUS "cet_make_library debug: CML_NO_INSTALL is ${CML_NO_INSTALL}")
+  #message( STATUS "cet_make_library debug: CML_WITH_STATIC_LIBRARY is ${CML_WITH_STATIC_LIBRARY}")
+  if( CML_NO_INSTALL )
+    #message(STATUS "cet_make_library debug: ${CML_LIBRARY_NAME} will not be installed")
+  else()
+    _cet_check_lib_directory()
+    #message( STATUS "cet_make_library: ${CML_LIBRARY_NAME} will be installed in ${cet_lib_dir}")
+    install( TARGETS  ${CML_LIBRARY_NAME} 
+	     RUNTIME DESTINATION ${flavorqual_dir}/bin
+	     LIBRARY DESTINATION ${cet_lib_dir}
+	     ARCHIVE DESTINATION ${cet_lib_dir}
+             )
+  endif()
   if( CML_WITH_STATIC_LIBRARY )
     add_library( ${CML_LIBRARY_NAME}S STATIC ${cet_src_list} )
     if(CML_LIBRARIES)
@@ -226,10 +233,14 @@ macro( cet_make_library )
     set_target_properties( ${CML_LIBRARY_NAME}  PROPERTIES OUTPUT_NAME ${CML_LIBRARY_NAME} )
     set_target_properties( ${CML_LIBRARY_NAME}S PROPERTIES CLEAN_DIRECT_OUTPUT 1 )
     set_target_properties( ${CML_LIBRARY_NAME}  PROPERTIES CLEAN_DIRECT_OUTPUT 1 )
-    install( TARGETS  ${CML_LIBRARY_NAME}S 
-	     RUNTIME DESTINATION ${flavorqual_dir}/bin
-	     LIBRARY DESTINATION ${cet_lib_dir}
-	     ARCHIVE DESTINATION ${cet_lib_dir}
-             )
+    if( CML_NO_INSTALL )
+      #message(STATUS "cet_make_library debug: ${CML_LIBRARY_NAME}S will not be installed")
+    else()
+      install( TARGETS  ${CML_LIBRARY_NAME}S 
+	       RUNTIME DESTINATION ${flavorqual_dir}/bin
+	       LIBRARY DESTINATION ${cet_lib_dir}
+	       ARCHIVE DESTINATION ${cet_lib_dir}
+               )
+    endif()
   endif( CML_WITH_STATIC_LIBRARY )
 endmacro( cet_make_library )
