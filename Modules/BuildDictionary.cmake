@@ -1,16 +1,27 @@
 # macro for building ROOT dictionaries
 #
 # USAGE:
-# build_dictionary( [dictionary_name]
+# build_dictionary( [<dictionary_name>]
+#                   [COMPILE_FLAGS <flags>]
+#                   [DICT_NAME_VAR <var>]
 #                   [DICTIONARY_LIBRARIES <library list>]
 #                   [NOINSTALL])
-#        dictionary_name defaults to a name based on the current source code subdirectory
-#        ${REFLEX} is always appended to the library list (even if it is empty)
-#        specify NOINSTALL when building a dictionary for the tests
 #
-#  any other macros or functions in this file are for internal use only
+# * <dictionary_name> defaults to a name based on the current source
+# code subdirectory.
 #
-
+# * ${REFLEX} is always appended to the library list (even if it is
+# empty).
+#
+# * Specify NOINSTALL when building a dictionary for tests.
+#
+# * If DICT_NAME_VAR is specified, <var> will be set to contain the
+# dictionary name.
+#
+# * Any other macros or functions in this file are for internal use
+# only.
+#
+########################################################################
 include(CetParseArgs)
 
 # define flags for genreflex
@@ -100,8 +111,8 @@ endmacro( _generate_dictionary )
 # dictionaries are built in art with this
 macro ( build_dictionary )
   #message(STATUS "BUILD_DICTIONARY: called with ${ARGC} arguments: ${ARGV}")
-  set(build_dictionary_usage "USAGE: build_dictionary( [dictionary_name] [DICTIONARY_LIBRARIES <library list>] [NOINSTALL] )")
-  cet_parse_args( BD "DICTIONARY_LIBRARIES;COMPILE_FLAGS" "NOINSTALL" ${ARGN})
+  set(build_dictionary_usage "USAGE: build_dictionary( [dictionary_name] [DICTIONARY_LIBRARIES <library list>] [COMPILE_FLAGS <flags>] [DICT_NAME_VAR <var>] [NOINSTALL] )")
+  cet_parse_args( BD "DICTIONARY_LIBRARIES;COMPILE_FLAGS;DICT_NAME_VAR" "NOINSTALL" ${ARGN})
   #message(STATUS "BUILD_DICTIONARY: default arguments: ${BD_DEFAULT_ARGS}")
   #message(STATUS "BUILD_DICTIONARY: install flag is  ${BD_NOINSTALL} ")
   #message(STATUS "BUILD_DICTIONARY: COMPILE_FLAGS: ${BD_COMPILE_FLAGS}")
@@ -117,6 +128,9 @@ macro ( build_dictionary )
   else()
      #message(STATUS "BUILD_DICTIONARY: no default arguments, call _set_dictionary_name")
      _set_dictionary_name()
+  endif()
+  if (DICT_NAME_VAR)
+    set(${DICT_NAME_VAR} ${dictname} PARENT_SCOPE)
   endif()
   if(BD_DICTIONARY_LIBRARIES)
      set(dictionary_liblist ${BD_DICTIONARY_LIBRARIES})
