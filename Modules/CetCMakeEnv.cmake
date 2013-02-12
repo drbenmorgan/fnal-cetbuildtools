@@ -13,6 +13,9 @@
 # returns ${CET_HAVE_QUAL}
 # cet_have_qual( <qualifier> )
 
+# Dummy use of CET_TEST_GROUPS to quell warning.
+if (CET_TEST_GROUPS)
+endif()
 
 macro(_get_cetpkg_info)
 
