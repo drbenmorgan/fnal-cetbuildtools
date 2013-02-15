@@ -31,6 +31,13 @@
 include(CetParseArgs)
 include(InstallSource)
 
+macro(_cet_debug_message)
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+    if( ${BTYPE_UC} MATCHES "DEBUG" )
+      message( STATUS "${ARGN}")
+    endif()
+endmacro(_cet_debug_message)
+
 macro( _cet_check_lib_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_libdir
   if( ${cet_lib_dir} MATCHES "NONE" )
@@ -154,32 +161,32 @@ macro( cet_make )
   # calculate base name
   STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   STRING( REGEX REPLACE "/" "_" cet_make_name "${CURRENT_SUBDIR}" )
-  #set(cet_make_name "${cetname2}_${name}_${type}")
 
   if( have_library )
-    #message( STATUS "cet_make debug: building library for ${CMAKE_CURRENT_SOURCE_DIR}")
     if(CM_LIBRARY_NAME)
       set(cet_make_library_name ${CM_LIBRARY_NAME})
     else()
       set(cet_make_library_name ${cet_make_name})
     endif()
+    _cet_debug_message("cet_make: building library ${cet_make_library_name} for ${CMAKE_CURRENT_SOURCE_DIR}")
     if(CM_LIBRARIES) 
-       target_link_libraries( ${cet_make_library_name} ${cet_liblist} )
-    endif(CM_LIBRARIES) 
-    #message( STATUS "cet_make debug: calling add_library with ${cet_make_library_name}  ${cet_make_library_src}") 
-    add_library( ${cet_make_library_name} SHARED ${cet_make_library_src} )
-    _cet_check_lib_directory()
-    #message( STATUS "cet_make: library ${cet_make_library_name} will be installed in ${cet_lib_dir}")
-    install( TARGETS ${cet_make_library_name} DESTINATION ${cet_lib_dir} )
+       cet_make_library( LIBRARY_NAME ${cet_make_library_name}
+                	 SOURCE ${cet_make_library_src}
+			 LIBRARIES  ${cet_liblist} )
+    else() 
+       cet_make_library( LIBRARY_NAME${cet_make_library_name}
+                	 SOURCE ${cet_make_library_src} )
+    endif() 
+    #message( STATUS "cet_make debug: library ${cet_make_library_name} will be installed in ${cet_lib_dir}")
   else( )
-    message( STATUS "cet_make: no library for ${CMAKE_CURRENT_SOURCE_DIR}")
+    _cet_debug_message("cet_make: no library for ${CMAKE_CURRENT_SOURCE_DIR}")
   endif( )
 
   # is there a dictionary?
   FILE(GLOB dictionary_header classes.h )
   FILE(GLOB dictionary_xml classes_def.xml )
   if( dictionary_header AND dictionary_xml )
-     message( STATUS "cet_make: found dictionary in ${CMAKE_CURRENT_SOURCE_DIR}")
+     _cet_debug_message("cet_make: found dictionary in ${CMAKE_CURRENT_SOURCE_DIR}")
      set(cet_file_list ${cet_file_list} ${dictionary_xml} ${dictionary_header} )
      if(CM_LIBRARIES) 
         build_dictionary( DICTIONARY_LIBRARIES ${cet_liblist} )
