@@ -71,6 +71,10 @@ macro(_get_cetpkg_info)
    set( cet_ups_dir ${CMAKE_CURRENT_SOURCE_DIR}/ups CACHE STRING "Package UPS directory" FORCE )
    ##message( STATUS "_get_cetpkg_info: cet_ups_dir is ${cet_ups_dir}")
 
+  set(FIND_UPS_INIT "
+## find_ups_product directives" 
+      CACHE STRING "UPS product directives for config" FORCE)
+
 endmacro(_get_cetpkg_info)
 
 macro(cet_cmake_env)

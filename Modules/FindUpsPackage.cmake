@@ -47,6 +47,9 @@ macro( find_ups_product PRODUCTNAME version )
 # get upper and lower case versions of the name
 string(TOUPPER  ${PRODUCTNAME} PRODUCTNAME_UC )
 string(TOLOWER ${PRODUCTNAME} PRODUCTNAME_LC )
+# add to product list
+set(FIND_UPS_INIT "${FIND_UPS_INIT}
+find_ups_product( ${PRODUCTNAME} ${version} )")
 
 # require ${PRODUCTNAME_UC}_VERSION or ${PRODUCTNAME_UC}_UPS_VERSION
 set( ${PRODUCTNAME_UC}_VERSION $ENV{${PRODUCTNAME_UC}_VERSION} )

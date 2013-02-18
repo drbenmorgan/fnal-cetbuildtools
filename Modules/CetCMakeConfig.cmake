@@ -25,10 +25,12 @@ macro( cet_cmake_config  )
   endif()
 
   #message(STATUS "will install cmake configure files in ${distdir}")
+  #message(STATUS "cet_cmake_config debug: ${FIND_UPS_INIT}")
 
   configure_package_config_file( 
              ${CMAKE_CURRENT_SOURCE_DIR}/${product}-config.cmake.in
              ${CMAKE_CURRENT_BINARY_DIR}/${product}-config.cmake 
+	     PATH_VARS
 	     INSTALL_DESTINATION ${distdir} )
 
   # allowed COMPATIBILITY values are:

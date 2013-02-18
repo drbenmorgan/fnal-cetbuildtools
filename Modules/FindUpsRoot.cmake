@@ -23,6 +23,8 @@ endif ()
 #message( STATUS "find_ups_root: checking root ${ROOT_VERSION} against ${minimum}" )
 _check_version( ROOT ${ROOT_VERSION} ${minimum} )
 set( ROOT_DOT_VERSION ${dotver} )
+set(FIND_UPS_INIT "${FIND_UPS_INIT}
+find_ups_product( root ${minimum} )")
 
 STRING( REGEX MATCH "[-][q]" has_qual  "${ROOT_STRING}" )
 STRING( REGEX MATCH "[-][j]" has_j  "${ROOT_STRING}" )
