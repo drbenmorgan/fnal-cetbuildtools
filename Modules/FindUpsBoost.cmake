@@ -11,7 +11,7 @@ macro( find_ups_boost version  )
   set(boost_liblist "${ARGN}")
 
 string(REGEX REPLACE ";" " " simple_list "${boost_liblist}")
-set(FIND_UPS_INIT "${FIND_UPS_INIT}
+set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
 find_ups_product( boost ${version} ${simple_list} )")
 
 # Check if the boost library has been set

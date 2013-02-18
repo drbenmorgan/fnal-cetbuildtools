@@ -25,7 +25,7 @@ macro( cet_cmake_config  )
   endif()
 
   #message(STATUS "will install cmake configure files in ${distdir}")
-  #message(STATUS "cet_cmake_config debug: ${FIND_UPS_INIT}")
+  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_UPS_COMMANDS}")
 
   configure_package_config_file( 
              ${CMAKE_CURRENT_SOURCE_DIR}/${product}-config.cmake.in

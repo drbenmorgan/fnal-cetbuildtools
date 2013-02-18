@@ -48,7 +48,7 @@ macro( find_ups_product PRODUCTNAME version )
 string(TOUPPER  ${PRODUCTNAME} PRODUCTNAME_UC )
 string(TOLOWER ${PRODUCTNAME} PRODUCTNAME_LC )
 # add to product list
-set(FIND_UPS_INIT "${FIND_UPS_INIT}
+set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
 find_ups_product( ${PRODUCTNAME} ${version} )")
 
 # require ${PRODUCTNAME_UC}_VERSION or ${PRODUCTNAME_UC}_UPS_VERSION
