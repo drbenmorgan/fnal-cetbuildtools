@@ -71,9 +71,14 @@ macro(_get_cetpkg_info)
    set( cet_ups_dir ${CMAKE_CURRENT_SOURCE_DIR}/ups CACHE STRING "Package UPS directory" FORCE )
    ##message( STATUS "_get_cetpkg_info: cet_ups_dir is ${cet_ups_dir}")
 
+  # initialize cmake config file fragments
   set(CONFIG_FIND_UPS_COMMANDS "
-## find_ups_product directives" 
+## find_ups_product directives
+## remember that these are minimum required versions" 
       CACHE STRING "UPS product directives for config" FORCE)
+  set(CONFIG_FIND_LIBRARY_COMMANDS "
+## find_library directives" 
+      CACHE STRING "find_library directives for config" FORCE)
 
 endmacro(_get_cetpkg_info)
 
@@ -291,3 +296,10 @@ macro( cet_set_inc_directory )
   #message( STATUS "cet_set_inc_directory: cet_inc_dir is ${cet_inc_dir}")
 endmacro( cet_set_inc_directory )
 
+macro(cet_find_library)
+  # add to library list for package configure file
+  set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+  find_library( ${ARGN} )")
+  message(STATUS "cet_find_library: calling find_library( ${ARGN} ")
+  find_library( ${ARGN} )
+endmacro(cet_find_library)

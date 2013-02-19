@@ -24,13 +24,13 @@ macro( cet_cmake_config  )
     set( distdir "${flavorqual_dir}/lib/${product}/cmake" )
   endif()
 
-  #message(STATUS "will install cmake configure files in ${distdir}")
+  #message(STATUS "cet_cmake_config debug: will install cmake configure files in ${distdir}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_UPS_COMMANDS}")
+  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
 
   configure_package_config_file( 
              ${CMAKE_CURRENT_SOURCE_DIR}/${product}-config.cmake.in
              ${CMAKE_CURRENT_BINARY_DIR}/${product}-config.cmake 
-	     PATH_VARS
 	     INSTALL_DESTINATION ${distdir} )
 
   # allowed COMPATIBILITY values are:

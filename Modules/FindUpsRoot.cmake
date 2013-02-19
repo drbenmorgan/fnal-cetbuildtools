@@ -24,7 +24,7 @@ endif ()
 _check_version( ROOT ${ROOT_VERSION} ${minimum} )
 set( ROOT_DOT_VERSION ${dotver} )
 set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-find_ups_product( root ${minimum} )")
+find_ups_root( ${minimum} )")
 
 STRING( REGEX MATCH "[-][q]" has_qual  "${ROOT_STRING}" )
 STRING( REGEX MATCH "[-][j]" has_j  "${ROOT_STRING}" )

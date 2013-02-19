@@ -12,7 +12,7 @@ macro( find_ups_boost version  )
 
 string(REGEX REPLACE ";" " " simple_list "${boost_liblist}")
 set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-find_ups_product( boost ${version} ${simple_list} )")
+find_ups_boost( ${version} ${simple_list} )")
 
 # Check if the boost library has been set
 # boost is a special case
@@ -25,7 +25,7 @@ ENDIF()
 STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2" MINVER "${version}" )
 STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2.\\3" THISVER "${BOOST_VERS}" )
 #message(STATUS "find_ups_boost debug: Boost minimum version is ${MINVER} from ${version} " )
-#message(STATUS "find_ups_boost debug: Boost  version is ${THISVER} from ${BOOST_VERS} " )
+#upmessage(STATUS "find_ups_boost debug: Boost  version is ${THISVER} from ${BOOST_VERS} " )
 if(  ${THISVER} STRGREATER ${MINVER} )
   #message( STATUS "find_ups_boost debug: Boost ${THISVER} meets minimum required version ${MINVER}")
 else()
