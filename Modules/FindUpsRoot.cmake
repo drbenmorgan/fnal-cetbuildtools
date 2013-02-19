@@ -40,7 +40,7 @@ if( has_qual )
 else( )
   message(STATUS "ROOT has no qualifier")
 endif( )
-message(STATUS "ROOT version and qualifier are ${ROOT_VERSION} ${ROOT_QUAL}" )
+message(STATUS "find_ups_root: ROOT version and qualifier are ${ROOT_VERSION} ${ROOT_QUAL}" )
 #message(STATUS "ROOT base qualifier is ${ROOT_BASE_QUAL}" )
 
 # add include directory to include path if it exists

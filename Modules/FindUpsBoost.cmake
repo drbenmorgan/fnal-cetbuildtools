@@ -51,7 +51,7 @@ if( has_qual )
 else( )
   message(STATUS "WARNING: Boost has no qualifier")
 endif( )
-message(STATUS "Boost version and qualifier are ${BOOST_VERS} ${BOOST_QUAL}" )
+message(STATUS "find_ups_boost: Boost version and qualifier are ${BOOST_VERS} ${BOOST_QUAL}" )
 #message(STATUS "find_ups_boost debug: Boost base qualifier is ${BOOST_BASE_QUAL}" )
 
 include_directories ( $ENV{BOOST_INC} )
