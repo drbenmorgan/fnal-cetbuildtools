@@ -46,7 +46,6 @@ macro( find_ups_product PRODUCTNAME version )
 
 # get upper and lower case versions of the name
 string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
-string(TOLOWER ${PRODUCTNAME} PRODUCTNAME_LC )
 # add to product list
 set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
 find_ups_product( ${PRODUCTNAME} ${version} )")
@@ -70,10 +69,6 @@ else()
   #message(STATUS "find_ups_product: ${PRODUCTNAME}-config.cmake NOT FOUND")
   _check_version( ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_VERSION} ${version} )
 endif()
-# get upper and lower case versions of the name again
-string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
-string(TOLOWER ${PRODUCTNAME} PRODUCTNAME_LC )
-
 
 SET ( ${${PRODUCTNAME}_UC}_STRING $ENV{SETUP_${${PRODUCTNAME}_UC}} )
 STRING( REGEX MATCH "[-][q]" has_qual  "${${${PRODUCTNAME}_UC}_STRING}" )
