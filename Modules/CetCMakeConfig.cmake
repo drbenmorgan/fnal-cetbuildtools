@@ -27,7 +27,17 @@ macro( cet_cmake_config  )
   #message(STATUS "cet_cmake_config debug: will install cmake configure files in ${distdir}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_UPS_COMMANDS}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
-
+  #message(STATUS "cet_cmake_config debug: ${CONFIG_LIBRARY_LIST}")
+ 
+  # add to library list for package configure file
+  foreach( my_library ${CONFIG_LIBRARY_LIST} )
+    string(TOUPPER  ${my_library} ${my_library}_UC )
+    string(TOUPPER  ${product} ${product}_UC )
+    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+    cet_find_library( ${${my_library}_UC} NAMES ${my_library} PATHS ENV ${${product}_UC}_LIB )" )
+  endforeach(my_library)
+  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
+ 
   configure_package_config_file( 
              ${CMAKE_CURRENT_SOURCE_DIR}/${product}-config.cmake.in
              ${CMAKE_CURRENT_BINARY_DIR}/${product}-config.cmake 

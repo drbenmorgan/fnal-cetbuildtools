@@ -31,13 +31,6 @@
 include(CetParseArgs)
 include(InstallSource)
 
-macro(_cet_debug_message)
-  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
-    if( ${BTYPE_UC} MATCHES "DEBUG" )
-      message( STATUS "${ARGN}")
-    endif()
-endmacro(_cet_debug_message)
-
 macro( _cet_check_lib_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_libdir
   if( ${cet_lib_dir} MATCHES "NONE" )
@@ -54,6 +47,18 @@ macro( _cet_check_bin_directory )
       message(FATAL_ERROR "Invalid bin directory in product_deps")
   endif()
 endmacro( _cet_check_bin_directory )
+
+macro( _cet_add_library_to_config )
+  string(TOUPPER  ${CML_LIBRARY_NAME} ${CML_LIBRARY_NAME}_UC )
+  string(TOUPPER  ${product} ${product}_UC )
+  #message(STATUS "_cet_add_library_to_config debug: ${${CML_LIBRARY_NAME}_UC} NAMES ${CML_LIBRARY_NAME}PATHS ENV ${${product}_UC}_LIB )")
+  # add to library list for package configure file
+  ##set(CONFIG_MAKE_LIBRARY_COMMANDS "${CONFIG_MAKE_LIBRARY_COMMANDS}
+  ##cet_find_library( ${${CML_LIBRARY_NAME}_UC} NAMES ${CML_LIBRARY_NAME} PATHS ENV ${${product}_UC}_LIB )"
+  ##CACHE INTERNAL "adding to CONFIG_MAKE_LIBRARY_COMMANDS" )
+  set(CONFIG_LIBRARY_LIST ${CONFIG_LIBRARY_LIST} ${CML_LIBRARY_NAME}
+      CACHE INTERNAL "libraries created by this package" )
+endmacro( _cet_add_library_to_config )
 
 macro( cet_make_exec )
   set(cet_exec_file_list "")
@@ -224,7 +229,8 @@ macro( cet_make_library )
     #message(STATUS "cet_make_library debug: ${CML_LIBRARY_NAME} will not be installed")
   else()
     _cet_check_lib_directory()
-    #message( STATUS "cet_make_library: ${CML_LIBRARY_NAME} will be installed in ${cet_lib_dir}")
+    _cet_add_library_to_config()
+    _cet_debug_message( "cet_make_library: ${CML_LIBRARY_NAME} will be installed in ${cet_lib_dir}")
     install( TARGETS  ${CML_LIBRARY_NAME} 
 	     RUNTIME DESTINATION ${flavorqual_dir}/bin
 	     LIBRARY DESTINATION ${cet_lib_dir}

@@ -79,6 +79,7 @@ macro(_get_cetpkg_info)
   set(CONFIG_FIND_LIBRARY_COMMANDS "
 ## find_library directives" 
       CACHE STRING "find_library directives for config" FORCE)
+  set(CONFIG_LIBRARY_LIST CACHE INTERNAL "libraries created by this package" )
 
 endmacro(_get_cetpkg_info)
 
@@ -147,6 +148,9 @@ macro(cet_cmake_env)
   
   # this is a dummy test needed by buildtool
   add_test(NAME NOP COMMAND echo)
+  set(library_list "" CACHE STRING "list of product librares" FORCE)
+  set(product_list "" CACHE STRING "list of ups products" FORCE)
+  set(find_library_list "" CACHE STRING "list of find_library calls" FORCE)
 
 endmacro(cet_cmake_env)
 
@@ -297,9 +301,29 @@ macro( cet_set_inc_directory )
 endmacro( cet_set_inc_directory )
 
 macro(cet_find_library)
-  # add to library list for package configure file
-  set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-  find_library( ${ARGN} )")
-  message(STATUS "cet_find_library: calling find_library( ${ARGN} ")
+  STRING( REGEX REPLACE ";" " " find_library_commands "${ARGN}" )
+  #message(STATUS "cet_find_library debug: find_library_commands ${find_library_commands}" )
+  #message(STATUS "cet_find_library debug: product_list ${product_list}")
+  #message(STATUS "cet_find_library debug: find_library_list ${find_library_list}")
+  set(no_product_match TRUE)
+  foreach(prod ${product_list})
+    if( ${prod} MATCHES ${ARGV2} )
+       set(no_product_match FALSE)
+    endif()
+  endforeach(prod)
+  if(no_product_match)
+    set(find_library_list ${ARGV2} ${find_library_list})
+    # add to library list for package configure file
+    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+    cet_find_library( ${find_library_commands} )" )
+  endif(no_product_match)
+  # call find_library
   find_library( ${ARGN} )
 endmacro(cet_find_library)
+
+macro(_cet_debug_message)
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+    if( ${BTYPE_UC} MATCHES "DEBUG" )
+      message( STATUS "${ARGN}")
+    endif()
+endmacro(_cet_debug_message)
