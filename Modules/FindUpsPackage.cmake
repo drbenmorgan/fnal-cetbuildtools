@@ -46,9 +46,21 @@ macro( find_ups_product PRODUCTNAME version )
 
 # get upper and lower case versions of the name
 string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
-# add to product list
-set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-find_ups_product( ${PRODUCTNAME} ${version} )")
+# compare for recursion
+#message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${product_list}")
+set(no_product_match TRUE)
+foreach(prod ${product_list})
+  if( ${prod} MATCHES ${PRODUCTNAME} )
+     set(no_product_match FALSE)
+  endif()
+endforeach(prod)
+if(no_product_match)
+  # add to product list
+  set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
+  find_ups_product( ${PRODUCTNAME} ${version} )")
+  set(product_list ${PRODUCTNAME} ${product_list} )
+  #message(STATUS "adding find_ups_product( ${PRODUCTNAME} ${version} )")
+endif(no_product_match)
 
 # require ${${PRODUCTNAME}_UC}_VERSION or ${${PRODUCTNAME}_UC}_UPS_VERSION
 set( ${${PRODUCTNAME}_UC}_VERSION $ENV{${${PRODUCTNAME}_UC}_VERSION} )
@@ -58,7 +70,9 @@ if ( NOT ${${PRODUCTNAME}_UC}_VERSION )
      message(FATAL_ERROR "${${PRODUCTNAME}_UC} has not been setup")
   endif ()
 endif ()
-message(STATUS "find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
+if(no_product_match)
+  _cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
+endif(no_product_match)
 
 # MUST use a unique variable name for the config path
 find_file( ${${PRODUCTNAME}_UC}_CONFIG_PATH ${PRODUCTNAME}-config.cmake $ENV{${${PRODUCTNAME}_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${${PRODUCTNAME}_UC}_DIR}/cmake )
