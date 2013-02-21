@@ -60,7 +60,8 @@ endif ()
 #message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${product_list}")
 list(FIND product_list ${PRODUCTNAME} found_product_match)
 if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
-else( ${found_product_match} LESS 0 )
+elseif( ${found_product_match} LESS 0 )
+  #message(STATUS "find_ups_product debug: ${found_product_match} for ${PRODUCTNAME} ")
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
   find_ups_product( ${PRODUCTNAME} ${version} )")
