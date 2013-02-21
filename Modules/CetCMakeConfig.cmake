@@ -39,7 +39,7 @@ macro( cet_cmake_config  )
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
  
   configure_package_config_file( 
-             ${CMAKE_CURRENT_SOURCE_DIR}/${product}-config.cmake.in
+             ${CMAKE_CURRENT_SOURCE_DIR}/product-config.cmake.in
              ${CMAKE_CURRENT_BINARY_DIR}/${product}-config.cmake 
 	     INSTALL_DESTINATION ${distdir} )
 
