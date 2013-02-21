@@ -59,7 +59,8 @@ endif ()
 # compare for recursion
 #message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${product_list}")
 list(FIND product_list ${PRODUCTNAME} found_product_match)
-if( ${found_product_match} LESS 0 )
+if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
+else( ${found_product_match} LESS 0 )
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
   find_ups_product( ${PRODUCTNAME} ${version} )")
