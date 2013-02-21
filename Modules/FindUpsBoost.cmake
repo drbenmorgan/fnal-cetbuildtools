@@ -37,13 +37,8 @@ set(boost_liblist chrono
 		  wserialization )
 
 # compare for recursion
-set(no_product_match TRUE)
-foreach(prod ${product_list})
-  if( ${prod} MATCHES "boost" )
-     set(no_product_match FALSE)
-  endif()
-endforeach(prod)
-if(no_product_match)
+list(FIND product_list boost found_product_match)
+if( ${found_product_match} LESS 0 )
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
   find_ups_boost( ${version} )")
@@ -96,6 +91,6 @@ if(no_product_match)
 
   #message(STATUS "find_ups_boost debug: Boost include directory is ${Boost_INCLUDE_DIR}" )
   #message(STATUS "find_ups_boost debug: Boost library directory is ${BOOST_LIBRARYDIR}" )
-endif(no_product_match)
+endif()
 
 endmacro( find_ups_boost )
