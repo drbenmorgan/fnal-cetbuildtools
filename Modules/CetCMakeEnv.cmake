@@ -79,7 +79,7 @@ macro(_get_cetpkg_info)
   set(CONFIG_FIND_LIBRARY_COMMANDS "
 ## find_library directives" 
       CACHE STRING "find_library directives for config" FORCE)
-  set(CONFIG_LIBRARY_LIST CACHE INTERNAL "libraries created by this package" )
+  set(CONFIG_LIBRARY_LIST "" CACHE INTERNAL "libraries created by this package" )
 
 endmacro(_get_cetpkg_info)
 
@@ -310,7 +310,9 @@ macro(cet_find_library)
     set(find_library_list ${ARGV2} ${find_library_list})
     # add to library list for package configure file
     set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-    cet_find_library( ${find_library_commands} )" )
+    if( NOT ${ARGV0} )
+      cet_find_library( ${find_library_commands} )
+    endif()" )
   endif()
   # call find_library
   find_library( ${ARGN} )

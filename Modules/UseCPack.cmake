@@ -27,7 +27,7 @@ if ( NOT full_qualifier )
 else ()
   # all qualifiers are passed
   STRING( REGEX REPLACE ":" "-" QUAL_NAME "${full_qualifier}" )
-  message(STATUS "full_qualifiers: ${full_qualifier} ${QUAL_NAME}")
+  #message(STATUS "UseCPack: full_qualifiers ${full_qualifier} ${QUAL_NAME}")
   set( CPACK_SYSTEM_NAME ${PACKAGE_BASENAME}-${QUAL_NAME} )
 endif ()
 

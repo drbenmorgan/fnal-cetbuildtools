@@ -53,9 +53,6 @@ macro( _cet_add_library_to_config )
   string(TOUPPER  ${product} ${product}_UC )
   #message(STATUS "_cet_add_library_to_config debug: ${${CML_LIBRARY_NAME}_UC} NAMES ${CML_LIBRARY_NAME}PATHS ENV ${${product}_UC}_LIB )")
   # add to library list for package configure file
-  ##set(CONFIG_MAKE_LIBRARY_COMMANDS "${CONFIG_MAKE_LIBRARY_COMMANDS}
-  ##cet_find_library( ${${CML_LIBRARY_NAME}_UC} NAMES ${CML_LIBRARY_NAME} PATHS ENV ${${product}_UC}_LIB )"
-  ##CACHE INTERNAL "adding to CONFIG_MAKE_LIBRARY_COMMANDS" )
   set(CONFIG_LIBRARY_LIST ${CONFIG_LIBRARY_LIST} ${CML_LIBRARY_NAME}
       CACHE INTERNAL "libraries created by this package" )
 endmacro( _cet_add_library_to_config )
