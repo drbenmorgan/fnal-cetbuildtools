@@ -225,6 +225,7 @@ MACRO(cet_test CET_TARGET)
       "and CET_PREBUILT options set.")
   ELSEIF(CET_PREBUILT) # eg scripts.
     ADD_CUSTOM_TARGET(!${CET_TARGET} ALL
+      ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}/"
       COMMAND ${CMAKE_COMMAND} -E
       copy "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
       "${EXECUTABLE_OUTPUT_PATH}/"
