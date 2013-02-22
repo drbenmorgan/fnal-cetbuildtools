@@ -12,8 +12,8 @@
 #           [SUBDIRS <source subdirectory>] (e.g., detail)
 #           [EXCLUDE <ignore these files>] )
 #
-# NOTE: if your code includes art plugins, you MUST use art_make instead of cet_make.
-# cet_make will ignore all plugin code
+#   NOTE: if your code includes art plugins, you MUST use art_make
+#   instead of cet_make: cet_make will ignore all plugin code.
 #
 # cet_make_library( [LIBRARY_NAME <library name>]  
 #                   [SOURCE <source code list>] 
@@ -21,12 +21,30 @@
 #                   [WITH_STATIC_LIBRARY]
 #                   [NO_INSTALL] )
 #
+#   Make the named library.
+#
 # cet_make_exec( NAME <executable name>  
 #                [SOURCE <source code list>] 
 #                [LIBRARIES <library link list>]
 #                [USE_BOOST_UNIT]
 #                [NO_INSTALL] )
-# -- build a regular executable
+#
+#   Build a regular executable.
+#
+# cet_script( [NO_INSTALL] [GENERATED] <script-name> ... )
+#
+#   Copy the named script to ${EXECUTABLE_OUTPUT_PATH} (usually bin/).
+#
+#   If the GENERATED option is used, the script will be copied from
+#   ${CMAKE_CURRENT_BINARY_DIR} (after being made by a CONFIGURE
+#   command, for example); otherwise it will be copied from
+#   ${CMAKE_CURRENT_SOURCE_DIR}.
+#
+#   NOTE: If you wish to use one of these scripts in a CUSTOM_COMMAND,
+#   list its name in the DEPENDS clause of the CUSTOM_COMMAND to ensure
+#   it gets re-run if the script chagees.
+#
+########################################################################
 
 include(CetParseArgs)
 include(InstallSource)
@@ -254,3 +272,34 @@ macro( cet_make_library )
     endif()
   endif( CML_WITH_STATIC_LIBRARY )
 endmacro( cet_make_library )
+
+macro (cet_script)
+  cet_parse_args(CS "" "GENERATED;NO_INSTALL" ${ARGN})
+  if (CS_GENERATED)
+    set(CS_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  else()
+    set(CS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+  foreach(target ${CS_DEFAULT_ARGS})
+    add_custom_target(!${target} ALL
+      ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}/"
+      COMMAND ${CMAKE_COMMAND} -E
+      copy "${CS_SOURCE_DIR}/${target}"
+      "${EXECUTABLE_OUTPUT_PATH}/"
+      DEPENDS "${CS_SOURCE_DIR}/${target}"
+      )
+    # Allow CUSTOM_COMMANDs using these scripts to be updated when the
+    # script changes: just list the script in the DEPENDS of the
+    # CUSTOM_COMMAND.
+    add_executable(${target} IMPORTED GLOBAL)
+    set_target_properties(${target}
+      PROPERTIES IMPORTED_LOCATION "${CS_SOURCE_DIR}/${target}"
+      )
+
+    # Install in product if desired.
+    if (NOT CS_NO_INSTALL)
+      install(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${target}
+        DESTINATION "${flavorqual_dir}/bin")
+    endif()
+  endforeach()
+endmacro()
