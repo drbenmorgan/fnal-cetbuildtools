@@ -113,6 +113,8 @@
 include(CetParseArgs)
 # May need Boost Unit Test Framework library.
 include(FindUpsBoost)
+# Need cet_script for PREBUILT scripts
+include(CetMake)
 
 # Simple CAR implementation.
 MACRO(cet_car var)
@@ -224,23 +226,10 @@ MACRO(cet_test CET_TARGET)
     MESSAGE(SEND_ERROR "cet_test: target ${CET_TARGET} cannot have both CET_HANDBUILT "
       "and CET_PREBUILT options set.")
   ELSEIF(CET_PREBUILT) # eg scripts.
-    ADD_CUSTOM_TARGET(!${CET_TARGET} ALL
-      ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}/"
-      COMMAND ${CMAKE_COMMAND} -E
-      copy "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
-      "${EXECUTABLE_OUTPUT_PATH}/"
-      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
-      )
-    if(CET_DEPENDENCIES)
-      ADD_DEPENDENCIES(!${CET_TARGET} ${CET_DEPENDENCIES})
+    IF (NOT CET_INSTALL_BIN)
+      SET(CET_NO_INSTALL "NO_INSTALL")
     ENDIF()
-    # Done this way to allow CUSTOM_COMMANDs using these scripts to be
-    # updated when the script changes: just list the script in the
-    # DEPENDS of the CUSTOM_COMMAND.
-    ADD_EXECUTABLE(${CET_TARGET} IMPORTED GLOBAL)
-    SET_TARGET_PROPERTIES(${CET_TARGET}
-      PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/${CET_TARGET}"
-      )
+    cet_script(${CET_TARGET} ${CET_NO_INSTALL} DEPENDENCIES ${CET_DEPENDENCIES})
   ELSEIF(NOT CET_HANDBUILT) # Normal build.
     # Build the executable.
     IF(NOT CET_SOURCES) # Useful default.
@@ -316,9 +305,7 @@ MACRO(cet_test CET_TARGET)
   IF(CET_INSTALL_BIN)
     IF(CET_HANDBUILT)
       MESSAGE(WARNING "INSTALL_BIN option ignored for HANDBUILT tests.")
-    ELSEIF(CET_PREBUILT)
-      INSTALL(PROGRAMS ${CET_TARGET} DESTINATION ${flavorqual_dir}/bin)
-    ELSE()
+    ELSEIF(NOT CET_PREBUILT)
       INSTALL(TARGETS ${CET_TARGET} DESTINATION ${flavorqual_dir}/bin)
     ENDIF()
   ENDIF()

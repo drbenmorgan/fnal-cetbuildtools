@@ -31,7 +31,9 @@
 #
 #   Build a regular executable.
 #
-# cet_script( [NO_INSTALL] [GENERATED] <script-name> ... )
+# cet_script( [NO_INSTALL] [GENERATED]
+#             <script-name> ...
+#             [DEPENDENCIES <deps>] )
 #
 #   Copy the named script to ${EXECUTABLE_OUTPUT_PATH} (usually bin/).
 #
@@ -265,7 +267,7 @@ macro( cet_make_library )
 endmacro( cet_make_library )
 
 macro (cet_script)
-  cet_parse_args(CS "" "GENERATED;NO_INSTALL" ${ARGN})
+  cet_parse_args(CS "DEPENDENCIES" "GENERATED;NO_INSTALL" ${ARGN})
   if (CS_GENERATED)
     set(CS_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR})
   else()
@@ -279,6 +281,9 @@ macro (cet_script)
       "${EXECUTABLE_OUTPUT_PATH}/"
       DEPENDS "${CS_SOURCE_DIR}/${target}"
       )
+    if (CS_DEPENDENCIES)
+      add_dependencies(!${target} ${CS_DEPENDENCIES})
+    endif()
     # Allow CUSTOM_COMMANDs using these scripts to be updated when the
     # script changes: just list the script in the DEPENDS of the
     # CUSTOM_COMMAND.
@@ -289,7 +294,7 @@ macro (cet_script)
 
     # Install in product if desired.
     if (NOT CS_NO_INSTALL)
-      install(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${target}
+      install(PROGRAMS "${EXECUTABLE_OUTPUT_PATH}/${target}"
         DESTINATION "${flavorqual_dir}/bin")
     endif()
   endforeach()
