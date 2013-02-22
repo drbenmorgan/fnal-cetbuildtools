@@ -17,6 +17,7 @@
 if (CET_TEST_GROUPS)
 endif()
 
+
 macro(_get_cetpkg_info)
 
    # find $CETBUILDTOOLS_DIR/bin/
@@ -71,15 +72,6 @@ macro(_get_cetpkg_info)
    set( cet_ups_dir ${CMAKE_CURRENT_SOURCE_DIR}/ups CACHE STRING "Package UPS directory" FORCE )
    ##message( STATUS "_get_cetpkg_info: cet_ups_dir is ${cet_ups_dir}")
 
-  # initialize cmake config file fragments
-  set(CONFIG_FIND_UPS_COMMANDS "
-## find_ups_product directives
-## remember that these are minimum required versions" 
-      CACHE STRING "UPS product directives for config" FORCE)
-  set(CONFIG_FIND_LIBRARY_COMMANDS "
-## find_library directives" 
-      CACHE STRING "find_library directives for config" FORCE)
-  set(CONFIG_LIBRARY_LIST "" CACHE INTERNAL "libraries created by this package" )
 
 endmacro(_get_cetpkg_info)
 
@@ -122,8 +114,12 @@ macro(cet_cmake_env)
   include(ParseUpsVersion)
   include(SetFlavorQual)
   include(InstallSource)
+  include(CetCMakeUtils)
   include(CetMake)
   include(CetCMakeConfig)
+
+  # initialize cmake config file fragments
+  cet_init_config_var()
 
   #set package version from ups version
   set_version_from_ups( ${version} )
@@ -148,9 +144,6 @@ macro(cet_cmake_env)
   
   # this is a dummy test needed by buildtool
   add_test(NAME NOP COMMAND echo)
-  set(library_list "" CACHE STRING "list of product librares" FORCE)
-  set(product_list "" CACHE STRING "list of ups products" FORCE)
-  set(find_library_list "" CACHE STRING "list of find_library calls" FORCE)
 
 endmacro(cet_cmake_env)
 

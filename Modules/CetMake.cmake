@@ -66,15 +66,6 @@ macro( _cet_check_bin_directory )
   endif()
 endmacro( _cet_check_bin_directory )
 
-macro( _cet_add_library_to_config )
-  string(TOUPPER  ${CML_LIBRARY_NAME} ${CML_LIBRARY_NAME}_UC )
-  string(TOUPPER  ${product} ${product}_UC )
-  #message(STATUS "_cet_add_library_to_config debug: ${${CML_LIBRARY_NAME}_UC} NAMES ${CML_LIBRARY_NAME}PATHS ENV ${${product}_UC}_LIB )")
-  # add to library list for package configure file
-  set(CONFIG_LIBRARY_LIST ${CONFIG_LIBRARY_LIST} ${CML_LIBRARY_NAME}
-      CACHE INTERNAL "libraries created by this package" )
-endmacro( _cet_add_library_to_config )
-
 macro( cet_make_exec )
   set(cet_exec_file_list "")
   set(cet_make_exec_usage "USAGE: cet_make_exec( NAME <executable name> [SOURCE <exec source>] [LIBRARIES <library list>] )")
@@ -244,7 +235,7 @@ macro( cet_make_library )
     #message(STATUS "cet_make_library debug: ${CML_LIBRARY_NAME} will not be installed")
   else()
     _cet_check_lib_directory()
-    _cet_add_library_to_config()
+    cet_add_to_library_list( ${CML_LIBRARY_NAME})
     _cet_debug_message( "cet_make_library: ${CML_LIBRARY_NAME} will be installed in ${cet_lib_dir}")
     install( TARGETS  ${CML_LIBRARY_NAME} 
 	     RUNTIME DESTINATION ${flavorqual_dir}/bin

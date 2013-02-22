@@ -156,7 +156,6 @@ function ( build_dictionary )
      install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
      install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )
      # add to library list for package configure file
-     set(CONFIG_LIBRARY_LIST ${CONFIG_LIBRARY_LIST} ${dictname}_dict
-	 CACHE INTERNAL "libraries created by this package" )
+     cet_add_to_library_list( ${dictname}_dict )
   endif()
 endfunction ( build_dictionary )
