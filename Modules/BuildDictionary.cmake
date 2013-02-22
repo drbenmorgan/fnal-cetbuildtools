@@ -155,5 +155,8 @@ function ( build_dictionary )
      #message( STATUS "BUILD_DICTIONARY: installing ${dictname}_dict and ${dictname}_map" )
      install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
      install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )
+     # add to library list for package configure file
+     set(CONFIG_LIBRARY_LIST ${CONFIG_LIBRARY_LIST} ${dictname}_dict
+	 CACHE INTERNAL "libraries created by this package" )
   endif()
 endfunction ( build_dictionary )
