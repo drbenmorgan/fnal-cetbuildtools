@@ -37,12 +37,12 @@ set(boost_liblist chrono
 		  wserialization )
 
 # compare for recursion
-list(FIND product_list boost found_product_match)
+list(FIND cet_product_list boost found_product_match)
 if( ${found_product_match} LESS 0 )
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
   find_ups_boost( ${version} )")
-  set(product_list boost ${product_list} )
+  set(cet_product_list boost ${cet_product_list} )
 
   # convert vx_y_z to x.y.z
   STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2" MINVER "${version}" )

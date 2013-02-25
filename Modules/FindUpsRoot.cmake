@@ -24,12 +24,12 @@ endif ()
 _check_version( ROOT ${ROOT_VERSION} ${minimum} )
 set( ROOT_DOT_VERSION ${dotver} )
 # compare for recursion
-list(FIND product_list root found_product_match)
+list(FIND cet_product_list root found_product_match)
 if( ${found_product_match} LESS 0 )
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
   find_ups_root( ${minimum} )")
-  set(product_list root ${product_list} )
+  set(cet_product_list root ${cet_product_list} )
 endif()
 
 STRING( REGEX MATCH "[-][q]" has_qual  "${ROOT_STRING}" )

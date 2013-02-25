@@ -57,15 +57,15 @@ if ( NOT ${${PRODUCTNAME}_UC}_VERSION )
 endif ()
 
 # compare for recursion
-#message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${product_list}")
-list(FIND product_list ${PRODUCTNAME} found_product_match)
+#message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${cet_product_list}")
+list(FIND cet_product_list ${PRODUCTNAME} found_product_match)
 if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
 elseif( ${found_product_match} LESS 0 )
   #message(STATUS "find_ups_product debug: ${found_product_match} for ${PRODUCTNAME} ")
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
   find_ups_product( ${PRODUCTNAME} ${version} )")
-  set(product_list ${PRODUCTNAME} ${product_list} )
+  set(cet_product_list ${PRODUCTNAME} ${cet_product_list} )
   #message(STATUS "adding find_ups_product( ${PRODUCTNAME} ${version} )")
   _cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
 endif()

@@ -119,7 +119,7 @@ macro(cet_cmake_env)
   include(CetCMakeConfig)
 
   # initialize cmake config file fragments
-  cet_init_config_var()
+  _cet_init_config_var()
 
   #set package version from ups version
   set_version_from_ups( ${version} )
@@ -292,24 +292,6 @@ macro( cet_set_inc_directory )
   endif()
   #message( STATUS "cet_set_inc_directory: cet_inc_dir is ${cet_inc_dir}")
 endmacro( cet_set_inc_directory )
-
-macro(cet_find_library)
-  STRING( REGEX REPLACE ";" " " find_library_commands "${ARGN}" )
-  #message(STATUS "cet_find_library debug: find_library_commands ${find_library_commands}" )
-  #message(STATUS "cet_find_library debug: product_list ${product_list}")
-  #message(STATUS "cet_find_library debug: find_library_list ${find_library_list}")
-  list(FIND product_list ${ARGV2} found_product_match)
-  if( ${found_product_match} LESS 0 )
-    set(find_library_list ${ARGV2} ${find_library_list})
-    # add to library list for package configure file
-    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-    if( NOT ${ARGV0} )
-      cet_find_library( ${find_library_commands} )
-    endif()" )
-  endif()
-  # call find_library
-  find_library( ${ARGN} )
-endmacro(cet_find_library)
 
 macro(_cet_debug_message)
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
