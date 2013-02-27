@@ -186,7 +186,7 @@ macro( cet_make )
                 	 SOURCE ${cet_make_library_src}
 			 LIBRARIES  ${cet_liblist} )
     else() 
-       cet_make_library( LIBRARY_NAME${cet_make_library_name}
+       cet_make_library( LIBRARY_NAME ${cet_make_library_name}
                 	 SOURCE ${cet_make_library_src} )
     endif() 
     #message( STATUS "cet_make debug: library ${cet_make_library_name} will be installed in ${cet_lib_dir}")
