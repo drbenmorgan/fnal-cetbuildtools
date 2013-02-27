@@ -5,7 +5,7 @@
 #                   [COMPILE_FLAGS <flags>]
 #                   [DICT_NAME_VAR <var>]
 #                   [DICTIONARY_LIBRARIES <library list>]
-#                   [NOINSTALL])
+#                   [NO_INSTALL])
 #
 # * <dictionary_name> defaults to a name based on the current source
 # code subdirectory.
@@ -13,7 +13,7 @@
 # * ${REFLEX} is always appended to the library list (even if it is
 # empty).
 #
-# * Specify NOINSTALL when building a dictionary for tests.
+# * Specify NO_INSTALL when building a dictionary for tests.
 #
 # * If DICT_NAME_VAR is specified, <var> will be set to contain the
 # dictionary name.
@@ -111,11 +111,14 @@ endmacro( _generate_dictionary )
 # dictionaries are built in art with this
 function ( build_dictionary )
   #message(STATUS "BUILD_DICTIONARY: called with ${ARGC} arguments: ${ARGV}")
-  set(build_dictionary_usage "USAGE: build_dictionary( [dictionary_name] [DICTIONARY_LIBRARIES <library list>] [COMPILE_FLAGS <flags>] [DICT_NAME_VAR <var>] [NOINSTALL] )")
-  cet_parse_args( BD "DICTIONARY_LIBRARIES;COMPILE_FLAGS;DICT_NAME_VAR" "NOINSTALL" ${ARGN})
+  set(build_dictionary_usage "USAGE: build_dictionary( [dictionary_name] [DICTIONARY_LIBRARIES <library list>] [COMPILE_FLAGS <flags>] [DICT_NAME_VAR <var>] [NO_INSTALL] )")
+  cet_parse_args( BD "DICTIONARY_LIBRARIES;COMPILE_FLAGS;DICT_NAME_VAR" "NOINSTALL:NO_INSTALL" ${ARGN})
   #message(STATUS "BUILD_DICTIONARY: default arguments: ${BD_DEFAULT_ARGS}")
-  #message(STATUS "BUILD_DICTIONARY: install flag is  ${BD_NOINSTALL} ")
+  #message(STATUS "BUILD_DICTIONARY: install flag is  ${BD_NO_INSTALL} ")
   #message(STATUS "BUILD_DICTIONARY: COMPILE_FLAGS: ${BD_COMPILE_FLAGS}")
+  if( BD_NOINSTALL )
+     message( SEND_ERROR "build_dictionary now requires NO_INSTALL, you have used the old NOINSTALL command")
+  endif( BD_NOINSTALL )
   if( BD_DEFAULT_ARGS )
      list(LENGTH BD_DEFAULT_ARGS dlen)
      if(dlen GREATER 1 )
@@ -151,7 +154,7 @@ function ( build_dictionary )
   target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
   target_link_libraries( ${dictname}_map  ${dictionary_liblist} )
   add_dependencies( ${dictname}_map  ${dictname}_dict )
-  if( NOT BD_NOINSTALL )
+  if( NOT BD_NO_INSTALL )
      #message( STATUS "BUILD_DICTIONARY: installing ${dictname}_dict and ${dictname}_map" )
      install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
      install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )
