@@ -28,3 +28,7 @@ test $have_simple = "false" && echo CETPKG_TYPE=$CETPKG_TYPE
 echo
 ups active
 echo
+echo "IF YOU ARE GOING TO BUILD THIS PACKAGE, "
+echo "YOU MUST USE setup_for_development INSTEAD OF setup_deps"
+echo
+
