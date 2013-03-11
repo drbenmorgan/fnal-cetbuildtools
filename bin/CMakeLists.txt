@@ -13,6 +13,7 @@ INSTALL ( PROGRAMS buildtool
 
 INSTALL ( FILES cet_test_functions.sh
                 parse_deps.pm
+		set_dep_check_report
 		set_dev_bin
 		set_dev_check
 		set_dev_check_report
