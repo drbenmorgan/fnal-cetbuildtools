@@ -12,10 +12,6 @@
 use File::Basename;
 use lib dirname($0);
 
-# use this file for debugging
-$diagfl = "diag_report";
-open(DIAG, "> $diagfl") or die "Couldn't open $diagfl";
-
 
 if( $#ARGV < 2 ) {
     $errfl1 = "problem_report";
@@ -53,6 +49,10 @@ for $i ( 2 .. $#ARGV ) {
       $qdir = $qdir.$ARGV[$i]."-";
     }
 }
+
+# use this file for debugging
+$diagfl = $builddir."/diag_report";
+open(DIAG, "> $diagfl") or die "Couldn't open $diagfl";
 
 $srcbase = basename($sourcedir);
 if ( $srcbase eq "ups" ) {

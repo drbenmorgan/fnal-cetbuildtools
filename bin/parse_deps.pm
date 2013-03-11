@@ -480,7 +480,7 @@ sub cetpkg_info_file {
   # if there is a cmake cache file, we could check for the install prefix
   # cmake -N -L | grep CMAKE_INSTALL_PREFIX | cut -f2 -d=
   my @params = @_;
-  $cetpkgfile = "cetpkg_variable_report";
+  $cetpkgfile = $params[6]."/cetpkg_variable_report";
   open(CPG, "> $cetpkgfile") or die "Couldn't open $cetpkgfile";
   print CPG "\n";
   print CPG "CETPKG_NAME     $params[0]\n";
