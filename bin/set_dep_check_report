@@ -20,12 +20,12 @@ unset merr1 merr2 merr3 merr4 merr5 merr6
 
 # Show what we've done
 echo
-echo CETPKG_SOURCE=$CETPKG_SOURCE
-echo CETPKG_NAME=$CETPKG_NAME
-echo CETPKG_VERSION=$CETPKG_VERSION
-test $have_simple = "false" && echo CETPKG_QUAL=$CETPKG_QUAL
-test $have_simple = "false" && echo CETPKG_TYPE=$CETPKG_TYPE
-echo
+#echo CETPKG_SOURCE=$CETPKG_SOURCE
+#echo CETPKG_NAME=$CETPKG_NAME
+#echo CETPKG_VERSION=$CETPKG_VERSION
+#test $have_simple = "false" && echo CETPKG_QUAL=$CETPKG_QUAL
+#test $have_simple = "false" && echo CETPKG_TYPE=$CETPKG_TYPE
+#echo
 #ups active
 #echo
 echo "IF YOU ARE GOING TO BUILD THIS PACKAGE, "
