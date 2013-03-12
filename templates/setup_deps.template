@@ -47,8 +47,9 @@ test -z "$db" && echo "$msg2" || vecho_ "db=$db"
 test -n "$db" && setenv CETPKG_SOURCE `dirname $db`
 
 # make sure we know the current directory
-mkdir -p /tmp/setup_deps/
-setenv CETPKG_BUILD /tmp/setup_deps/`pwd`
+set_ myname=`whoami`
+setenv CETPKG_BUILD /tmp/$myname/setup_deps
+rm -rf $CETPKG_BUILD
 mkdir -p $CETPKG_BUILD
 #echo Build directory is $CETPKG_BUILD
 
