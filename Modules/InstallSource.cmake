@@ -332,7 +332,7 @@ endmacro( install_headers )
 
 macro( install_scripts   )
   cet_parse_args( IS "SUBDIRS;LIST;EXTRAS;EXCLUDES" "" ${ARGN})
-  set(script_install_dir ${product}/${version}/bin )
+  set(script_install_dir ${cet_bin_dir} )
   #message( STATUS "install_scripts: scripts will be installed in ${script_install_dir}" )
   if( IS_LIST )
     if( IS_SUBDIRS )

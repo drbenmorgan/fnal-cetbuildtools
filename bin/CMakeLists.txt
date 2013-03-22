@@ -1,15 +1,14 @@
 
-INSTALL ( PROGRAMS buildtool
- 		   build_table
-		   build_version_file
-		   code-dep-graph
-		   increment-version
-		   set_dev_products
-		   report_bindir
-		   report_incdir
-		   report_libdir
-		   report_product_info
-          DESTINATION ${product}/${version}/bin )
+install_scripts( LIST buildtool
+ 		      build_table
+		      build_version_file
+		      code-dep-graph
+		      increment-version
+		      set_dev_products
+		      report_bindir
+		      report_incdir
+		      report_libdir
+		      report_product_info )
 
 INSTALL ( FILES cet_test_functions.sh
                 parse_deps.pm
