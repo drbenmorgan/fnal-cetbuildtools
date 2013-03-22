@@ -35,7 +35,7 @@
 #             <script-name> ...
 #             [DEPENDENCIES <deps>] )
 #
-#   Copy the named script to ${EXECUTABLE_OUTPUT_PATH} (usually bin/).
+#   Copy the named script to ${cet_bin_dir} (usually bin/).
 #
 #   If the GENERATED option is used, the script will be copied from
 #   ${CMAKE_CURRENT_BINARY_DIR} (after being made by a CONFIGURE
@@ -248,7 +248,7 @@ macro( cet_make_library )
     cet_add_to_library_list( ${CML_LIBRARY_NAME})
     _cet_debug_message( "cet_make_library: ${CML_LIBRARY_NAME} will be installed in ${cet_lib_dir}")
     install( TARGETS  ${CML_LIBRARY_NAME} 
-	     RUNTIME DESTINATION ${flavorqual_dir}/bin
+	     RUNTIME DESTINATION ${cet_bin_dir}
 	     LIBRARY DESTINATION ${cet_lib_dir}
 	     ARCHIVE DESTINATION ${cet_lib_dir}
              )
@@ -266,7 +266,7 @@ macro( cet_make_library )
       #message(STATUS "cet_make_library debug: ${CML_LIBRARY_NAME}S will not be installed")
     else()
       install( TARGETS  ${CML_LIBRARY_NAME}S 
-	       RUNTIME DESTINATION ${flavorqual_dir}/bin
+	       RUNTIME DESTINATION ${cet_bin_dir}
 	       LIBRARY DESTINATION ${cet_lib_dir}
 	       ARCHIVE DESTINATION ${cet_lib_dir}
                )
@@ -303,7 +303,7 @@ macro (cet_script)
     # Install in product if desired.
     if (NOT CS_NO_INSTALL)
       install(PROGRAMS "${EXECUTABLE_OUTPUT_PATH}/${target}"
-        DESTINATION "${flavorqual_dir}/bin")
+        DESTINATION "${cet_bin_dir}")
     endif()
   endforeach()
 endmacro()
