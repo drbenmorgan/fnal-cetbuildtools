@@ -17,6 +17,7 @@ INSTALL(FILES
 	FindUpsRoot.cmake
 	InstallSource.cmake
 	ParseUpsVersion.cmake
+	ProcessSmc.cmake
 	SetCompilerFlags.cmake
 	SetFlavorQual.cmake
 	UseCPack.cmake
