@@ -23,7 +23,7 @@
 #
 #   Make the named library.
 #
-# cet_make_exec( NAME <executable name>  
+# cet_make_exec( <executable name>  
 #                [SOURCE <source code list>] 
 #                [LIBRARIES <library link list>]
 #                [USE_BOOST_UNIT]
@@ -68,46 +68,46 @@ macro( _cet_check_bin_directory )
   endif()
 endmacro( _cet_check_bin_directory )
 
-macro( cet_make_exec )
+macro( cet_make_exec cet_exec_name )
   set(cet_exec_file_list "")
-  set(cet_make_exec_usage "USAGE: cet_make_exec( NAME <executable name> [SOURCE <exec source>] [LIBRARIES <library list>] )")
+  set(cet_make_exec_usage "USAGE: cet_make_exec( <executable name> [SOURCE <exec source>] [LIBRARIES <library list>] )")
   #message(STATUS "cet_make_exec debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CME "NAME;LIBRARIES;SOURCE" "USE_BOOST_UNIT;NO_INSTALL" ${ARGN})
+  cet_parse_args( CME "LIBRARIES;SOURCE" "USE_BOOST_UNIT;NO_INSTALL" ${ARGN})
   # there are no default arguments
   if( CME_DEFAULT_ARGS )
      message("CET_MAKE_EXEC: Incorrect arguments. ${ARGV}")
      message(SEND_ERROR  ${cet_make_exec_usage})
   endif()
-  #message(STATUS "debug: cet_make_exec called with ${CME_NAME} ${CME_LIBRARIES}")
-  FILE( GLOB exec_src ${CME_NAME}.c ${CME_NAME}.cc ${CME_NAME}.cpp ${CME_NAME}.C ${CME_NAME}.cxx )
+  #message(STATUS "debug: cet_make_exec called with ${cet_exec_name} ${CME_LIBRARIES}")
+  FILE( GLOB exec_src ${cet_exec_name}.c ${cet_exec_name}.cc ${cet_exec_name}.cpp ${cet_exec_name}.C ${cet_exec_name}.cxx )
   list(LENGTH exec_src n_sources)
   if (n_sources EQUAL 1) # If there's more than one, let the user specify explicitly.
     list(INSERT CME_SOURCE 0 ${exec_src})
   endif()
-  add_executable( ${CME_NAME} ${CME_SOURCE} )
+  add_executable( ${cet_exec_name} ${CME_SOURCE} )
   IF(CME_USE_BOOST_UNIT)
     # Make sure we have the correct library available.
     IF (NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
-      MESSAGE(SEND_ERROR "cet_make_exec: target ${CME_NAME} has USE_BOOST_UNIT "
+      MESSAGE(SEND_ERROR "cet_make_exec: target ${cet_exec_name} has USE_BOOST_UNIT "
         "option set but Boost Unit Test Framework Library cannot be found: is "
         "boost set up?")
     ENDIF()
     # Compile options (-Dxxx) for simple-format unit tests.
-    SET_TARGET_PROPERTIES(${CME_NAME} PROPERTIES
+    SET_TARGET_PROPERTIES(${cet_exec_name} PROPERTIES
       COMPILE_DEFINITIONS BOOST_TEST_MAIN
       COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK
       )
-    target_link_libraries(${CME_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+    target_link_libraries(${cet_exec_name} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
   ENDIF()
   if(CME_LIBRARIES)
-     target_link_libraries( ${CME_NAME} ${CME_LIBRARIES} )
+     target_link_libraries( ${cet_exec_name} ${CME_LIBRARIES} )
   endif()
   if(CME_NO_INSTALL)
-    #message(STATUS "${CME_NAME} will not be installed")
+    #message(STATUS "${cet_exec_name} will not be installed")
   else()
     _cet_check_bin_directory()
     #message( STATUS "cet_make_exec: executables will be installed in ${cet_bin_dir}")
-    install( TARGETS ${CME_NAME} DESTINATION ${cet_bin_dir} )
+    install( TARGETS ${cet_exec_name} DESTINATION ${cet_bin_dir} )
   endif()
 endmacro( cet_make_exec )
 
