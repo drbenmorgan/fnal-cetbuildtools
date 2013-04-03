@@ -377,10 +377,8 @@ function do_work() {
     fi
   else
     announce_stage
-    local extradef
-    [[ -n "$CETPKG_QUAL" ]] && extradef="-Dqualifier:STRING=$CETPKG_QUAL "
     cmake_defs=${cmake_defs//,/;}
-    ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${extradef}${cmake_defs}${CETPKG_SOURCE} )
+    ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${cmake_defs}${CETPKG_SOURCE} )
     check_status
     package_info
     (( ${cmake_only:-0} )) && exit 0
