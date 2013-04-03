@@ -142,9 +142,6 @@ macro(cet_cmake_env)
   # make sure all executables are in one directory
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
   
-  # this is a dummy test needed by buildtool
-  add_test(NAME NOP COMMAND echo)
-
 endmacro(cet_cmake_env)
 
 macro(cet_check_gcc)
