@@ -147,6 +147,20 @@ foreach $i ( 1 .. $ecount ) {
     ##print TSET " echo \$setup_fail \n"; 
   }
 }
+# are there products without listed qualifiers?
+@pkeys = keys %phash;
+foreach $i ( 1 .. $#pkeys ) {
+  $p_has_qual = 0;
+  foreach $j ( 1 .. $ndeps ) {
+    if ( $pkeys[$i] eq $qlist[0][$j] ) {
+       $p_has_qual++;
+    }
+  }
+  if ( $p_has_qual == 0 ) {
+    print_setup_noqual( $pkeys[$i], $phash{$pkeys[$i]}, $ohash{$pkeys[$i]}, TSET );
+  }
+}
+# now loop over the qualifier list
 foreach $i ( 1 .. $#qlist ) {
   if ( compare_qual( $qlist[$i][0], $qual ) ) {
     $match++;
