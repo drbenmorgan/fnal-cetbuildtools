@@ -121,12 +121,12 @@ if ( $qual ) {
     exit 0;
   }
 }
+#print DIAG "set_dev_products debug info: qual $qual\n";
 
 $cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type, $sourcedir, $builddir );
 (%ohash) = find_optional_products( $pfile );
 ($ecount, @ehash) = find_only_for_build_products( $pfile );
 
-$match = 0;
 print TSET "setenv UPS_OPTIONS -B\n";
 print TSET "setenv CETPKG_NAME $product\n";
 print TSET "setenv CETPKG_VERSION $version\n";
@@ -161,6 +161,7 @@ foreach $i ( 1 .. $#pkeys ) {
   }
 }
 # now loop over the qualifier list
+$match = 0;
 foreach $i ( 1 .. $#qlist ) {
   if ( compare_qual( $qlist[$i][0], $qual ) ) {
     $match++;
@@ -188,7 +189,7 @@ foreach $i ( 1 .. $#qlist ) {
 ##print TSET "test \"\$setup_fail\" =  \"true\" && return 1\n"; 
 # allow for the case where there are no dependencies
 if ( $match == 0 ) {
-   if( $phash{none} = "none" ) {
+   if( $phash{none} eq "none" ) {
      #print "this package has no dependencies\n";
    } else {
      print TSET "\n";
