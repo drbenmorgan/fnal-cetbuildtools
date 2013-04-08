@@ -1,4 +1,4 @@
 
-cet_make( EXEC SquareIt.cpp LIBRARIES ToyMath ToyMathIO )
+cet_make_exec( SquareIt LIBRARIES ToyMath ToyMathIO )
 
 install_source()
