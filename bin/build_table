@@ -27,8 +27,11 @@ require parse_deps;
 $pfile=$inputdir."/product_deps";
 $flagfile=$outputdir."/cet_base_flags";
 
+
+$tmpfl = $outputdir."/table_diagnostics";
+open(TERR, "> $tmpfl") or die "Couldn't open $tmpfl";
 ($product, $version, $default_ver, $default_qual, %phash) = parse_product_list( $pfile );
-($ndeps, @qlist) = parse_qualifier_list( $pfile );
+($ndeps, @qlist) = parse_qualifier_list( $pfile, TERR );
 $have_fq = check_fq_dir( $pfile );
 (%ohash) = find_optional_products( $pfile );
 ($have_fragment, @flist) = check_for_fragment( $pfile );
@@ -44,6 +47,7 @@ if ( $qlist[1][0] eq "-nq-"  ) {
 }
 create_table_bottom();
 close(TBL);
+close(TERR);
 
 exit 0;
 
