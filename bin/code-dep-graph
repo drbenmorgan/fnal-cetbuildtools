@@ -74,7 +74,7 @@ function package_name() {
     echo "${sanitized_path}"
     return
   fi
-  local opwd=`/bin/pwd`
+  local opwd=`/bin/pwd -P`
   local plugin
   local type
   cd "${topdir}/${path}">/dev/null 2>&1

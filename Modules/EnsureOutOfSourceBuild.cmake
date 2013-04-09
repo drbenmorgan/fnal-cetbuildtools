@@ -12,7 +12,7 @@ macro (cet_ensure_out_of_source_build)
 
   ##message(STATUS "cet_ensure_out_of_source_build: ${in_source} and ${maybe_in_source_subdir}")
   if( maybe_in_source_subdir )
-    execute_process( COMMAND /bin/pwd
+    execute_process( COMMAND /bin/pwd -P
 		     OUTPUT_VARIABLE thisdir
 		     OUTPUT_STRIP_TRAILING_WHITESPACE )
     ##message(STATUS "/bin/pwd returns ${thisdir}")

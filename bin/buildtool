@@ -11,7 +11,7 @@
 
 function real_dir() {
     [[ -n "$1" ]] || return 1
-    ( cd "$1" >/dev/null 2>&1 && /bin/pwd 2>/dev/null; exit $? )
+    ( cd "$1" >/dev/null 2>&1 && /bin/pwd -P 2>/dev/null; exit $? )
     return $?
 }
 
@@ -455,6 +455,7 @@ while true; do
       ;;
     -I|--install-prefix)
       install_prefix=$2
+      (( set_install_prefix = 1 ))
       shift
       shift
       ;;
@@ -543,6 +544,9 @@ while true; do
   esac
 done
 
+# Set test_groups variable based on set options.
+cmake_defs="${cmake_defs}-DCET_TEST_GROUPS=${test_groups} "
+
 # If desired, print current build information and quit.
 if (( ${want_info:-0} )); then
   if [[ -n $(package_name) ]]; then
@@ -585,6 +589,7 @@ else
   (( do_build = ${do_build:-0} | ! ${no_build:-0} ))
 fi
 
+# Possibly clean up.
 if (( ${clean:-0} )); then
   if [[ $(real_dir .) == $(real_dir "$CETPKG_BUILD")/* ]]; then
     echo "ERROR: Clean operation would remove the current directory!" 1>&2
@@ -630,27 +635,33 @@ else # Check consistency.
   fi
 fi
 
-cmake_defs="${cmake_defs}-DCET_TEST_GROUPS=${test_groups} "
-
 # Set install prefix from wherever we can get it.
-install_prefix=${install_prefix:-${CETPKG_INSTALL}}
-install_prefix=${install_prefix:-$(cmake_var CMAKE_INSTALL_PREFIX)}
-
-# Check we found an install prefix.
-if [[ -z "$install_prefix" ]]; then
-  echo "ERROR: Install prefix not specified, CETPKG_INSTALL not set and CMAKE_INSTALL_PREFIX cannot be obtained from CMake cache." 1>&2
-  usage 2
+if ! ((  ${set_install_prefix:-0} )); then
+  install_prefix=${install_prefix:-${CETPKG_INSTALL}}
+  install_prefix=${install_prefix:-$(cmake_var CMAKE_INSTALL_PREFIX)}
 fi
 
-report "INFO: CETPKG_TYPE = $CETPKG_TYPE"
+if [[ -z "$install_prefix" ]]; then
+  echo "INFO: unspecified or null install prefix defaulted to /dev/null." 1>&2
+  install_prefix=/dev/null
+elif [[ -d "${install_prefix}" ]]; then
+  install_prefix_new=$(real_dir "${install_prefix}")
+  if (( ${?:-1} )); then
+    echo "ERROR: specified install prefix \"${install_prefix}\" cannot be converted to a physical directory location." 1>&2
+    exit 1
+  else
+    install_prefix=${install_prefix_new}
+  fi
+fi
 
 if [[ "$targets" == *install* ]] && \
    { [[ ! -d "$install_prefix" ]] || [[ ! -w "$install_prefix" ]]; }; then
-  echo "ERROR: Install prefix does not exist as a directory or is not writable with install target selected." 1>&2
+  echo "ERROR: Install prefix \"${install_prefix}\" does not exist as a directory or is not writable with install target selected." 1>&2
+  exit 1
 fi
 
-# Want absolute dir
-install_prefix="`( cd \"$install_prefix\" >/dev/null 2>&1 && /bin/pwd)`"
+report "INFO: Install prefix = ${install_prefix}"
+report "INFO: CETPKG_TYPE = $CETPKG_TYPE"
 
 # Suppress messages if desired.
 if (( ${quiet:-0} )); then
