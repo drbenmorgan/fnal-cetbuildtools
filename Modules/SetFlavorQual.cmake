@@ -94,7 +94,7 @@ if( ${arch} MATCHES "noarch" )
 else ()
     SET (flavorqual ${OSTYPE}.${CMAKE_SYSTEM_PROCESSOR}.${QUAL_SUBDIR})
 endif ()
-SET (flavorqual_dir ${product}/${version}/${flavorqual} )
+SET (flavorqual_dir ${product}/${version}/${flavorqual} CACHE STRING "Flavor-qualified package install directory" FORCE)
 
 #message(STATUS "set_flavor_qual: flavorqual is ${flavorqual}" )
 #message(STATUS "set_flavor_qual: ups flavor is ${UPSFLAVOR}" )
