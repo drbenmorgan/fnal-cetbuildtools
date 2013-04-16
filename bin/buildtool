@@ -605,7 +605,7 @@ if (( ${clean:-0} )); then
   for i in 1 2 3 4 5; do printf "."; sleep 1; done
   printf "\n";
   pushd /tmp >/dev/null # 2>&1
-  report "INFO: Cleaning \"$CETPKG_BUILD\" ..."
+  report "INFO: Cleaning \"$CETPKG_BUILD\""
   if ! { find "$CETPKG_BUILD" -mindepth 1 -maxdepth 1 \
          \( -type d -o -name '*.cmake' -o -name 'CMakeCache.txt' -o -name 'Makefile' \) -print | \
          xargs rm -rf; }; then
