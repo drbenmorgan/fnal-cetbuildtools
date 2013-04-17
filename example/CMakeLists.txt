@@ -5,7 +5,7 @@ configure_file ( ${CMAKE_CURRENT_SOURCE_DIR}/ToyCmake/ups/product_deps.in
                  ${CMAKE_CURRENT_BINARY_DIR}/ToyCmake/ups/product_deps @ONLY )
 
 set( installUPSfiles ToyCmake/ups/CMakeLists.txt
-                     ToyCmake/ups/ToyCmake-config.cmake.in
+                     ToyCmake/ups/product-config.cmake.in
 		     ${CMAKE_CURRENT_BINARY_DIR}/ToyCmake/ups/product_deps
 		     ToyCmake/ups/setup_for_development )
 
