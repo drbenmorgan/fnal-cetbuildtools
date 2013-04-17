@@ -4,12 +4,12 @@
 #  PRODUCTNAME - product name
 #  version - minimum version required
 #
-# cet_cmake_config() will put ${PRODUCTNAME}-config.cmake in 
+# cet_cmake_config() will put ${PRODUCTNAME}Config.cmake in 
 #  $ENV{${PRODUCTNAME_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake or $ENV{${PRODUCTNAME_UC}_DIR}/cmake
-# check these directories for ${PRODUCTNAME}-config.cmake 
+# check these directories for allowed cmake configure files:
+# either ${PRODUCTNAME_LC}-config.cmake  or ${PRODUCTNAME}Config.cmake
 # call find_package() if we find the config file
 # if the config file is not found, call _check_version()
-
 
 include(CheckUpsVersion)
 
@@ -46,6 +46,7 @@ macro( find_ups_product PRODUCTNAME version )
 
 # get upper and lower case versions of the name
 string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
+string(TOLOWER  ${PRODUCTNAME} ${PRODUCTNAME}_LC )
 
 # require ${${PRODUCTNAME}_UC}_VERSION or ${${PRODUCTNAME}_UC}_UPS_VERSION
 set( ${${PRODUCTNAME}_UC}_VERSION $ENV{${${PRODUCTNAME}_UC}_VERSION} )
@@ -71,12 +72,14 @@ elseif( ${found_product_match} LESS 0 )
 endif()
 
 # MUST use a unique variable name for the config path
-find_file( ${${PRODUCTNAME}_UC}_CONFIG_PATH ${PRODUCTNAME}-config.cmake $ENV{${${PRODUCTNAME}_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${${PRODUCTNAME}_UC}_DIR}/cmake )
+find_file( ${${PRODUCTNAME}_UC}_CONFIG_PATH 
+           NAMES ${${PRODUCTNAME}_LC}-config.cmake  or ${PRODUCTNAME}Config.cmake
+           PATHS $ENV{${${PRODUCTNAME}_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${${PRODUCTNAME}_UC}_DIR}/cmake )
 if(${${PRODUCTNAME}_UC}_CONFIG_PATH)
-  #message(STATUS "find_ups_product: found ${PRODUCTNAME}-config.cmake in ${${${PRODUCTNAME}_UC}_CONFIG_PATH}")
+  #_cet_debug_message("find_ups_product: found a cmake configure file in ${${${PRODUCTNAME}_UC}_CONFIG_PATH}")
   _use_find_package( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} ${version} )
 else()
-  #message(STATUS "find_ups_product: ${PRODUCTNAME}-config.cmake NOT FOUND")
+  #_cet_debug_message("find_ups_product: ${PRODUCTNAME} cmake config NOT FOUND")
   _check_version( ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_VERSION} ${version} )
 endif()
 
