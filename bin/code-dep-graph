@@ -4,6 +4,13 @@ shopt -s extglob
 
 declare -a ignored_deps=(sys)
 
+function set_pwd_P_arg() {
+  ( cd / ; /bin/pwd -P ) >/dev/null 2>&1
+  if (( $? == 0 )); then
+    pwd_P_arg="-P"
+  fi
+}
+
 function ignore_dep() {
   local dep="${1}"
   local depdir=`dirname "${dep}"`
@@ -74,7 +81,7 @@ function package_name() {
     echo "${sanitized_path}"
     return
   fi
-  local opwd=`/bin/pwd -P`
+  local opwd=`/bin/pwd ${pwd_P_arg}`
   local plugin
   local type
   cd "${topdir}/${path}">/dev/null 2>&1

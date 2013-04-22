@@ -9,13 +9,22 @@
 # 2011/11/10
 ########################################################################
 
+function set_pwd_P_arg() {
+  ( cd / ; /bin/pwd -P ) >/dev/null 2>&1
+  if (( $? == 0 )); then
+    pwd_P_arg="-P"
+  fi
+}
+
 function real_dir() {
     [[ -n "$1" ]] || return 1
-    ( cd "$1" >/dev/null 2>&1 && /bin/pwd -P 2>/dev/null; exit $? )
+    ( cd "$1" >/dev/null 2>&1 && /bin/pwd ${pwd_P_arg} 2>/dev/null; exit $? )
     return $?
 }
 
 # Basic safety checks.
+set_pwd_P_arg
+
 if [[ -z "$CETPKG_BUILD" ]] || [[ -z "$CETPKG_SOURCE" ]] || [[ -z "$CETPKG_TYPE" ]]; then
   echo "ERROR: Expected CETPKG_BUILD and friends to be set: source setup_for_development?" 1>&2
   exit 1
