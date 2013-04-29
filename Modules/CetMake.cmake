@@ -31,16 +31,21 @@
 #
 #   Build a regular executable.
 #
-# cet_script( [NO_INSTALL] [GENERATED]
-#             <script-name> ...
-#             [DEPENDENCIES <deps>] )
+# cet_script( <script-names> ...
+#             [DEPENDENCIES <deps>] 
+#             [NO_INSTALL] 
+#             [GENERATED]
+#             [REMOVE_EXTENSIONS] )
 #
-#   Copy the named script to ${cet_bin_dir} (usually bin/).
+#   Copy the named scripts to ${cet_bin_dir} (usually bin/).
 #
 #   If the GENERATED option is used, the script will be copied from
 #   ${CMAKE_CURRENT_BINARY_DIR} (after being made by a CONFIGURE
 #   command, for example); otherwise it will be copied from
 #   ${CMAKE_CURRENT_SOURCE_DIR}.
+#
+#   If REMOVE_EXTENSIONS is specified, extensions will be removed from script names 
+#   when they are installed.
 #
 #   NOTE: If you wish to use one of these scripts in a CUSTOM_COMMAND,
 #   list its name in the DEPENDS clause of the CUSTOM_COMMAND to ensure
@@ -275,19 +280,24 @@ macro( cet_make_library )
 endmacro( cet_make_library )
 
 macro (cet_script)
-  cet_parse_args(CS "DEPENDENCIES" "GENERATED;NO_INSTALL" ${ARGN})
+  cet_parse_args(CS "DEPENDENCIES" "GENERATED;NO_INSTALL;REMOVE_EXTENSIONS" ${ARGN})
   if (CS_GENERATED)
     set(CS_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR})
   else()
     set(CS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
-  foreach(target ${CS_DEFAULT_ARGS})
+  foreach(target_name ${CS_DEFAULT_ARGS})
+    if(CS_REMOVE_EXTENSIONS)
+       get_filename_component(target ${target_name} NAME_WE )
+    else()
+       set(target ${target_name})
+    endif()
     add_custom_target(!${target} ALL
       ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}/"
       COMMAND ${CMAKE_COMMAND} -E
-      copy "${CS_SOURCE_DIR}/${target}"
-      "${EXECUTABLE_OUTPUT_PATH}/"
-      DEPENDS "${CS_SOURCE_DIR}/${target}"
+      copy "${CS_SOURCE_DIR}/${target_name}"
+      "${EXECUTABLE_OUTPUT_PATH}/${target}"
+      DEPENDS "${CS_SOURCE_DIR}/${target_name}"
       )
     if (CS_DEPENDENCIES)
       add_dependencies(!${target} ${CS_DEPENDENCIES})
@@ -297,7 +307,7 @@ macro (cet_script)
     # CUSTOM_COMMAND.
     add_executable(${target} IMPORTED GLOBAL)
     set_target_properties(${target}
-      PROPERTIES IMPORTED_LOCATION "${CS_SOURCE_DIR}/${target}"
+      PROPERTIES IMPORTED_LOCATION "${CS_SOURCE_DIR}/${target_name}"
       )
 
     # Install in product if desired.
