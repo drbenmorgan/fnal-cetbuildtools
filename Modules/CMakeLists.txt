@@ -9,6 +9,7 @@ INSTALL(FILES
 	CetCMakeConfig.cmake
 	CetCMakeEnv.cmake
 	CetCMakeUtils.cmake
+	CetRootCint.cmake
 	CheckUpsVersion.cmake
 	EnsureOutOfSourceBuild.cmake
 	FindCompilerVersion.cmake

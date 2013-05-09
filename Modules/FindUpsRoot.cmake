@@ -141,4 +141,7 @@ _check_if_version_greater( ROOT ${ROOT_VERSION} v5_28_00d )
    endif()
    #message(STATUS "genreflex cleanup status: ${GENREFLEX_CLEANUP}")
 
+# define rootcint executable
+find_program( ROOTCINT NAMES rootcint PATHS ${ROOTSYS}/bin )
+
 endmacro( find_ups_root )
