@@ -77,8 +77,6 @@ endmacro(_get_cetpkg_info)
 
 macro(cet_cmake_env)
 
-  set(arch "${ARGN}")
-
   _get_cetpkg_info()
 
   if( full_qualifier )
@@ -102,9 +100,16 @@ macro(cet_cmake_env)
 
   enable_testing()
   
+  include(CetParseArgs)
+  cet_parse_args( EOSB "" "ALLOW_IN_SOURCE_BUILD" ${ARGN})
+  if( EOSB_DEFAULT_ARGS)
+    set(arch "${EOSB_DEFAULT_ARGS}")
+  endif()
   # Ensure out of source build before anything else
-  include(EnsureOutOfSourceBuild)
-  cet_ensure_out_of_source_build()
+  if( NOT EOSB_ALLOW_IN_SOURCE_BUILD )
+    include(EnsureOutOfSourceBuild)
+    cet_ensure_out_of_source_build()
+  endif()
 
   # Useful includes.
   include(SetCompilerFlags)
