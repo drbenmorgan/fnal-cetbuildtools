@@ -4,6 +4,13 @@ shopt -s extglob
 
 declare -a ignored_deps=(sys)
 
+# Need ack
+ack --noenv --thppt >/dev/null 2>&1 || \
+    { echo "code-dep-graph requires ack!" 1>&2; exit 1; }
+
+# Cope with ack < 2.0
+ack --noenv --bar >/dev/null 2>&1 || a_arg="-a"
+
 function set_pwd_P_arg() {
   ( cd / ; /bin/pwd -P ) >/dev/null 2>&1
   if (( $? == 0 )); then
@@ -161,7 +168,7 @@ function find_int_packages() {
     ( cd $path
       echo $path >>  "${TMP}.int_packages.tmp"
       echo $path
-      for file in `ack -a -f -G '_(generator|module|service|source)\.cc(?:\.in)?$' </dev/null 2>/dev/null`; do
+      for file in `ack --noenv $a_arg -g '_(generator|module|service|source)\.cc(?:\.in)?$' </dev/null 2>/dev/null`; do
         package_name "${path}" "${file}" >> "${TMP}.int_packages.tmp"
       done
     )
@@ -214,7 +221,7 @@ cat "${TMP}" | while read path; do
   ( cd $path
     echo "INFO: Examining directory ${path}." 1>&2
     declare -a dirs=( . src inc include interface detail )
-    ack -f -n -G '\.(h|H|hh|hpp|hxx|C|cc|cpp|cxx)(\.in)?$' "${dirs[@]}" </dev/null 2>/dev/null | \
+    ack --noenv $a_arg -n -g '\.(h|H|hh|hpp|hxx|C|cc|cpp|cxx)(\.in)?$' "${dirs[@]}" </dev/null 2>/dev/null | \
      while read file; do
       [[ `basename "${file}"` == "classes.h" ]] && continue
       package=$(package_name "${path}" "${file}")
