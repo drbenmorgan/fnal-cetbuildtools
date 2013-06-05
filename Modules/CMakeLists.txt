@@ -2,6 +2,9 @@
 INSTALL(FILES
 	BuildDictionary.cmake
 	BuildSubdirectories.cmake
+	CetBasicConfigVersion-AnyNewerVersion.cmake.in
+	CetBasicConfigVersion-ExactVersion.cmake.in
+	CetBasicConfigVersion-SameMajorVersion.cmake.in
         CetBuildTable.cmake
 	CetParseArgs.cmake
 	CetTest.cmake
@@ -24,4 +27,3 @@ INSTALL(FILES
 	UseCPack.cmake
   DESTINATION ${product}/${version}/Modules
   )
-
