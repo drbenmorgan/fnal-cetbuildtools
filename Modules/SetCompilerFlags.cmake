@@ -1,3 +1,4 @@
+
 ########################################################################
 # cet_set_compiler_flags( [extra flags] ) 
 #
@@ -285,7 +286,7 @@ macro( cet_set_compiler_flags )
   set( DXXFLAGS_CAVALIER "" )
   set( DFLAGS_CAUTIOUS "-Wall -Werror=return-type" )
   set( DXXFLAGS_CAUTIOUS "" )
-  set( DFLAGS_VIGILANT "${DFLAGS_CAUTIOUS} -Wextra -Wno-long-long -Winit-self" )
+  set( DFLAGS_VIGILANT "${DFLAGS_CAUTIOUS} -Wextra -Wno-long-long -Winit-self -Wno-unused-local-typedefs" )
   set( DXXFLAGS_VIGILANT "-Woverloaded-virtual" )
   set( DFLAGS_PARANOID "${DFLAGS_VIGILANT} -pedantic -Wformat-y2k -Wswitch-default -Wsync-nand -Wtrampolines -Wlogical-op -Wshadow -Wcast-qual" )
   set( DXXFLAGS_PARANOID "" )
