@@ -26,6 +26,7 @@ require parse_deps;
 
 $pfile=$inputdir."/product_deps";
 $flagfile=$outputdir."/cet_base_flags";
+$have_flagfile = -e $flagfile;
 
 
 $tmpfl = $outputdir."/table_diagnostics";
@@ -102,19 +103,22 @@ sub create_quals {
     foreach $j ( 1 .. $#words ) {
       $qdot = $qdot.".".$words[$j];
     }
-    my $cxxflag = "";
-    my $cflag = "";
-    foreach $j ( 0 .. $#words ) {
-      if( $words[$j] eq "debug" ) {
-         ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
-      } elsif( $words[$j] eq "opt" ) {
-         ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
-      } elsif( $words[$j] eq "prof" ) {
-         ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
+    # skip this bit if $flagfile does not exist
+    if ( $have_flagfile ) {
+      my $cxxflag = "";
+      my $cflag = "";
+      foreach $j ( 0 .. $#words ) {
+	if( $words[$j] eq "debug" ) {
+           ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
+	} elsif( $words[$j] eq "opt" ) {
+           ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
+	} elsif( $words[$j] eq "prof" ) {
+           ($cxxflag,$cflag) = check_flags( $flagfile, $words[$j] );
+	}
       }
+      $cxxflag =~ s/;/ /g;
+      $cflag =~ s/;/ /g;
     }
-    $cxxflag =~ s/;/ /g;
-    $cflag =~ s/;/ /g;
     print TBL "Flavor     = ANY\n";
     print TBL "Qualifiers = \"$qlist[$i][0]\"\n";
     print TBL "\n";
@@ -127,8 +131,10 @@ sub create_quals {
       print TBL "\n";
     }
     print TBL "  Action = GetProducts\n";
-    print TBL "    envSet( \${UPS_PROD_NAME_UC}_CXXFLAGS, \"$cxxflag\" )\n";
-    print TBL "    envSet( \${UPS_PROD_NAME_UC}_CFLAGS, \"$cflag\" )\n";
+    if ( $have_flagfile ) {
+      print TBL "    envSet( \${UPS_PROD_NAME_UC}_CXXFLAGS, \"$cxxflag\" )\n";
+      print TBL "    envSet( \${UPS_PROD_NAME_UC}_CFLAGS, \"$cflag\" )\n";
+    }
     foreach $j ( 1 .. $ndeps ) {
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
