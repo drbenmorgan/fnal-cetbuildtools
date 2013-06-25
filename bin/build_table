@@ -155,6 +155,16 @@ sub create_quals {
   }
 }
 
+sub table_ld_library {
+
+  print TBL "    if ( test \`uname\` = \"Darwin\" )\n";
+  print TBL "      pathPrepend(DYLD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
+  print TBL "    else()\n";
+  print TBL "      pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
+  print TBL "    endif ( test \`uname\` = \"Darwin\" )\n";
+
+}
+
 sub create_table_bottom {
 
   $include_directory = get_include_directory( $pfile );
@@ -182,12 +192,12 @@ sub create_table_bottom {
   }
   if( $lib_directory eq "default" ) {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib) \n";
-  print TBL "    pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
+  table_ld_library();
   print TBL "\n";
   } elsif ( $lib_directory eq "none" )   {
   } else {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, $lib_directory) \n";
-  print TBL "    pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})\n";
+  table_ld_library();
   print TBL "\n";
   }
   if( $bin_directory eq "default" ) {
