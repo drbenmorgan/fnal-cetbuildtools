@@ -30,6 +30,8 @@ set( GENREFLEX_FLAGS
   --iocomments
   --fail_on_warnings
   --capabilities=classes_ids.cc
+  --gccxmlopt=--gccxml-compiler
+  --gccxmlopt=$ENV{GCC_FQ_DIR}/bin/g++
   -D_REENTRANT
   -DGNU_SOURCE
   -DGNU_GCC
