@@ -295,10 +295,6 @@ macro( cet_set_compiler_flags )
     SET(CSCF_DIAGS "CAUTIOUS")
   endif()
 
-  if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-flat_namespace")
-  endif()
-
   if (CSCF_NO_UNDEFINED)
     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
