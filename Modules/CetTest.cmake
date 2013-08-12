@@ -1,6 +1,6 @@
 ########################################################################
 # cet_test: specify tests in a concise and transparent way (see also
-#           cet_test_env, below).
+#           cet_test_env() and cet_test_assertion(), below).
 ########################################################################
 #
 # Usage: cet_test(target [<options>] [<args>] [<data-files>])
@@ -85,6 +85,7 @@
 #    contain the special value "ALL." Specify multiple values separated
 #    by ";" (escape or protect with quotes) or "," See explanation of
 #    the OPTIONAL_GROUPS variable above for more details.
+#
 ########################################################################
 # cet_test_env: set environment for all tests here specified.
 ########################################################################
@@ -97,6 +98,7 @@
 # CLEAR
 #   Clear the global test environment (ie anything previously set with
 #    cet_test_env()) before setting <env>.
+#
 ####################################
 # Notes:
 #
@@ -107,6 +109,24 @@
 #   for tests then that will be propagated to tests defined in
 #   subdirectories unless include(CetTest) or cet_test_env(CLEAR ...) is
 #   invoked in that directory.
+#
+########################################################################
+# cet_test_assertion: require assertion failure on given condition
+########################################################################
+#
+# Usage: cet_test_assertion(TESTNAME CONDITION)
+#
+####################################
+# Notes:
+#
+# * TESTNAME is the name of the test target as specified to cet_test()
+#  or add_test().
+#
+# * CONDITION should be a CMake regex which should have any escaped
+#   items doubly-escaped due to being passed as a string argument
+#   (e.g. "\\\\(" for a literal, open-parenthesis, "\\\\." for a literal
+#   period).
+#
 ########################################################################
 
 # Need argument parser.
@@ -323,4 +343,18 @@ MACRO(cet_test CET_TARGET)
       )
   ENDIF()
 ENDMACRO(cet_test)
+
+MACRO (cet_test_assertion TESTNAME CONDITION)
+  IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+    SET_TESTS_PROPERTIES(${TESTNAME} PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "Assertion failed: \\(${CONDITION}\\), "
+      )
+  ELSE()
+    SET_TESTS_PROPERTIES(${TESTNAME} PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "Assertion `${CONDITION}' failed\\."
+      )
+  ENDIF()
+ENDMACRO()
 ########################################################################
