@@ -306,6 +306,7 @@ macro (cet_script)
       COMMAND ${CMAKE_COMMAND} -E
       copy "${CS_SOURCE_DIR}/${target_name}"
       "${EXECUTABLE_OUTPUT_PATH}/${target}"
+      COMMAND chmod +x "${EXECUTABLE_OUTPUT_PATH}/${target}"
       DEPENDS "${CS_SOURCE_DIR}/${target_name}"
       )
     if (CS_DEPENDENCIES)
