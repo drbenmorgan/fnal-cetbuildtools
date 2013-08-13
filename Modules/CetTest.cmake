@@ -85,6 +85,9 @@
 #    by ";" (escape or protect with quotes) or "," See explanation of
 #    the OPTIONAL_GROUPS variable above for more details.
 #
+# CET_DEFINED_TEST_GROUPS
+#  Any test group names CMake sees will be added to this list.
+#
 ########################################################################
 # cet_test_env: set environment for all tests here specified.
 #
@@ -152,12 +155,25 @@ SET(CET_TEST_GROUPS "NONE"
   CACHE STRING "List of optional test groups to be configured."
   )
 
+
 STRING(TOUPPER "${CET_TEST_GROUPS}" CET_TEST_GROUPS_UC)
 
 SET(CET_TEST_ENV ""
   CACHE INTERNAL "Environment to add to every test"
   FORCE
   )
+
+FUNCTION(_update_defined_test_groups)
+  IF(ARGC)
+    SET(TMP_LIST ${CET_DEFINED_TEST_GROUPS})
+    LIST(APPEND TMP_LIST ${ARGN})
+    LIST(REMOVE_DUPLICATES TMP_LIST)
+    SET(CET_DEFINED_TEST_GROUPS ${TMP_LIST}
+      CACHE STRING "List of defined test groups."
+      FORCE
+      )
+  ENDIF()
+ENDFUNCTION()
 
 FUNCTION(_check_want_test CET_OPTIONAL_GROUPS CET_WANT_TEST)
   IF(NOT CET_OPTIONAL_GROUPS)
@@ -297,6 +313,7 @@ MACRO(cet_test CET_TARGET)
   IF(CET_CONFIGURATIONS)
     SET(CONFIGURATIONS_CMD CONFIGURATIONS)
   ENDIF()
+  _update_defined_test_groups(${CET_OPTIONAL_GROUPS})
   _check_want_test("${CET_OPTIONAL_GROUPS}" WANT_TEST)
   IF(NOT CET_NO_AUTO AND WANT_TEST)
     # Add the test.
