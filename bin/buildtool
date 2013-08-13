@@ -73,10 +73,12 @@ usage: ${prog} [<mode-options>] [<misc-options>] [--] [<make-build-options>]
        ${prog} --help|-h
 
 Mode options: [-C|--cmake-only|-A|--all|--info] ||
-              { [-b|--build] [-i|--install] [-p|--package] [-t|--test] [-T|--test-all] }
+              { [-b|--build] [-i|--install] [-p|--package] [-t|--test] }
+
+Combo options: [-R|--release] || [-T|--test-all]
 
 Misc options: [-D<CMake-definition>]+ [-I|--install-prefix <install-location>]
-              [-c|--clean] [-f|--force-top] [-j #]
+              [-c|--clean] [--clean-logs] [-f|--force-top] [-j #]
               [-l|--log=|--log-file=[<log-file>]] [-q|--quiet] [--tee]
               [--test-groups|--groups <group>[<;|,><group>]+]
 
@@ -110,12 +112,14 @@ CETPKG_J:       Default parallelism for all appropriate steps, assuming
 CETPKG_QUAL:    If set, causes -Dqualifier:STRING=$CETPKG_QUAL to be
                 added to the CMake arguments.
 
+
 MODE OPTIONS.
 
-If -A (--all) or -C (--cmake-only) are set, they override all other mode
-options. The cmake-only option overrides the all option. If any of the
-other options are selected, they will be executed in order *after* the
-CMake stage (which is always executed in the CETPKG_BUILD directory).
+If any of -A (--all), C (--cmake-only) or --info are set, they override
+all other mode options. The cmake-only option overrides the all
+option. If any of the other options are selected, they will be executed
+in order *after* the CMake stage (which is always executed in the
+CETPKG_BUILD directory).
 
 -A|--all
 
@@ -124,14 +128,6 @@ CMake stage (which is always executed in the CETPKG_BUILD directory).
 -C|--cmake-only
 
   Execute *only* the CMake stage.
-
--R|--release
-
-  Equivalent to -t --test-groups=RELEASE.
-
--T|--test-all
-
-  Equivalent to -t --test-groups=ALL.
 
 -b|--build
 
@@ -166,6 +162,17 @@ CMake stage (which is always executed in the CETPKG_BUILD directory).
 
   Execute configured tests with ctest from the current
   directory. Implies --build.
+
+
+COMBO MODE OPTIONS.
+
+-R|--release
+
+  Equivalent to -t --test-groups=RELEASE.
+
+-T|--test-all
+
+  Equivalent to -t --test-groups=ALL.
 
 
 MISC. OPTIONS.
@@ -231,6 +238,7 @@ MISC. OPTIONS.
   groups are delimited with semicolons they should be escaped or
   quoted to protect them from the shell. A warning shall be issued if
   this option is specified but the CMake stage is not to be executed.
+
 
 EXAMPLES.
 
