@@ -617,7 +617,7 @@ done
 
 # Upcase test groups.
 [[ -n "$test_groups" ]] && \
-  echo "$test_groups" | tr '[a-z]' '[A-Z]'
+  test_groups=$(echo "$test_groups" | tr '[a-z]' '[A-Z]')
 
 if (( ${clean:-0} && ${short_circuit:-0} )); then
     echo "ERROR: specifying clean and short-circuit options together is not meaningful." 1>&2
