@@ -1,7 +1,6 @@
 ########################################################################
 # cet_test: specify tests in a concise and transparent way (see also
 #           cet_test_env() and cet_test_assertion(), below).
-########################################################################
 #
 # Usage: cet_test(target [<options>] [<args>] [<data-files>])
 #
@@ -88,7 +87,6 @@
 #
 ########################################################################
 # cet_test_env: set environment for all tests here specified.
-########################################################################
 #
 # Usage: cet_test_env([<options] [<env>])
 #
@@ -112,20 +110,19 @@
 #
 ########################################################################
 # cet_test_assertion: require assertion failure on given condition
-########################################################################
 #
-# Usage: cet_test_assertion(TESTNAME CONDITION)
+# Usage: cet_test_assertion(CONDITION TARGET...)
 #
 ####################################
 # Notes:
 #
-# * TESTNAME is the name of the test target as specified to cet_test()
-#  or add_test().
-#
 # * CONDITION should be a CMake regex which should have any escaped
 #   items doubly-escaped due to being passed as a string argument
-#   (e.g. "\\\\(" for a literal, open-parenthesis, "\\\\." for a literal
+#   (e.g. "\\\\(" for a literal open-parenthesis, "\\\\." for a literal
 #   period).
+#
+# * TARGET...: the name(s) of the test target(s) as specified to
+#   cet_test() or add_test() -- require at least one.
 #
 ########################################################################
 
@@ -344,14 +341,14 @@ MACRO(cet_test CET_TARGET)
   ENDIF()
 ENDMACRO(cet_test)
 
-MACRO (cet_test_assertion TESTNAME CONDITION)
+MACRO (cet_test_assertion CONDITION FIRST_TARGET)
   IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-    SET_TESTS_PROPERTIES(${TESTNAME} PROPERTIES
+    SET_TESTS_PROPERTIES(${FIRST_TARGET} ${ARGN} PROPERTIES
       PASS_REGULAR_EXPRESSION
       "Assertion failed: \\(${CONDITION}\\), "
       )
   ELSE()
-    SET_TESTS_PROPERTIES(${TESTNAME} PROPERTIES
+    SET_TESTS_PROPERTIES(${FIRST_TARGET} ${ARGN} PROPERTIES
       PASS_REGULAR_EXPRESSION
       "Assertion `${CONDITION}' failed\\."
       )
