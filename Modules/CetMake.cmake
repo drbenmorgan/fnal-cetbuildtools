@@ -4,8 +4,8 @@
 # Users may opt to just include cet_make() in their CMakeLists.txt
 # This implementation is intended to be called NO MORE THAN ONCE per subdirectory.
 #
-# NOTE: cet_make_exec and cet_make_test_exec are no longer part of cet_make 
-# or art_make and must be called explicitly.
+# NOTE: cet_make_exec and cet_make_test_exec are no longer part of 
+# cet_make or art_make and must be called explicitly.
 #
 # cet_make( LIBRARY_NAME <library name> 
 #           [LIBRARIES <library link list>]
@@ -13,7 +13,7 @@
 #           [EXCLUDE <ignore these files>] )
 #
 #   NOTE: if your code includes art plugins, you MUST use art_make
-#   instead of cet_make: cet_make will ignore all plugin code.
+#   instead of cet_make: cet_make will ignore all known plugin code.
 #
 # cet_make_library( [LIBRARY_NAME <library name>]  
 #                   [SOURCE <source code list>] 
@@ -134,24 +134,33 @@ macro( cet_make )
   #message(STATUS "cet_make debug: listed files ${cet_file_list}")
   FILE( GLOB src_files *.c *.cc *.cpp *.C *.cxx )
   FILE( GLOB ignore_dot_files  .*.c .*.cc .*.cpp .*.C .*.cxx )
-  FILE( GLOB ignore_plugins  *_source.cc *_service.cc  *_module.cc )
-  # also check subdirectories
-  if( CM_SUBDIRS )
-     foreach( sub ${CM_SUBDIRS} )
-	FILE( GLOB subdir_src_files ${sub}/*.c ${sub}/*.cc ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx )
-	FILE( GLOB subdir_ignore_dot_files ${sub}/.*.c ${sub}/.*.cc ${sub}/.*.cpp ${sub}/.*.C ${sub}/.*.cxx )
-	FILE( GLOB subdir_ignore_plugins  ${sub}/*_source.cc ${sub}/*_service.cc  ${sub}/*_module.cc )
-        if( subdir_src_files )
-	  list(APPEND  src_files ${subdir_src_files})
-        endif( subdir_src_files )
-        if( subdir_ignore_plugins )
-	  list(APPEND  ignore_plugins ${subdir_ignore_plugins})
-        endif( subdir_ignore_plugins )
-        if( subdir_ignore_dot_files )
-	  list(APPEND  ignore_dot_files ${subdir_ignore_dot_files})
-        endif( subdir_ignore_dot_files )
-     endforeach(sub)
-  endif( CM_SUBDIRS )
+  FILE( GLOB ignore_plugins  *_dict.cpp
+                             *_map.cpp
+			     *_generator.cc
+			     *_source.cc
+			     *_service.cc
+			     *_module.cc )
+  # check subdirectories and also CMAKE_CURRENT_BINARY_DIR for generated code
+  LIST(APPEND CM_SUBDIRS ${CMAKE_CURRENT_BINARY_DIR})
+  foreach( sub ${CM_SUBDIRS} )
+     FILE( GLOB subdir_src_files ${sub}/*.c ${sub}/*.cc ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx )
+     FILE( GLOB subdir_ignore_dot_files ${sub}/.*.c ${sub}/.*.cc ${sub}/.*.cpp ${sub}/.*.C ${sub}/.*.cxx )
+     FILE( GLOB subdir_ignore_plugins  ${sub}/*_dict.cpp
+                        	       ${sub}/*_map.cpp
+				       ${sub}/*_generator.cc
+                                       ${sub}/*_source.cc
+				       ${sub}/*_service.cc
+				       ${sub}/*_module.cc )
+     if( subdir_src_files )
+       list(APPEND  src_files ${subdir_src_files})
+     endif( subdir_src_files )
+     if( subdir_ignore_plugins )
+       list(APPEND  ignore_plugins ${subdir_ignore_plugins})
+     endif( subdir_ignore_plugins )
+     if( subdir_ignore_dot_files )
+       list(APPEND  ignore_dot_files ${subdir_ignore_dot_files})
+     endif( subdir_ignore_dot_files )
+  endforeach(sub)
   #message(STATUS "cet_make ignore list: ${ignore_dot_files}")
   if( ignore_plugins )
     LIST( REMOVE_ITEM src_files ${ignore_plugins} )
