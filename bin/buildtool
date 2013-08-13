@@ -125,9 +125,13 @@ CMake stage (which is always executed in the CETPKG_BUILD directory).
 
   Execute *only* the CMake stage.
 
+-R|--release
+
+  Equivalent to -t --test-groups=RELEASE.
+
 -T|--test-all
 
-  Equivalent to -t --test-groups=all.
+  Equivalent to -t --test-groups=ALL.
 
 -b|--build
 
@@ -145,8 +149,8 @@ CMake stage (which is always executed in the CETPKG_BUILD directory).
 
 --info
 
-  If already configured (CMake has been run at least once), give some
-  basic information about the package, then exit.
+  If already configured (CMake has been run at least once since the last
+  clean), give some basic information about the package, then exit.
 
 -p|--package
 
@@ -175,18 +179,17 @@ MISC. OPTIONS.
 -I|--install-prefix <ups-install-dir>
 
   Specify the location of the private (or public) UPS products area into
-  which to install the package if install is requested. Overrides
-  the CETPKG_INSTALL environment variable and anything already known to
+  which to install the package if install is requested. Overrides the
+  CETPKG_INSTALL environment variable and anything already known to
   CMake.
 
 -c|--clean
 
-  Remove *everything* in the CETPKG_BUILD area, including CMake cache
-  files. If you want the equivalent of make clean, you should invoke:
+  Remove CMake-generated files and caches and other build products.
 
-    buildtool -- clean
+--clean-logs
 
-  from CETPKG_BUILD.
+  Remove .log files in the ${CETPKG_BUILD} top directory.
 
 --force-top
 
@@ -224,10 +227,10 @@ MISC. OPTIONS.
 --test-groups|--groups <group>[<;|,><group>]+
 
   Specify optional test groups to configure per cet_test macro
-  (CetTest.cmake). Equivalent to -DET_TEST_GROUPS=... if multiple groups
-  are delimited with semicolons they should be escaped or quoted.to
-  protect them from the shell. A warning shall be issued if this option
-  is specified but the CMake stage is not to be executed.
+  (CetTest.cmake). Equivalent to -DCET_TEST_GROUPS=... if multiple
+  groups are delimited with semicolons they should be escaped or
+  quoted to protect them from the shell. A warning shall be issued if
+  this option is specified but the CMake stage is not to be executed.
 
 EXAMPLES.
 
@@ -273,11 +276,51 @@ function package_version() {
   echo "$(cmake_var VERSION_MAJOR).$(cmake_var VERSION_MINOR).$(cmake_var VERSION_PATCH)"
 }
 
+function package_test_groups() {
+  cmake_var CET_DEFINED_TEST_GROUPS | sed -e 's&;&, &g'
+}
+
+function selected_test_groups() {
+  cmake_var CET_TEST_GROUPS | sed -e 's&;&, &g'
+}
+
+function basic_info() {
+  if [[ -n $(package_name) ]]; then
+    cat <<EOF
+Package info:           $(package_name) $(package_version)
+Build type:             $(cmake_var CMAKE_BUILD_TYPE)
+Qualifier:              $(cmake_var qualifier)
+EOF
+    local defined_test_groups=$(package_test_groups)
+    [[ -n "$defined_test_groups" ]] && \
+      cat <<EOF
+Known test groups:      ${defined_test_groups}
+EOF
+    local selected_test_groups=$(selected_test_groups)
+    [[ -n "$selected_test_groups" ]] && \
+      cat <<EOF
+Selected test groups:   ${selected_test_groups}
+EOF
+    exit 0
+  else
+    echo "ERROR: CMake not run; no current information in build area." 1>&2
+    exit 1
+  fi
+}
+
 function package_info() {
   local package_name=$(package_name)
   local package_version=$(package_version)
   [[ -n "$package_name" ]] && [[ -n "$package_version" ]] || return
   local msg="INFO: $package_name version $package_version configured."
+  local test_groups="$(package_test_groups)"
+  [[ -n "$test_groups" ]] && \
+    msg="${msg}
+      Available test groups: ${test_groups}."
+  local selected_test_groups=$(selected_test_groups)
+  [[ -n "$selected_test_groups" ]] && \
+    msg="$msg
+      Selected test groups:  ${selected_test_groups}."
   banner "$msg"
   log_no_tee && report "$msg" 1>&3
 }
@@ -448,7 +491,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,force-top,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups: -o +ACD:I:Tbcfhij:l::pqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,clean-logs,force-top,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups,relesae: -o +ACD:I:RTbcfhij:l::pqt -- "${@}"`
 if (( $? )); then
   usage 1
 fi
@@ -479,12 +522,20 @@ while true; do
       shift
       shift
       ;;
+    -R|--release)
+      shift
+      set -- -t --test-groups RELEASE "${@}"
+      ;;
     -T|--test-all)
       shift
-      set -- -t --test-groups all "${@}"
+      set -- -t --test-groups ALL "${@}"
       ;;
     -b|--build)
       (( do_build = 1 ))
+      shift
+      ;;
+    --clean-logs)
+      (( clean_logs = 1 ))
       shift
       ;;
     -c|--clean)
@@ -564,6 +615,10 @@ while true; do
   esac
 done
 
+# Upcase test groups.
+[[ -n "$test_groups" ]] && \
+  echo "$test_groups" | tr '[a-z]' '[A-Z]'
+
 if (( ${clean:-0} && ${short_circuit:-0} )); then
     echo "ERROR: specifying clean and short-circuit options together is not meaningful." 1>&2
     exit 1
@@ -574,17 +629,7 @@ cmake_defs="${cmake_defs}-DCET_TEST_GROUPS=${test_groups} "
 
 # If desired, print current build information and quit.
 if (( ${want_info:-0} )); then
-  if [[ -n $(package_name) ]]; then
-    cat <<EOF
-Package info: $(package_name) $(package_version)
-Build type:   $(cmake_var CMAKE_BUILD_TYPE)
-Qualifier:    $(cmake_var qualifier)
-EOF
-    exit 0
-  else
-    echo "ERROR: CMake not run; no current information in build area." 1>&2
-    exit 1
-  fi
+  basic_info # Will exit.
 fi
 
 # Make sure output will appear as we'd like.
@@ -658,6 +703,11 @@ else # Check consistency.
     echo "ERROR: Qualifier has changed from \"$check_qual\" to \"$CETPKG_QUAL\": need clean build." 1>&2
     exit 2
   fi
+fi
+
+if (( ${clean_logs:-0} )); then
+  report "INFO: Removing .log files from \"${CETPKG_BUILD}\""
+  rm -f "${CETPKG_BUILD}"/*.log
 fi
 
 # Set install prefix from wherever we can get it.
