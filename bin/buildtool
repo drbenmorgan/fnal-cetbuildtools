@@ -78,11 +78,12 @@ Mode options: [-C|--cmake-only|-A|--all|--info] ||
 Combo options: [-R|--release] || [-T|--test-all]
 
 Misc options: [-D<CMake-definition>]+ [-I|--install-prefix <install-location>]
-              [-c|--clean] [--clean-logs] [-f|--force-top] [-j #]
+              [-c|--clean] [--clean-logs] [-f|--force-top]
+              [-g|--grapviz=<dot-file> [--gfilt <gfilt-opt>[,<gfilt-opt>]+]] [-j #]
               [-l|--log=|--log-file=[<log-file>]] [-q|--quiet] [--tee]
               [--test-groups|--groups <group>[<;|,><group>]+]
 
-Options suffixed  with '+' are repeatable and cumulative.
+Options suffixed with '+' are repeatable and cumulative.
 
 Required environment: CETPKG_BUILD, CETPKG_SOURCE, CETPKG_TYPE
 Optional environment: CETPKG_INSTALL CETPKG_J CETPKG_QUAL
@@ -121,21 +122,25 @@ option. If any of the other options are selected, they will be executed
 in order *after* the CMake stage (which is always executed in the
 CETPKG_BUILD directory).
 
--A|--all
+-A
+--all
 
   Execute all targets.
 
--C|--cmake-only
+-C
+--cmake-only
 
   Execute *only* the CMake stage.
 
--b|--build
+-b
+--build
 
   Execute the build stage from the current directory. Since this is
   default, this is only required if you specify --install or --package
   and do *not* also specify test (see below).
 
--i|--install
+-i
+--install
 
   Execute the install stage from CETPKG_BUILD. CMake's generated build
   procedure will ensure that all build targets are up to date so the
@@ -148,17 +153,20 @@ CETPKG_BUILD directory).
   If already configured (CMake has been run at least once since the last
   clean), give some basic information about the package, then exit.
 
--p|--package
+-p
+--package
 
   Execute the package stage from CETPKG_BUILD to create an install
   tarball. See the notes for --install above regarding the build option.
 
---short-circuit|--sc
+--short-circuit
+--sc
 
   Execute only the specified targets and not those that might be implied
   (CMake stage, build stage when test stage is specified, etc).
 
--t|--test
+-t
+--test
 
   Execute configured tests with ctest from the current
   directory. Implies --build.
@@ -166,11 +174,13 @@ CETPKG_BUILD directory).
 
 COMBO MODE OPTIONS.
 
--R|--release
+-R
+--release
 
   Equivalent to -t --test-groups=RELEASE.
 
--T|--test-all
+-T
+--test-all
 
   Equivalent to -t --test-groups=ALL.
 
@@ -183,14 +193,16 @@ MISC. OPTIONS.
   be issued if this option is specified but the CMake stage is not to be
   executed.
 
--I|--install-prefix <ups-install-dir>
+-I <ups-install-dir>
+--install-prefix <ups-install-dir>
 
   Specify the location of the private (or public) UPS products area into
   which to install the package if install is requested. Overrides the
   CETPKG_INSTALL environment variable and anything already known to
   CMake.
 
--c|--clean
+-c
+--clean
 
   Remove CMake-generated files and caches and other build products.
 
@@ -203,6 +215,46 @@ MISC. OPTIONS.
   Force build and test stages (if applicable) to take place in the
   CETPKG_BUILD area (default is to build / test in current directory).
 
+-g <dot-file>
+--graphviz <dot-file>
+
+  Ask CMake to produce a code dependency graph in graphviz (.dot) format.
+
+--gfilt[=<opt>[,<opt>]+]
+
+  Filter the graphviz output from cmake through cmake-graphviz filt,
+  with the following options:
+
+    exes|no-exes
+
+      With or without executables shown (default without).
+
+    dicts|no-dicts
+
+      With or without dictionary and map libraries (default without).
+
+    extlibs|no-extlibs
+
+      With or without extlibs shown (default without).
+
+    short-libnames|no-short-libnames
+
+      Any fully-specified library pathnames are shortened to their
+      basenames (default long).
+
+    test-tree|no-test-tree
+
+      With or without libraries and execs from the test directory
+      hierarchy.
+
+    tred|no-tred
+
+      With or without transitive dependency reduction (default with).
+
+  Multiple options should be comma-separated. Note that all of these
+  options may be specified in ~/.cgfrc for the same effect (command-line
+  overrides).
+
 -h|--help
 
   This help (long-form).
@@ -212,16 +264,19 @@ MISC. OPTIONS.
   Specify the level of parallelism for stages for which it is
   appropriate.
 
--l|--log=|--log-file=[<log-file>]
+-l
+--log[=<log-file>]
+--log-file[=<log-file>]
 
   All build output is redirected to the specified log-file, or one with
   a default name if no other is specified. Unless --quiet is also
   specified, stage information will still be printed to the screen,
-  though see --tee below. Note that the argument to the short variant,
-  if used, must *immediately* follow the "-l" with no space. The long
-  forms may optionally use "=" (but spaces are also not permitted here).
+  though see --tee below. Note that the short variant does not accept an
+  argument: a log-file name will be generated. The long forms should use
+  "=" to separate the option from its argument.
 
--q|--quiet
+-q
+--quiet
 
   Suppress all non-error output to the screen (but see --tee below). A
   log file will still be written as normal if so specified.
@@ -231,7 +286,8 @@ MISC. OPTIONS.
   Write to a log file (either as specified by --log or the default), but
   copy output to the screen also: --quiet is overridden by this option.
 
---test-groups|--groups <group>[<;|,><group>]+
+--test-groups <group>[<;|,><group>]+
+--groups <group>[<;|,><group>]+
 
   Specify optional test groups to configure per cet_test macro
   (CetTest.cmake). Equivalent to -DCET_TEST_GROUPS=... if multiple
@@ -423,6 +479,30 @@ function cleanup() {
   [[ -n "$TMP" ]] && [[ -d "$TMP" ]] && rm -rf "$TMP"
 }
 
+# Funky argument parsing.
+function process_gfargs() {
+  oifs="$IFS"
+  IFS=,
+  for opt in $1; do
+    case $opt in
+      dicts|no-dicts|exes|no-exes|extlibs|no-extlibs|short-libnames|no-short-libnames|test-tree|no-test-tree)
+        gfargs[${#gfargs[@]}]=--${opt};
+      ;;
+      tred)
+        (( tred = 1 ))
+      ;;
+      no-tred)
+        unset tred
+        :
+      ;;
+      *)
+        echo "Unrecognized gfilt option \"$opt\"" 1>&2
+        usage 1
+    esac
+  done
+  IFS="$oifs"
+}
+
 # Main work
 function do_work() {
   if log_no_tee; then
@@ -438,7 +518,18 @@ function do_work() {
   else
     announce_stage
     cmake_defs=${cmake_defs//,/;}
-    ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE ${cmake_defs}${CETPKG_SOURCE} )
+    ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE $garg ${cmake_defs}${CETPKG_SOURCE} )
+    if [[ -f "${gtmpfile}" ]]; then
+      if (( ${gfilt:-0} )); then
+        if (( ${tred:-0} )); then
+          cat "${gtmpfile}" | cmake-graphviz-filt "${gfargs[@]}" | tred > "${gfile}"
+        else
+          cat "${gtmpfile}" | cmake-graphviz-filt "${gfargs[@]}" > "${gfile}"
+        fi
+      else
+        mv "${gtmpfile}" "${gfile}"
+      fi
+    fi
     check_status
     package_info
     if (( ${clean:-0} )) && [[ -d "${install_prefix}" ]]; then
@@ -468,11 +559,6 @@ function do_work() {
     maybe_force_top_and_announce
     check_curdir_in_build_tree
     # Trap and tee *only* stderr from ctest. Yes, this is fiddly.
-    TMP=`mktemp -d -t buildtool.XXXXXXXXXX`
-    if [[ -z "$TMP" ]]; then
-      error "ERROR: Unable to create temporary working directory: aborting buildtool execution."
-      exit 1
-    fi
     exec 5>&1
     { ctest $jarg 2>&1 >&5 5>&-; echo $? > "$TMP/status.dat"; } | tee "$TMP/ctest.err" 5>&-
     exec 5>&-
@@ -497,9 +583,24 @@ function do_work() {
 # Defaults.
 log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( report = 1 ))
+(( tred = 1 ))
+
+# Temporary directory.
+TMP=`mktemp -d -t buildtool.XXXXXXXXXX`
+if [[ -z "$TMP" ]]; then
+  echo "ERROR: Unable to create temporary working directory: aborting buildtool execution." 1>&2
+  exit 1
+fi
 
 # Parse arguments.
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,clean-logs,force-top,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups,release: -o +ACD:I:RTbcfhij:l::pqt -- "${@}"`
+getopt -T >/dev/null 2>&1
+if (( $? != 4 )); then
+  echo "ERROR: GNU getopt required! Obtain from homebrew (http://brew.sh)." 1>&2
+  exit 1
+fi
+
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,clean-logs,force-top,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups,release: -o +ACD:I:RTbcfg:hij:lpqt -- "${@}"`
+
 if (( $? )); then
   usage 1
 fi
@@ -553,6 +654,21 @@ while true; do
     -f|--force-top)
       (( force_top = 1 ))
       shift
+      ;;
+    -g|--graphviz)
+      gfile=${2}
+      gtmpfile="$TMP/$(basename $2)"
+      garg="--graphviz=$gtmpfile"
+      shift; shift;
+      ;;
+     --gfilt)
+      (( gfilt = 1 ))
+      shift
+      if [[ -n "$1" ]]; then
+        declare -a gfargs
+        process_gfargs "${1}"
+        shift
+      fi
       ;;
     -h|--help)
       usage long
