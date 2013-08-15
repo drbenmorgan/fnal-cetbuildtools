@@ -67,7 +67,7 @@ sub parse_product_list {
       } elsif( $words[0] eq "defaultqual" ) {
 	 $get_phash="";
          $get_quals="";
-	 $dq=@words[1];
+	 $dq=$words[1];
       } elsif( $words[0] eq "only_for_build" ) {
 	 $get_phash="";
          $get_quals="";
@@ -230,7 +230,7 @@ sub find_optional_products {
       } elsif( $words[0] eq "defaultqual" ) {
 	 $get_phash="";
          $get_quals="";
-	 $dq=@words[1];
+	 $dq=$words[1];
       } elsif( $words[0] eq "only_for_build" ) {
 	 $get_phash="";
          $get_quals="";
