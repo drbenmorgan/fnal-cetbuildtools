@@ -389,20 +389,14 @@ sub check_fq_dir {
   $fq = "true";
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
   while ( $line=<PIN> ) {
-    chomp $line;
-    next if ( index($line,"#") == 0 or $line !~ /\w+/);
-
-    @words = split(/\s+/,$line);
-    if( $words[0] eq "no_fq_dir" ) {
-      $fq = "";
-    } elsif( $words[0] eq "table_fragment_begin" ) {
-      $get_fragment="true";
-      $get_phash="";
-      $get_quals="";
-    } elsif( $words[0] eq "table_fragment_end" ) {
-      $get_fragment="";
-      $get_phash="";
-      $get_quals="";
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+       @words = split(/\s+/,$line);
+       if( $words[0] eq "no_fq_dir" ) {
+          $fq = "";
+       }
     }
   }
   close(PIN);
