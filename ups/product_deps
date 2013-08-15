@@ -24,6 +24,6 @@ qualifier	cmake
 
 table_fragment_begin
 if ( test `uname` = "Darwin" )
-  setupRequired(getopt v1_1_5)
+  setupOptional(getopt v1_1_5)
 endif ( test `uname` = "Darwin" )
 table_fragment_end
