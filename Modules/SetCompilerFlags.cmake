@@ -24,6 +24,15 @@
 #    DIAGS <diag-level>
 #      This option may be CAVALIER, CAUTIOUS, VIGILANT or PARANOID.
 #      Default is CAUTIOUS.
+#    DWARF_STRICT
+#      Instruct the compiler not to emit any debugging information more
+#      advanced than that selected. This will prevent possible errors in
+#      older debuggers, but may prevent certain C++11 constructs from
+#      being debuggable in modern debuggers.
+#    DWARF_VER <#>
+#      Version of the DWARF standard to use for generating debugging
+#      information. Default depends upon the compiler: GCC v4.8.0 and
+#      above emit DWARF4 by default; earlier compilers emit DWARF2.
 #    ENABLE_ASSERTS
 #      Enable asserts regardless of debug level (default is to disable
 #      asserts for PROF and OPT levels).
@@ -268,8 +277,8 @@ endmacro(cet_remove_compiler_flag)
 
 macro( cet_set_compiler_flags )
   CET_PARSE_ARGS(CSCF
-    "DIAGS;EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
-    "ENABLE_ASSERTS;NO_UNDEFINED;WERROR"
+    "DIAGS;DWARF_VER;EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
+    "DWARF_STRICT;ENABLE_ASSERTS;NO_UNDEFINED;WERROR"
     ${ARGN}
     )
 
@@ -320,12 +329,26 @@ macro( cet_set_compiler_flags )
     message(FATAL "Unrecognized DIAGS option ${CSCF_DIAGS}")
   endif()
 
-  set( CMAKE_C_FLAGS_DEBUG "-g -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_C_FLAGS_MINSIZEREL "-O3 -g -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  if (CSCF_DWARF_VER EQUAL 2)
+    set(GDWARF "-gdwarf-2")
+  elseif (CSCF_DWARD_VER EQUAL 3)
+    set(GDWARF "-gdwarf-3")
+  elseif (CSCF_DWARD_VER EQUAL 4)
+    set(GDWARF "-gdwarf-4")
+  else()
+    message(FATAL "Unexpected value of DWARF_VER: ${CSCF_DWARF_VER}. Valid values are 2 - 4.")
+  endif()
+
+  if (GDWARF AND CSCF_DWARF_STRICT)
+    set(GDWARF "${GDWARF} -gstrict-dwarf")
+  endif()
+
+  set( CMAKE_C_FLAGS_DEBUG "-g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_C_FLAGS_MINSIZEREL "-O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
 
  _cet_add_build_types() 
 
