@@ -79,8 +79,9 @@ Combo options: [-R|--release] || [-T|--test-all]
 
 Misc options: [-D<CMake-definition>]+ [-I|--install-prefix <install-location>]
               [-c|--clean] [--clean-logs] [-f|--force-top]
-              [-g|--grapviz=<dot-file> [--gfilt <gfilt-opt>[,<gfilt-opt>]+]] [-j #]
-              [-l|--log=|--log-file=[<log-file>]] [-q|--quiet] [--tee]
+              [-g|--grapviz=<dot-file> [--gfilt <gfilt-opt>[,<gfilt-opt>]+]]
+              [-j #] [-l|--log[=<log-file>]|--log-file[=<log-file>]]
+              [-q|--quiet] [--tee]
               [--test-groups|--groups <group>[<;|,><group>]+]
 
 Options suffixed with '+' are repeatable and cumulative.
@@ -688,8 +689,12 @@ while true; do
       shift
       shift
       ;;
-    -l|--log|--log-file)
-      if [[ -d "$2" ]]; then
+    -l)
+      log="${log_default}"
+      shift
+      ;;
+    --log|--log-file)
+      if [[ -d "$1" ]]; then
         log="$2/${log_default}"
       else
         log="${2:-${log:-${log_default}}}"
