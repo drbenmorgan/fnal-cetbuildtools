@@ -13,14 +13,19 @@ set( CPACK_PACKAGE_NAME ${product} )
 
 find_compiler()
 
+FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name )
+set( THIS_PLATFORM ${CMAKE_SYSTEM_PROCESSOR} )
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+   execute_process(COMMAND ${CETB_GET_DIRECTORY_NAME} platform
+                   OUTPUT_VARIABLE THIS_PLATFORM 
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
+endif ()
+
 if ( ${OSTYPE} MATCHES "noarch" )
   set( PACKAGE_BASENAME ${OSTYPE} )
 else ()
-  if ( NOT CPack_COMPILER_STRING )
-    set( PACKAGE_BASENAME ${OSTYPE}-${CMAKE_SYSTEM_PROCESSOR} )
-  else ()
-    set( PACKAGE_BASENAME ${OSTYPE}-${CMAKE_SYSTEM_PROCESSOR}${CPack_COMPILER_STRING} )
-  endif ()
+  set( PACKAGE_BASENAME ${OSTYPE}-${THIS_PLATFORM} )
 endif ()
 if ( NOT full_qualifier )
   set( CPACK_SYSTEM_NAME ${PACKAGE_BASENAME} )
