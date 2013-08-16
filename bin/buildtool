@@ -541,7 +541,7 @@ function do_work() {
         report "INFO: Cleaning flavor-specific install dir \"${fq_dir}\""
         log_no_tee && \
          report "INFO: Cleaning flavor-specific install dir \"${fq_dir}\"" 1>&3
-        rm -rvf "${fq_dir}"
+        rm -rf "${fq_dir}"
       fi
     fi
     (( ${cmake_only:-0} )) && exit 0
