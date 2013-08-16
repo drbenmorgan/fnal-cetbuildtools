@@ -587,7 +587,7 @@ log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( tred = 1 ))
 
 # Temporary directory.
-TMP=`mktemp -d -t buildtool.XXXXXXXXXX`
+TMP=`mktemp -d ${TMPDIR:-/tmp}/buildtool.XXXXXXXXXX`
 if [[ -z "$TMP" ]]; then
   echo "ERROR: Unable to create temporary working directory: aborting buildtool execution." 1>&2
   exit 1
