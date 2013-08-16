@@ -668,8 +668,8 @@ while true; do
       if [[ -n "$1" ]]; then
         declare -a gfargs
         process_gfargs "${1}"
-        shift
       fi
+      shift
       ;;
     -h|--help)
       usage long
