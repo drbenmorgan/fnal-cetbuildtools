@@ -13,31 +13,33 @@ macro( set_flavor_qual )
 
 set(arch "${ARGN}")
 
+FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name )
+set( UPS_DIR $ENV{UPS_DIR} )
+set( THIS_PLATFORM ${CMAKE_SYSTEM_PROCESSOR} )
+
 # sl5 is 2.6.18
 # sl4 is 2.6.9
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
    # set OSTYPE
-   FIND_PROGRAM( CETB_GET_DIRECTORY_NAME get-directory-name )
    execute_process(COMMAND ${CETB_GET_DIRECTORY_NAME} os 
                    OUTPUT_VARIABLE OSTYPE
 		   OUTPUT_STRIP_TRAILING_WHITESPACE
 		   )
    # find ups flavor
-   set( UPS_DIR $ENV{UPS_DIR} )
    if( NOT UPS_DIR )
        if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^2.6.9.*" )
-	   if( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64" )
+	   if( ${THIS_PLATFORM} MATCHES "x86_64" )
                set( UPSFLAVOR Linux64bit+2.6-2.3.4)
-	   elseif( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc" )
+	   elseif( ${THIS_PLATFORM} MATCHES "ppc" )
                set( UPSFLAVOR Linuxppc+2.6-2.3.4)
 	   else ()
                set( UPSFLAVOR Linux+2.6-2.3.4)
 	   endif ()
        endif ()
        if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^2.6.18.*" )
-	   if( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64" )
+	   if( ${THIS_PLATFORM} MATCHES "x86_64" )
                set( UPSFLAVOR Linux64bit+2.6-2.5)
-	   elseif( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc" )
+	   elseif( ${THIS_PLATFORM} MATCHES "ppc" )
                set( UPSFLAVOR Linuxppc+2.6-2.5)
 	   else ()
                set( UPSFLAVOR Linux+2.6-2.5)
@@ -52,7 +54,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
        #message( STATUS " flavor is ${UPSFLAVOR}" )
    endif ()
    if( CMAKE_CROSSCOMPILING )
-       if( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc" )
+       if( ${THIS_PLATFORM} MATCHES "ppc" )
 	   if( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^2.6.9.*" )
         	   set( UPSFLAVOR Linuxppc+2.6-2.3.4)
 	   elseif( ${CMAKE_HOST_SYSTEM_VERSION} MATCHES "^2.6.18.*" )
@@ -68,9 +70,23 @@ endif ()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
    STRING(REGEX MATCH "^([0-9]+)" DARWIN_VERSION "${CMAKE_HOST_SYSTEM_VERSION}")
    set( OSTYPE "d${DARWIN_VERSION}" )
-   set( UPSFLAVOR "Darwin+${DARWIN_VERSION}" )
+   if( NOT UPS_DIR )
+       set( UPSFLAVOR "Darwin+${DARWIN_VERSION}" )
+   else()
+       FIND_PROGRAM( CET_UPS ups ${UPS_DIR}/bin  )
+       execute_process(COMMAND ${CET_UPS} flavor -2
+                       OUTPUT_VARIABLE UPSFLAVOR
+		       OUTPUT_STRIP_TRAILING_WHITESPACE
+		       )
+   endif ()
+   #message(STATUS "set_flavor_qual: flavor is ${UPSFLAVOR}")
+   execute_process(COMMAND ${CETB_GET_DIRECTORY_NAME} platform
+                   OUTPUT_VARIABLE THIS_PLATFORM 
+		   OUTPUT_STRIP_TRAILING_WHITESPACE
+		   )
+   #message(STATUS "set_flavor_qual: THIS_PLATFORM ${THIS_PLATFORM}")
 endif ()
-message(STATUS "Building for ${CMAKE_SYSTEM_NAME} ${OSTYPE} ${CMAKE_SYSTEM_PROCESSOR}" )
+message(STATUS "Building for ${CMAKE_SYSTEM_NAME} ${OSTYPE} ${THIS_PLATFORM}" )
 
 if ( arch )
    set( OSTYPE ${arch} )
@@ -92,7 +108,7 @@ STRING( REGEX REPLACE ":" "." QUAL_SUBDIR "${full_qualifier}" )
 if( ${arch} MATCHES "noarch" )
     SET (flavorqual ${OSTYPE}.${QUAL_SUBDIR} )
 else ()
-    SET (flavorqual ${OSTYPE}.${CMAKE_SYSTEM_PROCESSOR}.${QUAL_SUBDIR})
+    SET (flavorqual ${OSTYPE}.${THIS_PLATFORM}.${QUAL_SUBDIR})
 endif ()
 SET (flavorqual_dir ${product}/${version}/${flavorqual} CACHE STRING "Flavor-qualified package install directory" FORCE)
 
