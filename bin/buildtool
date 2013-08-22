@@ -22,39 +22,8 @@ function real_dir() {
     return $?
 }
 
-# Basic safety checks.
+# Make sure we can use pwd properly.
 set_pwd_P_arg
-
-if [[ -z "$CETPKG_BUILD" ]] || [[ -z "$CETPKG_SOURCE" ]] || [[ -z "$CETPKG_TYPE" ]]; then
-  echo "ERROR: Expected CETPKG_BUILD and friends to be set: source setup_for_development?" 1>&2
-  exit 1
-elif [[ ! -d "$CETPKG_BUILD" ]] || [[ ! -w "$CETPKG_BUILD" ]]; then
-  echo "ERROR: CETPKG_BUILD \"$CETPKG_BUILD\" does not exist,
-is not a directory or is not writable." 1>&2
-  exit 1
-elif [[ $(real_dir "$CETPKG_BUILD") == $(real_dir "$CETPKG_SOURCE") ]]; then
-  echo "ERROR: CETPKG_BUILD ($CETPKG_BUILD) is identical to
-CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
-  exit 1
-elif [[ $(real_dir "$CETPKG_BUILD") == $(real_dir "$CETPKG_SOURCE")/* ]]; then
-  echo "ERROR: CETPKG_BUILD ($CETPKG_BUILD) is a subdir of
-CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
-  exit 1
-elif [[ $(real_dir "$CETPKG_SOURCE") == $(real_dir "$CETPKG_BUILD")/* ]]; then
-  echo "ERROR: CETPKG_SOURCE ($CETPKG_SOURCE) is a subdir of
-CETPKG_BUILD (${CETPKG_BUILD})." 1>&2
-  exit 1
-elif [[ "$CETPKG_BUILD" == "/" ]]; then
-  echo "ERROR: CETPKG_BUILD == /" 1>&2
-  exit 1
-elif [[ "$CETPKG_BUILD" != /* ]]; then
-  echo "ERROR: CETPKG_BUILD appears to be relative." 1>&2
-  exit 1
-elif [[ $(real_dir "$CETPKG_BUILD") == "${HOME}" ]] || \
-     [[ $(real_dir "$CETPKG_BUILD") == ~ ]]; then
-  echo "ERROR: CETPKG_BUILD has been set to your home directory." 1>&2
-  exit 1
-fi
 
 # Program name.
 prog=${0##*/}
@@ -110,7 +79,6 @@ CETPKG_INSTALL: The default location of the private (or public) UPS
                 CMake.
 CETPKG_J:       Default parallelism for all appropriate steps, assuming
                 -j is not specified explicitly.
-
 CETPKG_QUAL:    If set, causes -Dqualifier:STRING=$CETPKG_QUAL to be
                 added to the CMake arguments.
 
@@ -209,7 +177,7 @@ MISC. OPTIONS.
 
 --clean-logs
 
-  Remove .log files in the ${CETPKG_BUILD} top directory.
+  Remove .log files in the \${CETPKG_BUILD} top directory.
 
 --force-top
 
@@ -743,6 +711,39 @@ while true; do
       usage 1
   esac
 done
+
+# Basic safety checks.
+if [[ -z "$CETPKG_BUILD" ]] || [[ -z "$CETPKG_SOURCE" ]] || [[ -z "$CETPKG_TYPE" ]]; then
+  echo "ERROR: Expected CETPKG_BUILD and friends to be set: source setup_for_development?" 1>&2
+  exit 1
+elif [[ ! -d "$CETPKG_BUILD" ]] || [[ ! -w "$CETPKG_BUILD" ]]; then
+  echo "ERROR: CETPKG_BUILD \"$CETPKG_BUILD\" does not exist,
+is not a directory or is not writable." 1>&2
+  exit 1
+elif [[ $(real_dir "$CETPKG_BUILD") == $(real_dir "$CETPKG_SOURCE") ]]; then
+  echo "ERROR: CETPKG_BUILD ($CETPKG_BUILD) is identical to
+CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
+  exit 1
+elif [[ $(real_dir "$CETPKG_BUILD") == $(real_dir "$CETPKG_SOURCE")/* ]]; then
+  echo "ERROR: CETPKG_BUILD ($CETPKG_BUILD) is a subdir of
+CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
+  exit 1
+elif [[ $(real_dir "$CETPKG_SOURCE") == $(real_dir "$CETPKG_BUILD")/* ]]; then
+  echo "ERROR: CETPKG_SOURCE ($CETPKG_SOURCE) is a subdir of
+CETPKG_BUILD (${CETPKG_BUILD})." 1>&2
+  exit 1
+elif [[ "$CETPKG_BUILD" == "/" ]]; then
+  echo "ERROR: CETPKG_BUILD == /" 1>&2
+  exit 1
+elif [[ "$CETPKG_BUILD" != /* ]]; then
+  echo "ERROR: CETPKG_BUILD appears to be relative." 1>&2
+  exit 1
+elif [[ $(real_dir "$CETPKG_BUILD") == "${HOME}" ]] || \
+     [[ $(real_dir "$CETPKG_BUILD") == ~ ]]; then
+  echo "ERROR: CETPKG_BUILD has been set to your home directory." 1>&2
+  exit 1
+fi
+
 
 # Upcase test groups.
 [[ -n "$test_groups" ]] && \
