@@ -310,6 +310,9 @@ macro( cet_set_compiler_flags )
     else()
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
     endif()
+  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    # Make OS X match default SLF6 behavior.
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
   endif()
 
 
