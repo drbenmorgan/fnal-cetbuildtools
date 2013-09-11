@@ -266,11 +266,17 @@ macro( cet_remove_compiler_flag )
     message(FATAL_ERROR "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider C OR CXX")
   endif()
 
+
   IF (CSCF_C)
     STRING(REGEX REPLACE "${CSCF_C}" "" CMAKE_C_FLAGS_${BTYPE_UC} "${CMAKE_C_FLAGS_${BTYPE_UC}}" )
   ENDIF()
   IF (CSCF_CXX)
-    STRING(REGEX REPLACE "${CSCF_CXX}" "" CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}}" )
+    #message(STATUS "cet_remove_compiler_flag: removing ${CSCF_CXX}")
+    IF ( ${CSCF_CXX} MATCHES "-Werror" )
+      STRING(REGEX REPLACE "${CSCF_CXX} " " " CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}}" )
+    else()
+      STRING(REGEX REPLACE "${CSCF_CXX}" "" CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}}" )
+    endif()
   ENDIF()
 
 endmacro(cet_remove_compiler_flag)
