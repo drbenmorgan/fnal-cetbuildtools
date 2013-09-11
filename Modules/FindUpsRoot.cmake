@@ -144,4 +144,31 @@ _check_if_version_greater( ROOT ${ROOT_VERSION} v5_28_00d )
 # define rootcint executable
 find_program( ROOTCINT NAMES rootcint PATHS ${ROOTSYS}/bin )
 
+# define some useful library lists
+set(ROOT_BASIC_LIB_LIST ${ROOT_CORE}
+                        ${ROOT_CINT} 
+                        ${ROOT_RIO}
+                        ${ROOT_NET}
+                        ${ROOT_HIST} 
+                        ${ROOT_GRAF}
+                        ${ROOT_GRAF3D}
+                        ${ROOT_GPAD}
+                        ${ROOT_TREE}
+                        ${ROOT_RINT}
+                        ${ROOT_POSTSCRIPT}
+                        ${ROOT_MATRIX}
+                        ${ROOT_PHYSICS}
+                        ${ROOT_MATHCORE}
+                        ${ROOT_THREAD}
+)
+set(ROOT_GUI_LIB_LIST   ${ROOT_GUI} ${ROOT_BASIC_LIB_LIST} )
+set(ROOT_EVE_LIB_LIST   ${ROOT_EVE}
+                        ${ROOT_EG}
+                        ${ROOT_TREEPLAYER}
+                        ${ROOT_GEOM}
+                        ${ROOT_GED}
+                        ${ROOT_RGL}
+                        ${ROOT_GUI_LIB_LIST}
+)
+
 endmacro( find_ups_root )
