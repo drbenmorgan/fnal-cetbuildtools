@@ -127,7 +127,7 @@ $cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type, $sour
 (%ohash) = find_optional_products( $pfile );
 ($ecount, @ehash) = find_only_for_build_products( $pfile );
 
-print TSET "setenv UPS_OPTIONS -B\n";
+print TSET "setenv UPS_OVERRIDE -B\n";
 print TSET "setenv CETPKG_NAME $product\n";
 print TSET "setenv CETPKG_VERSION $version\n";
 if ( $simple ) {
