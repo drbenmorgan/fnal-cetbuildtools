@@ -321,7 +321,6 @@ macro( cet_set_compiler_flags )
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
   endif()
 
-
   if (CSCF_WERROR)
     set(CSCF_WERROR "-Werror")
   else()
@@ -336,6 +335,11 @@ macro( cet_set_compiler_flags )
     message(STATUS "Selected diagnostics option ${CSCF_DIAGS}")
   else()
     message(FATAL_ERROR "Unrecognized DIAGS option ${CSCF_DIAGS}")
+  endif()
+
+  if (NOT CSCF_DWARF_VER)
+    # Default to DWARF2 until our debuggers come up to speed.
+    set(CSCF_DWARF_VER 2)
   endif()
 
   if (CSCF_DWARF_VER EQUAL 2)
