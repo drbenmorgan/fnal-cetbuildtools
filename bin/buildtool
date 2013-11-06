@@ -472,6 +472,10 @@ function process_gfargs() {
   IFS="$oifs"
 }
 
+function reorder_quals() {
+  printf "$1" | tr ':' '\n' | sort | tr '\n' ':' | sed -e 's&:$&&'
+}
+
 # Main work
 function do_work() {
   if log_no_tee; then
@@ -829,7 +833,7 @@ else # Check consistency.
     exit 2
   fi
   check_qual="$(cmake_var full_qualifier)"
-  if [[ -n "$check_qual" ]] && [[ "$check_qual" != "$CETPKG_QUAL" ]]; then
+  if [[ -n "$check_qual" ]] && [[ $(reorder_quals "$check_qual") != $(reorder_quals "$CETPKG_QUAL") ]]; then
     echo "ERROR: Qualifier has changed from \"$check_qual\" to \"$CETPKG_QUAL\": need clean build." 1>&2
     exit 2
   fi
