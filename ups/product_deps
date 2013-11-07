@@ -5,10 +5,11 @@ parent cetbuildtools v3_06_07
 # headers, libraries, and executables will be found
 # Use them only if your product does not conform to the defaults
 # Format: directory_type directory_path directory_name
-# The only recognized values of the first field are incdir, libdir, and bindir
+# The only recognized values of the first field are incdir, fcldir, libdir, and bindir
 # The only recognized values of the second field are product_dir, fq_dir, and -
 # The third field is not constrained
 incdir      -
+fcldir      -
 libdir      -
 bindir      product_dir	bin
 # The no_fq_dir keyword indicates that this product is NULL flavored

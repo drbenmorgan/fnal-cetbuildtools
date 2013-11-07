@@ -2,21 +2,24 @@
 
 # product_deps format:
 
-#   parent this_product this_version
-#   [incdir      product_dir	include]
-#   [libdir      fq_dir	lib]
-#   [bindir      fq_dir	bin]
+#   parent       this_product   this_version
+#   [incdir      product_dir    include]
+#   [fcldir      product_dir    fcl]
+#   [libdir      fq_dir	        lib]
+#   [bindir      fq_dir         bin]
+#
 #   product		version
 #   dependent_product	dependent_product_version [optional]
 #   dependent_product	dependent_product_version [optional]
+#
 #   qualifier dependent_product       dependent_product notes
 #   this_qual dependent_product_qual  dependent_product_qual
 #   this_qual dependent_product_qual  dependent_product_qual
 
-# The indir, libdir, and bindir lines are optional
+# The indir, fcldir, libdir, and bindir lines are optional
 # Use them only if your product does not conform to the defaults
 # Format: directory_type directory_path directory_name
-# The only recognized values of the first field are incdir, libdir, and bindir
+# The only recognized values of the first field are incdir, fcldir, libdir, and bindir
 # The only recognized values of the second field are product_dir and fq_dir
 # The third field is not constrained
 #
@@ -56,6 +59,9 @@ sub parse_product_list {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "incdir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "fcldir" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "libdir" ) {
@@ -123,6 +129,9 @@ sub parse_qualifier_list {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "no_fq_dir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "fcldir" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "incdir" ) {
@@ -216,6 +225,9 @@ sub find_optional_products {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "no_fq_dir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "fcldir" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "incdir" ) {
@@ -382,6 +394,36 @@ sub get_lib_directory {
   close(PIN);
   ##print "defining library directory $libdir\n";
   return ($libdir);
+}
+
+sub get_fcl_directory {
+  my @params = @_;
+  $fcldir = "default";
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "fcldir" ) {
+         if( $words[1] eq "product_dir" ) {
+	    $fcldir = "\${UPS_PROD_DIR}/".$words[2];
+         } elsif( $words[1] eq "fq_dir" ) {
+	    $fcldir = "\${\${UPS_PROD_NAME_UC}_FQ_DIR}/".$words[2];
+         } elsif( $words[1] eq "-" ) {
+	    $fcldir = "none";
+	 } else {
+	    print "ERROR: $words[1] is an invalid directory path\n";
+	    print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
+	    print "ERROR: using the default fcl directory path\n";
+	 }
+      }
+    }
+  }
+  close(PIN);
+  ##print "defining executable directory $fcldir\n";
+  return ($fcldir);
 }
 
 sub check_fq_dir {
@@ -654,6 +696,38 @@ sub get_cmake_bin_directory {
   }
   close(PIN);
   return ($bindir);
+}
+
+sub get_cmake_fcl_directory {
+  my @params = @_;
+  $fcldir = "DEFAULT";
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "fcldir" ) {
+	 if( $#words < 2 ) {
+	   $fclsubdir = "fcl";
+	 } else {
+	   $fclsubdir = $words[2];
+	 }
+         if( $words[1] eq "product_dir" ) {
+	    $fcldir = "product_dir/$fclsubdir";
+         } elsif( $words[1] eq "fq_dir" ) {
+	    $fcldir = "flavorqual_dir/$fclsubdir";
+         } elsif( $words[1] eq "-" ) {
+	    $fcldir = "NONE";
+	 } else {
+	    $fcldir = "ERROR";
+	 }
+      }
+    }
+  }
+  close(PIN);
+  return ($fcldir);
 }
 
 1;

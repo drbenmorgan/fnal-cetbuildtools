@@ -175,6 +175,7 @@ sub create_table_bottom {
 
   $include_directory = get_include_directory( $pfile );
   $lib_directory = get_lib_directory( $pfile );
+  $fcl_directory = get_fcl_directory( $pfile );
   $bin_directory = get_bin_directory( $pfile );
 
   $pvername = $product."_VERSION";
@@ -205,6 +206,17 @@ sub create_table_bottom {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, $lib_directory) \n";
   table_ld_library();
   print TBL "\n";
+  }
+  if( $fcl_directory eq "default" ) {
+  print TBL "    # add the fcl directory to the fhicl file path\n";
+  print TBL "    pathPrepend(FHICL_FILE_PATH, \${UPS_PROD_DIR}/fcl )\n";
+  print TBL "    # dropit -E removes non-existent directories\n";
+  print TBL "    Execute(dropit -E, NO_UPS_ENV, FHICL_FILE_PATH)\n";
+  print TBL "\n";
+  } elsif ( $fcl_directory eq "none" )   {
+  } else {
+  print TBL "    # add the fcl directory to the path\n";
+  print TBL "    pathPrepend(FHICL_FILE_PATH, $fcl_directory )\n";
   }
   if( $bin_directory eq "default" ) {
   print TBL "    # add the bin directory to the path\n";

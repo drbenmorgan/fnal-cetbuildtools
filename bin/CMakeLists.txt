@@ -9,6 +9,7 @@ install_scripts( LIST buildtool
 		      report_bindir
 		      report_incdir
 		      report_libdir
+		      report_fcldir
 		      report_product_info )
 
 INSTALL ( FILES cet_test_functions.sh
