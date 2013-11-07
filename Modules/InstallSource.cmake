@@ -255,6 +255,17 @@ macro( _cet_install_script_without_list   )
   endif( IS_SUBDIRS )
 endmacro( _cet_install_script_without_list )
 
+macro( _cet_copy_fcl )
+  set( mrb_build_dir $ENV{MRB_BUILDDIR} )
+  if( mrb_build_dir )
+    foreach( fclfile ${ARGN} )
+      get_filename_component( fclname ${fclfile} NAME )
+      #message(STATUS "copy ${fclname} to ${mrb_build_dir}/fcl")
+      configure_file( ${fclname} ${mrb_build_dir}/fcl/${fclname} COPYONLY )
+    endforeach(fclfile)
+  endif( mrb_build_dir )
+endmacro( _cet_copy_fcl )
+
 macro( _cet_install_fhicl_without_list   )
   #message( STATUS "fhicl scripts will be installed in ${fhicl_install_dir}" )
   FILE(GLOB fcl_files [^.]*.fcl )
@@ -263,7 +274,8 @@ macro( _cet_install_fhicl_without_list   )
   endif()
   if( fcl_files )
     #message( STATUS "installing fhicl files ${fcl_files} in ${fhicl_install_dir}")
-    INSTALL ( PROGRAMS ${fcl_files}
+    _cet_copy_fcl( ${fcl_files} )
+    INSTALL ( FILES ${fcl_files}
               DESTINATION ${fhicl_install_dir} )
   endif( fcl_files )
   # now check subdirectories
@@ -275,7 +287,8 @@ macro( _cet_install_fhicl_without_list   )
         LIST( REMOVE_ITEM subdir_fcl_files ${IFCL_EXCLUDES} )
       endif()
       if( subdir_fcl_files )
-        INSTALL ( PROGRAMS ${subdir_fcl_files}
+        _cet_copy_fcl( ${subdir_fcl_files} )
+        INSTALL ( FILES ${subdir_fcl_files}
                   DESTINATION ${fhicl_install_dir} )
       endif( subdir_fcl_files )
     endforeach(sub)
@@ -359,11 +372,13 @@ macro( install_fhicl   )
       message( FATAL_ERROR
                "ERROR: call install_fhicl with EITHER LIST or SUBDIRS but not both")
     endif( IFCL_SUBDIRS )
-    INSTALL ( PROGRAMS  ${IFCL_LIST}
+    _cet_copy_fcl( ${IFCL_LIST} )
+    INSTALL ( FILES  ${IFCL_LIST}
               DESTINATION ${fhicl_install_dir} )
   else()
     if( IFCL_EXTRAS )
-      INSTALL ( PROGRAMS  ${IFCL_EXTRAS}
+      _cet_copy_fcl( ${IFCL_EXTRAS} )
+      INSTALL ( FILES  ${IFCL_EXTRAS}
                 DESTINATION ${fhicl_install_dir} )
     endif( IFCL_EXTRAS )
     _cet_install_fhicl_without_list()
