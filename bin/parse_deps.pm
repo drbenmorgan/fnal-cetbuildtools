@@ -317,6 +317,7 @@ sub get_include_directory {
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "incdir" ) {
+         if( ! $words[2] ) { $words[2] = include; }
          if( $words[1] eq "product_dir" ) {
 	    $incdir = "\${UPS_PROD_DIR}/".$words[2];
          } elsif( $words[1] eq "fq_dir" ) {
@@ -347,6 +348,7 @@ sub get_bin_directory {
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "bindir" ) {
+         if( ! $words[2] ) { $words[2] = bin; }
          if( $words[1] eq "product_dir" ) {
 	    $bindir = "\${UPS_PROD_DIR}/".$words[2];
          } elsif( $words[1] eq "fq_dir" ) {
@@ -377,6 +379,7 @@ sub get_lib_directory {
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "libdir" ) {
+         if( ! $words[2] ) { $words[2] = lib; }
          if( $words[1] eq "product_dir" ) {
 	    $libdir = "\${UPS_PROD_DIR}/".$words[2];
          } elsif( $words[1] eq "fq_dir" ) {
@@ -407,6 +410,7 @@ sub get_fcl_directory {
     } else {
       @words = split(/\s+/,$line);
       if( $words[0] eq "fcldir" ) {
+         if( ! $words[2] ) { $words[2] = fcl; }
          if( $words[1] eq "product_dir" ) {
 	    $fcldir = "\${UPS_PROD_DIR}/".$words[2];
          } elsif( $words[1] eq "fq_dir" ) {
