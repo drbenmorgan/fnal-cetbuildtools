@@ -38,13 +38,18 @@ macro( cet_rootcint rc_output_name )
   ##message(STATUS "cint header list is now ${CINT_HEADER_LIST}" )
 
   ##message(STATUS "cet_rootcint: running ${ROOTCINT} and using headers in ${ROOTSYS}/include")
+  get_property(inc_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+  foreach( dir ${inc_dirs} )
+     set( CINT_INCS -I${dir} ${CINT_INCS} )
+  endforeach( dir )
+  ##message(STATUS "cet_rootcint: include_directories ${CINT_INCS}")
 
   add_custom_command(
      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.cc
             ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.h
      COMMAND ${ROOTCINT} -f ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.cc
                 	 -c -p ${SRT_FLAGS}
-			 -I. -I${CMAKE_SOURCE_DIR}
+			 -I. -I${CMAKE_SOURCE_DIR} ${CINT_INCS}
 			 -DUSE_ROOT -I${ROOTSYS}/include
 			 ${CINT_HEADER_LIST} LinkDef.h || { rm -f ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.cc\; /bin/false\; }
      DEPENDS ${CINT_DEPENDS} LinkDef.h
