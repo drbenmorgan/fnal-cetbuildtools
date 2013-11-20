@@ -211,7 +211,7 @@ sub create_table_bottom {
   print TBL "    # add the fcl directory to the fhicl file path\n";
   print TBL "    pathPrepend(FHICL_FILE_PATH, \${UPS_PROD_DIR}/fcl )\n";
   print TBL "    # dropit -E removes non-existent directories\n";
-  print TBL "    Execute(dropit -E, NO_UPS_ENV, FHICL_FILE_PATH)\n";
+  print TBL "    Execute("dropit -p $FHICL_FILE_PATH -E", NO_UPS_ENV, FHICL_FILE_PATH)\n";
   print TBL "\n";
   } elsif ( $fcl_directory eq "none" )   {
   } else {
