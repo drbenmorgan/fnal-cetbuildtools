@@ -100,7 +100,7 @@ sub parse_product_list {
       } elsif( $get_quals ) {
       } elsif( $get_fragment ) {
       } else {
-        print "parse_product_list: ignoring $line\n";
+        ##print "parse_product_list: ignoring $line\n";
       }
     }
   }
@@ -200,7 +200,7 @@ sub parse_qualifier_list {
       } elsif( $get_fragment ) {
 	 print "$params[0] qualifier $words[0]\n";
       } else {
-        print "parse_qualifier_list: ignoring $line\n";
+        ##print "parse_qualifier_list: ignoring $line\n";
       }
     }
   }
@@ -273,7 +273,7 @@ sub find_optional_products {
       } elsif( $get_fragment ) {
       } elsif( $get_quals ) {
       } else {
-        print "find_optional_products: ignoring $line\n";
+        ##print "find_optional_products: ignoring $line\n";
       }
     }
   }
