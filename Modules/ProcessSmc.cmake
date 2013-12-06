@@ -1,7 +1,10 @@
 # macro for State Machine Compiler
 
+include(CetParseArgs)
+
 function(process_smc SMC_LIB_SOURCES)
-  foreach(source ${ARGN})
+  cet_parse_args ( PSMC "" "NO_INSTALL" ${ARGN})
+  foreach(source ${PSMC_DEFAULT_ARGS})
     string(REPLACE ".sm" "_sm.cpp" SMC_CPP_OUTPUT ${source})
     string(REPLACE ".sm" "_sm.h"   SMC_H_OUTPUT   ${source})
     string(REPLACE ".sm" "_sm.dot" SMC_DOT_OUTPUT ${source})
@@ -14,6 +17,12 @@ function(process_smc SMC_LIB_SOURCES)
       COMMAND perl -wapi\\~ -e 's&\(\#\\s*include\\s+\"\)\\Q${CMAKE_BINARY_DIR}/\\E&$$1&' ${CMAKE_CURRENT_BINARY_DIR}/${SMC_CPP_OUTPUT}
       DEPENDS ${source}
       )
+    if (NOT ${PSMC_NO_INSTALL})
+      install_headers(LIST ${CMAKE_CURRENT_BINARY_DIR}/${SMC_H_OUTPUT})
+      install_source(LIST ${CMAKE_CURRENT_BINARY_DIR}/${SMC_H_OUTPUT}
+        ${CMAKE_CURRENT_BINARY_DIR}/${SMC_CPP_OUTPUT}
+        )
+    endif()
   endforeach()
   set_source_files_properties(${TMP_SOURCES}
     PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter" )

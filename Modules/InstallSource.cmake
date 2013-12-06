@@ -67,20 +67,6 @@ macro( set_install_root )
   message( STATUS "set_install_root: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
 endmacro( set_install_root )
 
-macro( _cet_install_generated_code )
-  # _cet_install_generated_code is replaced by _cet_check_build_directory
-  # leave in place for now in case we need it again
-  # search for .in files
-  FILE(GLOB config_source_files *.in  )
-  if( config_source_files )
-     foreach( input_file ${config_source_files} )
-	STRING( REGEX REPLACE "^(${CMAKE_CURRENT_SOURCE_DIR})(.*)[.][i][n]$"  "${CMAKE_CURRENT_BINARY_DIR}\\2" output_file "${input_file}")
-	INSTALL( FILES ${output_file}
-        	 DESTINATION ${source_install_dir} )
-     endforeach(input_file)
-  endif( config_source_files )
-endmacro( _cet_install_generated_code )
-
 macro( _cet_check_inc_directory )
   if( ${${product}_inc_dir} MATCHES "NONE" )
      message(FATAL_ERROR "Please specify an include directory in product_deps")
@@ -159,7 +145,6 @@ macro( _cet_install_without_list   )
              DESTINATION ${source_install_dir} )
   endif( src_files )
   # check for generated files
-  #_cet_install_generated_code()
   _cet_check_build_directory()
   _cet_install_generated_dictionary_code()
   # now check subdirectories
