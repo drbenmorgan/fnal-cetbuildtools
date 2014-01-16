@@ -151,33 +151,39 @@ macro( _check_if_version_greater product version minimum )
    set( THISPATCH ${patch} )
    set( THISCHAR ${patchchar} )
    set( THISMICRO ${micro} )
-   #message(STATUS "_check_if_version_greater: ${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
-   #message(STATUS "_check_if_version_greater: ${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
-  # initialize product_version_less
-  set( product_version_less FALSE )
-  if( ${product} MATCHES "ROOT" )
-     if( ${THISCVER} VERSION_LESS ${MINCVER} )
-       set( product_version_less TRUE )
-     elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	 AND ${THISCHAR} STRLESS ${MINCHAR} )
-       set( product_version_less TRUE )
-     elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	 AND ${THISCHAR} STREQUAL ${MINCHAR} )
-       # root micro versions require special handling
-       #message(STATUS "root versions match so far, compare  ${THISMICRO} to ${MINMICRO}")
-       _compare_root_micro( ${THISMICRO} ${MINMICRO} )
-     endif()
-  else()
-     if( ${THISCVER} VERSION_LESS ${MINCVER} )
-        set( product_version_less TRUE )
-     elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	 AND ${THISCHAR} STRLESS ${MINCHAR} )
-       set( product_version_less TRUE )
-     elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	 AND ${THISCHAR} STREQUAL ${MINCHAR} 
-	 AND ${THISMICRO} LESS ${MINMICRO} )
-       set( product_version_less TRUE )
-     endif()
-  endif()
-  #message( STATUS "_check_if_version_greater: ${product} ${THISVER} check if greater returns ${product_version_less}")
+   ##message(STATUS "_check_if_version_greater: ${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
+   ##message(STATUS "_check_if_version_greater: ${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
+   # initialize product_version_less
+   set( product_version_less FALSE )
+   if( ${product} MATCHES "ROOT" )
+      if( ${THISCVER} VERSION_LESS ${MINCVER} )
+	set( product_version_less TRUE )
+      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	  AND ${THISCHAR} STRLESS ${MINCHAR} )
+	set( product_version_less TRUE )
+      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	  AND ${THISCHAR} STREQUAL ${MINCHAR} )
+	# root micro versions require special handling
+	#message(STATUS "root versions match so far, compare  ${THISMICRO} to ${MINMICRO}")
+	_compare_root_micro( ${THISMICRO} ${MINMICRO} )
+      endif()
+   else()
+      if( ${THISCVER} VERSION_LESS ${MINCVER} )
+         set( product_version_less TRUE )
+      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	  AND ${THISCHAR} STRLESS ${MINCHAR} )
+	set( product_version_less TRUE )
+      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	  AND ${THISCHAR} STREQUAL ${MINCHAR} 
+	  AND ${THISMICRO} LESS ${MINMICRO} )
+	set( product_version_less TRUE )
+      endif()
+   endif()
+   # check for special cases such as "nightly"
+   STRING(REGEX MATCH "([0-9]+)" isnumeric "${version}")
+   if( NOT isnumeric )
+     ##message(STATUS "_check_if_version_greater: ${product} ${version} is not numeric")
+     set( product_version_less FALSE )
+   endif()
+   ##message( STATUS "_check_if_version_greater: ${product} ${THISVER} check if greater returns ${product_version_less}")
 endmacro( _check_if_version_greater product version minimum )
