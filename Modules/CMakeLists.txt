@@ -5,13 +5,14 @@ INSTALL(FILES
 	CetBasicConfigVersion-AnyNewerVersion.cmake.in
 	CetBasicConfigVersion-ExactVersion.cmake.in
 	CetBasicConfigVersion-SameMajorVersion.cmake.in
-        CetBuildTable.cmake
+  CetBuildTable.cmake
 	CetParseArgs.cmake
 	CetTest.cmake
 	CetMake.cmake
 	CetCMakeConfig.cmake
 	CetCMakeEnv.cmake
 	CetCMakeUtils.cmake
+  CetGetProductInfo.cmake
 	CetRootCint.cmake
 	CheckUpsVersion.cmake
 	EnsureOutOfSourceBuild.cmake

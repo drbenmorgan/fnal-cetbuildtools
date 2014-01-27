@@ -528,9 +528,10 @@ sub cetpkg_info_file {
   print CPG "CETPKG_TYPE     $params[4]\n";
   print CPG "CETPKG_SOURCE   $params[5]\n";
   print CPG "CETPKG_BUILD    $params[6]\n";
+  print CPG "CETPKG_COMPILER $params[7]\n" if $params[7];
   print CPG "to check cmake cached variables, use cmake -N -L\n";
   close(CPG);
-  return($cetpkgfile);  
+  return($cetpkgfile);
 }
 
 sub print_setup_noqual {

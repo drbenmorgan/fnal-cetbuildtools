@@ -103,6 +103,7 @@
 #
 ########################################################################
 include(CetParseArgs)
+include(CetGetProductInfo)
 
 macro( cet_report_compiler_flags )
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )

@@ -26,28 +26,32 @@ while ( $line=<PIN> ) {
     } elsif( $words[0] eq "CETPKG_DEFAULT_VERSION" ) {
        $default_version = $words[1];
     } elsif( $words[0] eq "CETPKG_QUAL" ) {
-       if( $words[1] eq "-nq-" ) { 
-         $qual = ""; 
+       if( $words[1] eq "-nq-" ) {
+         $qual = "";
        } else {
-         $qual = $words[1]; 
+         $qual = $words[1];
        }
     } elsif( $words[0] eq "CETPKG_TYPE" ) {
        $type = $words[1];
-    }
+     } elsif( $words[0] eq "CETPKG_COMPILER") {
+       $compiler = $words[1];
+     }
 }
 close(PIN);
 
 
 if( $info_type eq "product" ) {
-    print "$product\n";
+  print "$product\n";
 } elsif( $info_type eq "version" ) {
-    print "$version\n";
+  print "$version\n";
 } elsif( $info_type eq "default_version" ) {
-    print "$default_version\n";
+  print "$default_version\n";
 } elsif( $info_type eq "qualifier" ) {
-    print "$qual\n";
+  print "$qual\n";
 } elsif( $info_type eq "type" ) {
-    print "$type\n";
+  print "$type\n";
+} elsif ($info_type eq "compiler" ) {
+  print "$compiler\n";
 }
 
 exit 0;

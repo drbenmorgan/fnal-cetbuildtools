@@ -496,7 +496,14 @@ function do_work() {
   else
     announce_stage
     cmake_defs=${cmake_defs//,/;}
-    ( cd "$CETPKG_BUILD" && cmake -DCMAKE_INSTALL_PREFIX="$install_prefix" -DCMAKE_BUILD_TYPE=$CETPKG_TYPE $garg ${cmake_defs}${CETPKG_SOURCE} )
+    [[ -n "${CETPKG_COMPILER}" ]] && \
+        local ccenv="CC=${CETPKG_COMPILER}"
+    ( cd "$CETPKG_BUILD" && \
+        eval ${ccenv} cmake \
+            -DCMAKE_INSTALL_PREFIX="$install_prefix" \
+            -DCMAKE_BUILD_TYPE=$CETPKG_TYPE \
+            $garg ${cmake_defs}${CETPKG_SOURCE}
+    ) || check_status # Fail here if there's a problem.
     if [[ -f "${gtmpfile}" ]]; then
       if (( ${gfilt:-0} )); then
         if (( ${tred:-0} )); then
