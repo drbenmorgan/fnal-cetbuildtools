@@ -66,12 +66,12 @@ macro( cet_cmake_config  )
   if( CCC_NO_FLAVOR )
     cet_write_version_file(
                ${CMAKE_CURRENT_BINARY_DIR}/${product}ConfigVersion.cmake
-	       VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
+	       VERSION ${cet_dot_version}
 	       COMPATIBILITY AnyNewerVersion )
   else()
     write_basic_package_version_file(
                ${CMAKE_CURRENT_BINARY_DIR}/${product}ConfigVersion.cmake
-	       VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
+	       VERSION ${cet_dot_version}
 	       COMPATIBILITY AnyNewerVersion )
   endif()
 

@@ -129,6 +129,11 @@ macro(cet_cmake_env)
 
   #set package version from ups version
   set_version_from_ups( ${version} )
+  if( ${VERSION_MAJOR} MATCHES "nightly" )
+     set( cet_dot_version ${VERSION_MAJOR} CACHE STRING "Package dot version" FORCE)
+  else()
+     set( cet_dot_version ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}  CACHE STRING "Package dot version" FORCE)
+  endif()
   #define flavorqual and flavorqual_dir
   set_flavor_qual( ${arch} )
   cet_set_lib_directory()
