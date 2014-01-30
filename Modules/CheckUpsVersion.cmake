@@ -1,11 +1,11 @@
 # These macros are used by the FindUps modules
 
 #internal macro
-macro(_get_dotver version )
+macro(_get_dotver myversion )
    # replace all underscores with dots
-   STRING( REGEX REPLACE "_" "." dotver1 "${version}" )
+   STRING( REGEX REPLACE "_" "." dotver1 "${myversion}" )
    STRING( REGEX REPLACE "v(.*)" "\\1" dotver "${dotver1}" )
-endmacro(_get_dotver version )
+endmacro(_get_dotver myversion )
 
 #internal macro
 macro(_parse_version version )

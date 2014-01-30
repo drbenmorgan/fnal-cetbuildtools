@@ -41,8 +41,34 @@ endif()
 
 endmacro( _use_find_package )
 
+macro( _use_find_package_noversion PNAME PNAME_UC )
+
+# we use find package to check the version
+# however, if we have some special build such as "nightly", we cannot compare version numbers
+
+# define the cmake search path
+set( ${PNAME_UC}_SEARCH_PATH $ENV{${PNAME_UC}_FQ_DIR} )
+if( NOT ${PNAME_UC}_SEARCH_PATH )
+  find_package( ${PNAME} PATHS $ENV{${PNAME_UC}_DIR} )
+else()
+  find_package( ${PNAME} PATHS $ENV{${PNAME_UC}_FQ_DIR} )
+endif()
+# make sure we found the product
+if( NOT ${${PNAME}_FOUND} )
+  message(FATAL_ERROR "ERROR: ${PNAME} was NOT found ")
+endif()
+# make sure the version numbers match
+if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
+  #message(STATUS "_use_find_package_noversion: ${PNAME} versions match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+else()
+  message(STATUS "ERROR: _use_find_package_noversion: There is an inconsistency between the ${PNAME} table and config files ")
+  message(FATAL_ERROR "${PNAME} versions DO NOT match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+endif()
+
+endmacro( _use_find_package_noversion )
+
 # since variables are passed, this is implemented as a macro
-macro( find_ups_product PRODUCTNAME version )
+macro( find_ups_product PRODUCTNAME fup_version )
 
 # get upper and lower case versions of the name
 string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
@@ -65,10 +91,10 @@ elseif( ${found_product_match} LESS 0 )
   #message(STATUS "find_ups_product debug: ${found_product_match} for ${PRODUCTNAME} ")
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-  find_ups_product( ${PRODUCTNAME} ${version} )")
+  find_ups_product( ${PRODUCTNAME} ${fup_version} )")
   set(cet_product_list ${PRODUCTNAME} ${cet_product_list} )
-  #message(STATUS "adding find_ups_product( ${PRODUCTNAME} ${version} )")
-  _cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
+  #message(STATUS "adding find_ups_product( ${PRODUCTNAME} ${fup_version} )")
+  #_cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
 endif()
 
 # MUST use a unique variable name for the config path
@@ -77,10 +103,17 @@ find_file( ${${PRODUCTNAME}_UC}_CONFIG_PATH
            PATHS $ENV{${${PRODUCTNAME}_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${${PRODUCTNAME}_UC}_DIR}/cmake )
 if(${${PRODUCTNAME}_UC}_CONFIG_PATH)
   #_cet_debug_message("find_ups_product: found a cmake configure file in ${${${PRODUCTNAME}_UC}_CONFIG_PATH}")
-  _use_find_package( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} ${version} )
+  # look for the case where there are no underscores
+  string(REGEX MATCHALL "_" nfound ${${${PRODUCTNAME}_UC}_VERSION} )
+  list(LENGTH nfound nfound)
+  if( ${nfound} EQUAL 0 )
+    _use_find_package_noversion( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} )
+  else()
+    _use_find_package( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} ${fup_version} )
+  endif()
 else()
   #_cet_debug_message("find_ups_product: ${PRODUCTNAME} cmake config NOT FOUND")
-  _check_version( ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_VERSION} ${version} )
+  _check_version( ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_VERSION} ${fup_version} )
 endif()
 
 # add include directory to include path if it exists
