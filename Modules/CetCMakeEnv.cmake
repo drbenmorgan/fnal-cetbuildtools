@@ -129,7 +129,11 @@ macro(cet_cmake_env)
 
   #set package version from ups version
   set_version_from_ups( ${version} )
-  if( ${VERSION_MAJOR} MATCHES "nightly" )
+  # look for the case where there are no underscores
+  string(REGEX MATCHALL "_" nfound ${version} )
+  list(LENGTH nfound nfound)
+  ##if( ${VERSION_MAJOR} MATCHES "nightly" )
+  if( ${nfound} EQUAL 0 )
      set( cet_dot_version ${VERSION_MAJOR} CACHE STRING "Package dot version" FORCE)
   else()
      set( cet_dot_version ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}  CACHE STRING "Package dot version" FORCE)
