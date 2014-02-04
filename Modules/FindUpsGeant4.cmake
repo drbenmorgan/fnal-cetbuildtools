@@ -44,6 +44,10 @@ cet_find_library( G4READOUT  NAMES G4readout PATHS ENV G4LIB )
 cet_find_library( G4RUN  NAMES G4run PATHS ENV G4LIB )
 cet_find_library( G4TRACK  NAMES G4track PATHS ENV G4LIB )
 cet_find_library( G4TRACKING  NAMES G4tracking PATHS ENV G4LIB )
+cet_find_library( G4VISHEPREP  NAMES G4visHepRep PATHS ENV G4LIB )
+cet_find_library( G4VISXXX  NAMES G4visXXX PATHS ENV G4LIB )
+cet_find_library( G4VIS_MANAGEMENT  NAMES G4vis_management PATHS ENV G4LIB )
+cet_find_library( G4ZLIB  NAMES G4zlib PATHS ENV G4LIB )
 
 set( G4_LIB_LIST ${XERCESC}
                  ${G4FR}
