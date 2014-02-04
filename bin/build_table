@@ -197,6 +197,10 @@ sub create_table_bottom {
   } else {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, $include_directory) \n";
   }
+  # need to setup dependencies BEFORE prepending to any paths
+  print TBL "\n";
+  print TBL "    exeActionRequired(GetProducts)\n";
+  print TBL "\n";
   if( $lib_directory eq "default" ) {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib) \n";
   table_ld_library();
@@ -227,7 +231,6 @@ sub create_table_bottom {
   print TBL "    # add the bin directory to the path\n";
   print TBL "    pathPrepend(PATH, $bin_directory )\n";
   }
-  print TBL "    exeActionRequired(GetProducts)\n";
   print TBL "\n";
   if( $have_fragment ) {
     foreach $i ( 0 .. $#flist ) {
