@@ -4,8 +4,10 @@
 
 if( $#ARGV < 1 ) {
     print "\n";
-    print "USAGE: report_product_info <input-directory> <product|version>\n";
-    print "       input-directory  = directory containing cetpkg_variable_report\n";
+    print "USAGE: report_product_info <input-directory> <info>+\n";
+    print "       input-directory = directory containing cetpkg_variable_report\n";
+    print "       info = all product version default_version qualifier type compiler\n";
+    print "       for \"all\", variables are printed as VAR=val, one per line.\n";
     print "\n";
     exit 1;
 }
@@ -16,43 +18,38 @@ $info_type = $ARGV[1];
 $report=$inputdir."/cetpkg_variable_report";
 
 open(PIN, "< $report") or die "Couldn't open $report";
+my $info = {};
 while ( $line=<PIN> ) {
     chop $line;
     @words = split(/\s+/,$line);
     if( $words[0] eq "CETPKG_NAME" ) {
-       $product = $words[1];
+       $info->{product} = $words[1];
     } elsif( $words[0] eq "CETPKG_VERSION" ) {
-       $version = $words[1];
+       $info->{version} = $words[1];
     } elsif( $words[0] eq "CETPKG_DEFAULT_VERSION" ) {
-       $default_version = $words[1];
+       $info->{default_version} = $words[1];
     } elsif( $words[0] eq "CETPKG_QUAL" ) {
        if( $words[1] eq "-nq-" ) {
-         $qual = "";
+         $info->{qual} = "";
        } else {
-         $qual = $words[1];
+         $info->{qual} = $words[1];
        }
     } elsif( $words[0] eq "CETPKG_TYPE" ) {
-       $type = $words[1];
+       $info->{type} = $words[1];
      } elsif( $words[0] eq "CETPKG_COMPILER") {
-       $compiler = $words[1];
+       $info->{compiler} = $words[1];
      }
 }
 close(PIN);
 
-
-if( $info_type eq "product" ) {
-  print "$product\n";
-} elsif( $info_type eq "version" ) {
-  print "$version\n";
-} elsif( $info_type eq "default_version" ) {
-  print "$default_version\n";
-} elsif( $info_type eq "qualifier" ) {
-  print "$qual\n";
-} elsif( $info_type eq "type" ) {
-  print "$type\n";
-} elsif ($info_type eq "compiler" ) {
-  print "$compiler\n";
+if (exists $info->{$info_type}) {
+  print "$info->{$info_type}\n";
+} elsif ($info_type eq "all") {
+  print map { sprintf("CETPKG_%s='%s'\n", uc $_, $info->{$_}) } sort keys %$info;
+} else {
+  printf STDERR " Could not find CETPKG_%s in $report\n", ${info_type};
+  exit(1);
 }
 
-exit 0;
+exit(0);
 
