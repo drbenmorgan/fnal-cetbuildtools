@@ -189,6 +189,11 @@ MISC. OPTIONS.
 
   Ask CMake to produce a code dependency graph in graphviz (.dot) format.
 
+  Note that CMake can only tell you about the dependencies about which
+  it knows. Libraries must have their dependencies resolved at library
+  production time (NO_UNDEFINED) in order for the information to be
+  complete.
+
 --gfilt[=<opt>[,<opt>]+]
 
   Filter the graphviz output from cmake through cmake-graphviz filt,
@@ -214,7 +219,7 @@ MISC. OPTIONS.
     test-tree|no-test-tree
 
       With or without libraries and execs from the test directory
-      hierarchy.
+      hierarchy (default without).
 
     tred|no-tred
 
