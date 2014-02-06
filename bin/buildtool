@@ -773,7 +773,7 @@ elif [[ $(real_dir "$CETPKG_BUILD") == "${HOME}" ]] || \
   exit 1
 fi
 
-set_vars_from_report_file()
+set_vars_from_report_file
 
 if [[ -z "$CETPKG_SOURCE" ]] || [[ -z "$CETPKG_TYPE" ]] || [[ -z "$CETPKG_COMPILER" ]]; then
   echo "ERROR: Missing required variable from cetpkg_variable_report: cetbuildtools version mismatch?" 1>&2

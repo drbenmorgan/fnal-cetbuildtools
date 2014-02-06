@@ -19,6 +19,10 @@ endif()
 
 include(CetGetProductInfo)
 
+macro(regex_escape val var)
+  string(REGEX REPLACE "(\\.|\\||\\^|\\$|\\*|\\(|\\)|\\[|\\]|\\+)" "\\\\\\1" ${var} "${val}")
+endmacro()
+
 # Verify that the compiler is set as desired, and is consistent with our
 # current known use of qualifiers.
 function(_verify_compiler_quals)
@@ -27,17 +31,14 @@ function(_verify_compiler_quals)
   endif()
   cet_get_product_info_item(compiler rcompiler ec_compiler)
   if (NOT rcompiler)
-    cet_have_qual("e[24]" REGEX legacy)
-    if (legacy)
-      message(INFO "Compiler not specified: set to GCC based on qualifier e[24].")
-      set(rcompiler gcc)
-    endif()
+    message(FATAL_ERROR "Unable to obtain compiler suite setting: re-source setup_for_development?")
   endif()
   set(compiler ${rcompiler} CACHE STRING "Compiler suite identifier" FORCE)
   if(rcompiler STREQUAL "cc")
-    set(c_compiler_ref "/usr/bin/cc")
-  elseif(compiler STREQUAL "gcc")
-    set(c_compiler_ref "$ENV{GCC_FQ_DIR}/bin/gcc")
+    set(c_compiler_ref "^/usr/bin/cc$")
+  elseif(compiler MATCHES "^(gcc.*)$")
+    regex_escape("$ENV{GCC_FQ_DIR}/bin/${CMAKE_MATCH_0}" escaped_path)
+    set(c_compiler_ref "^${escaped_path}$")
   elseif(rcompiler STREQUAL icc)
     message(FATAL_ERROR "Intel compiler suite not yet supported.")
   elseif(rcompiler STREQUAL clang)
@@ -45,15 +46,13 @@ function(_verify_compiler_quals)
   elseif(rcompiler MATCHES "[-_]gcc\\$")
     message(FATAL_ERROR "Cross-compiling not yet supported")
   else()
-    message(FATAL_ERROR "Unrecognized compiler suite \"${rcompiler}\": use cc (default), gcc, icc, or clang.")
+    message(FATAL_ERROR "Unrecognized compiler suite \"${rcompiler}\": use cc (default), gcc(-XXX)?, icc, or clang.")
   endif()
-  if(NOT (c_compiler_ref STREQUAL CMAKE_C_COMPILER))
-    message(FATAL_ERROR "CMAKE_C_COMPILER set to ${CMAKE_C_COMPILER}: expected ${c_compiler_ref}.\n"
+  if(NOT (CMAKE_C_COMPILER MATCHES "${c_compiler_ref}"))
+    message(FATAL_ERROR "CMAKE_C_COMPILER set to ${CMAKE_C_COMPILER}: expected match to \"${c_compiler_ref}\".\n"
       "Use buildtool or preface cmake invocation with \"env CC=${CETPKG_COMPILER}.\" Use buildtool -c if changing qualifier.")
   endif()
-  # Verify consistency of qualifier with compiler choice.
 endfunction()
-
 
 
 macro(_get_cetpkg_info)

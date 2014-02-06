@@ -183,6 +183,15 @@ foreach $i ( 1 .. $#qlist ) {
 
 close(SETUP_CMDS);
 
+if (!$compiler) {
+  my @quals = split /:/, $qual;
+  if (grep /^(e[24]|gcc4[78])$/, @quals) {
+    $compiler = "gcc";
+  } else {
+    $compiler = "cc"; # Native.
+  }
+}
+
 $cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type, $sourcedir, $builddir, $compiler );
 
 print TSET "setenv UPS_OVERRIDE -B\n";
@@ -195,11 +204,7 @@ if ( $simple ) {
 } else {
   print TSET "setenv CETPKG_QUAL $qual\n";
   print TSET "setenv CETPKG_TYPE $type\n";
-  if ($compiler) {
-    print TSET "setenv CETPKG_COMPILER $compiler\n";
-  } else {
-    print TSET "unsetenv_ CETPKG_COMPILER\n";
-  }
+  print TSET "setenv CETPKG_COMPILER $compiler\n";
 }
 print TSET "setup -B cetpkgsupport \n";
 print TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
