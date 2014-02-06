@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent cetbuildtools v3_07_08
+parent cetbuildtools v3_08_00
 
 # These optional lines define the installed directories where
 # headers, libraries, and executables will be found
@@ -25,7 +25,7 @@ no_fq_dir
 # The required "product version" line indicates that the remaining lines
 # define product/version pairs
 product		version
-cmake		-
+cmake		v2_8_12_1
 
 # note that cetbuildtools depends only on products which have no qualifiers
 qualifier	cmake

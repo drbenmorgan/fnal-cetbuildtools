@@ -17,65 +17,73 @@
 if (CET_TEST_GROUPS)
 endif()
 
+include(CetGetProductInfo)
+
+macro(regex_escape val var)
+  string(REGEX REPLACE "(\\.|\\||\\^|\\$|\\*|\\(|\\)|\\[|\\]|\\+)" "\\\\\\1" ${var} "${val}")
+endmacro()
+
+# Verify that the compiler is set as desired, and is consistent with our
+# current known use of qualifiers.
+function(_verify_compiler_quals)
+  if(NOT CMAKE_C_COMPILER) # Languages disabled.
+    return()
+  endif()
+  cet_get_product_info_item(compiler rcompiler ec_compiler)
+  if (NOT rcompiler)
+    message(FATAL_ERROR "Unable to obtain compiler suite setting: re-source setup_for_development?")
+  endif()
+  set(compiler ${rcompiler} CACHE STRING "Compiler suite identifier" FORCE)
+  if(rcompiler STREQUAL "cc")
+    set(c_compiler_ref "^/usr/bin/cc$")
+  elseif(compiler MATCHES "^(gcc.*)$")
+    regex_escape("$ENV{GCC_FQ_DIR}/bin/${CMAKE_MATCH_0}" escaped_path)
+    set(c_compiler_ref "^${escaped_path}$")
+  elseif(rcompiler STREQUAL icc)
+    message(FATAL_ERROR "Intel compiler suite not yet supported.")
+  elseif(rcompiler STREQUAL clang)
+    message(FATAL_ERROR "Clang not yet supported.")
+  elseif(rcompiler MATCHES "[-_]gcc\\$")
+    message(FATAL_ERROR "Cross-compiling not yet supported")
+  else()
+    message(FATAL_ERROR "Unrecognized compiler suite \"${rcompiler}\": use cc (default), gcc(-XXX)?, icc, or clang.")
+  endif()
+  if(NOT (CMAKE_C_COMPILER MATCHES "${c_compiler_ref}"))
+    message(FATAL_ERROR "CMAKE_C_COMPILER set to ${CMAKE_C_COMPILER}: expected match to \"${c_compiler_ref}\".\n"
+      "Use buildtool or preface cmake invocation with \"env CC=${CETPKG_COMPILER}.\" Use buildtool -c if changing qualifier.")
+  endif()
+endfunction()
+
 
 macro(_get_cetpkg_info)
 
-   # find $CETBUILDTOOLS_DIR/bin/
-   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-   if( NOT CETBUILDTOOLS_DIR )
-       #message(STATUS "_get_cetpkg_info: looking in path")
-       FIND_PROGRAM( GET_PRODUCT_INFO report_product_info $ENV{PATH} )
-   else()
-       #message(STATUS "_get_cetpkg_info: looking in ${CETBUILDTOOLS_DIR}/bin")
-       FIND_PROGRAM( GET_PRODUCT_INFO report_product_info
-                     ${CETBUILDTOOLS_DIR}/bin  )
-   endif ()
-   #message(STATUS "GET_PRODUCT_INFO: ${GET_PRODUCT_INFO}")
-   if( NOT GET_PRODUCT_INFO )
-       message(FATAL_ERROR "_get_cetpkg_info: Can't find report_product_info")
-   endif()
+  cet_get_product_info_item(product rproduct ec_product)
+  if(ec_product)
+    message(FATAL_ERROR "Unable to obtain product information: need to re-source setup_for_development?")
+  endif()
 
-   execute_process(COMMAND ${GET_PRODUCT_INFO} 
-			   ${CMAKE_CURRENT_BINARY_DIR}
-			   product
-                   OUTPUT_VARIABLE rproduct
-		   OUTPUT_STRIP_TRAILING_WHITESPACE
-		   )
+  cet_get_product_info_item(version rversion)
+  cet_get_product_info_item(default_version rdefault_version)
+  cet_get_product_info_item(qualifier rqual)
 
-   execute_process(COMMAND ${GET_PRODUCT_INFO} 
-			   ${CMAKE_CURRENT_BINARY_DIR}
-			   version
-                   OUTPUT_VARIABLE rversion
-		   OUTPUT_STRIP_TRAILING_WHITESPACE
-		   )
+  set(product ${rproduct} CACHE STRING "Package UPS name" FORCE)
+  set(version ${rversion} CACHE STRING "Package UPS version" FORCE)
+  set(default_version ${rdefault_version} CACHE STRING "Package UPS default version" FORCE)
+  set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
+  #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${full_qualifier}")
 
-   execute_process(COMMAND ${GET_PRODUCT_INFO} 
-			   ${CMAKE_CURRENT_BINARY_DIR}
-			   default_version
-                   OUTPUT_VARIABLE rdefault_version
-		   OUTPUT_STRIP_TRAILING_WHITESPACE
-		   )
-
-   execute_process(COMMAND ${GET_PRODUCT_INFO} 
-			   ${CMAKE_CURRENT_BINARY_DIR}
-			   qualifier
-                   OUTPUT_VARIABLE rqual
-		   OUTPUT_STRIP_TRAILING_WHITESPACE
-		   )
-
-   set(product ${rproduct} CACHE STRING "Package UPS name" FORCE)
-   set(version ${rversion} CACHE STRING "Package UPS version" FORCE)
-   set(default_version ${rdefault_version} CACHE STRING "Package UPS default version" FORCE)
-   set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
-   #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${full_qualifier}")
-
-   set( cet_ups_dir ${CMAKE_CURRENT_SOURCE_DIR}/ups CACHE STRING "Package UPS directory" FORCE )
-   ##message( STATUS "_get_cetpkg_info: cet_ups_dir is ${cet_ups_dir}")
-
-
+  set( cet_ups_dir ${CMAKE_CURRENT_SOURCE_DIR}/ups CACHE STRING "Package UPS directory" FORCE )
+  ##message( STATUS "_get_cetpkg_info: cet_ups_dir is ${cet_ups_dir}")
 endmacro(_get_cetpkg_info)
 
 macro(cet_cmake_env)
+
+  # project() must have been called before us.
+  if(NOT CMAKE_PROJECT_NAME)
+    message (FATAL_ERROR
+      "CMake project() command must have been invoked prior to cet_cmake_env()."
+      "\nIt must be invoked at the top level, not in an included .cmake file.")
+  endif()
 
   _get_cetpkg_info()
 
@@ -112,12 +120,12 @@ macro(cet_cmake_env)
   endif()
 
   # Useful includes.
-  include(SetCompilerFlags)
   include(FindUpsPackage)
   include(FindUpsBoost)
   include(FindUpsRoot)
   include(FindUpsGeant4)
   include(ParseUpsVersion)
+  include(SetCompilerFlags)
   include(SetFlavorQual)
   include(InstallSource)
   include(CetCMakeUtils)
@@ -126,6 +134,9 @@ macro(cet_cmake_env)
 
   # initialize cmake config file fragments
   _cet_init_config_var()
+
+  # Make sure compiler is set as the configuration requires.
+  _verify_compiler_quals()
 
   #set package version from ups version
   set_version_from_ups( ${version} )
@@ -161,33 +172,35 @@ macro(cet_cmake_env)
 endmacro(cet_cmake_env)
 
 macro(cet_check_gcc)
-
-  # make sure gcc has been set
-  # note that gcc has no qualifier
-  SET ( GCC_VERSION $ENV{GCC_VERSION} )
-  IF (NOT GCC_VERSION)
-      MESSAGE (FATAL_ERROR "gcc has not been setup")
-  ENDIF()
-  #message(STATUS "GCC version is ${GCC_VERSION}")
-
+  message(WARNING "Obsolete function cet_check_gcc called -- NOP.")
 endmacro(cet_check_gcc)
 
-macro( cet_have_qual findq )
-   if(${ARGC} GREATER 1)
-     set(ans_var ${ARGV1})
-   else()
-     set(ans_var CET_HAVE_QUAL)
-   endif()
-   STRING( REGEX REPLACE ":" ";" qualifier_as_list "${full_qualifier}" )
-   list(FIND qualifier_as_list ${findq} qual_index)
-   #message(STATUS "cet_have_qual: qual_index is ${qual_index}")
-   if( ${qual_index} LESS 0 ) 
-     set( ${ans_var} "FALSE") # Not found.
-   else()
-     set( ${ans_var} "TRUE") # Found.
-   endif()
-   #message(STATUS "cet_have_qual: returning ${CET_HAVE_QUAL}")
-endmacro(cet_have_qual)
+function( cet_have_qual findq )
+  cet_parse_args(CHQ "" "REGEX" ${ARGN})
+  list(LENGTH CHQ_DEFAULT_ARGS chq_def_args_length)
+  if (chq_def_args_length GREATER 0)
+    list(GET CHQ_DEFAULT_ARGS 0 ans_var)
+  else()
+    set(ans_var CET_HAVE_QUAL)
+  endif()
+  if (CHQ_REGEX)
+    set(qual_index -1)
+    STRING(REGEX MATCH "(^|:)${findq}(:|$)" found_match "${full_qualifier}")
+    if (found_match)
+      set(qual_index 0)
+    endif()
+  else()
+    STRING( REGEX REPLACE ":" ";" qualifier_as_list "${full_qualifier}" )
+    list(FIND qualifier_as_list ${findq} qual_index)
+    #message(STATUS "cet_have_qual: qual_index is ${qual_index}")
+  endif()
+  if( qual_index LESS 0 ) 
+    set( ${ans_var} "FALSE" PARENT_SCOPE) # Not found.
+  else()
+    set( ${ans_var} "TRUE" PARENT_SCOPE) # Found.
+  endif()
+  #message(STATUS "cet_have_qual: returning ${CET_HAVE_QUAL}")
+endfunction(cet_have_qual)
 
 macro( cet_set_lib_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_libdir

@@ -13,11 +13,13 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (cetbuildtools)
-
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Modules)
 
 include(CetCMakeEnv)
+
+# Project name. Necessary before call to cet_cmake_env()
+project(cetbuildtools NONE)
+
 # cetbuildtools has no architecture dependence
 cet_cmake_env( noarch )
 

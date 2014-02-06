@@ -36,6 +36,7 @@
 # -nq-	this dependent product has no qualifier
 # -b-	this dependent product is only used for the build - it will not be in the table
 
+use List::Util qw(min max); # Numeric min / max funcions.
 sub parse_product_list {
   my @params = @_;
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
@@ -517,20 +518,27 @@ sub cetpkg_info_file {
   ## add CETPKG_SOURCE and CETPKG_BUILD for ease of reference by the user
   # if there is a cmake cache file, we could check for the install prefix
   # cmake -N -L | grep CMAKE_INSTALL_PREFIX | cut -f2 -d=
-  my @params = @_;
-  $cetpkgfile = $params[6]."/cetpkg_variable_report";
+  my @param_names =
+    qw (name version default_version qual type source build compiler);
+  my @param_vals = @_;
+  if (scalar @param_vals != scalar @param_names) {
+    print STDERR "ERROR: cetpkg_info_file expects the following paramaters in order:\n",
+      join(", ", @param_names), ".\n";
+    exit(1);
+  }
+  $cetpkgfile = "$param_vals[6]/cetpkg_variable_report";
   open(CPG, "> $cetpkgfile") or die "Couldn't open $cetpkgfile";
   print CPG "\n";
-  print CPG "CETPKG_NAME     $params[0]\n";
-  print CPG "CETPKG_VERSION  $params[1]\n";
-  print CPG "CETPKG_DEFAULT_VERSION  $params[2]\n";
-  print CPG "CETPKG_QUAL     $params[3]\n";
-  print CPG "CETPKG_TYPE     $params[4]\n";
-  print CPG "CETPKG_SOURCE   $params[5]\n";
-  print CPG "CETPKG_BUILD    $params[6]\n";
-  print CPG "to check cmake cached variables, use cmake -N -L\n";
+  foreach my $index (0 .. $#param_names) {
+    printf CPG "CETPKG_%s%s%s\n",
+      uc $param_names[$index], # Var name.
+        " " x (max(map { length() + 2 } @param_names) -
+               length($param_names[$index])), # Space padding.
+          $param_vals[$index]; # Value.
+  }
+  print CPG "\nTo check cmake cached variables, use cmake -N -L.\n";
   close(CPG);
-  return($cetpkgfile);  
+  return($cetpkgfile);
 }
 
 sub print_setup_noqual {

@@ -21,6 +21,7 @@ if( $#ARGV < 2 ) {
     print ERR1 "unsetenv_ CETPKG_VERSION\n";
     print ERR1 "unsetenv_ CETPKG_QUAL\n";
     print ERR1 "unsetenv_ CETPKG_TYPE\n";
+    print ERR1 "unsetenv_ CETPKG_COMPILER\n";
     print ERR1 "echo \"ERROR: directory and qualifiers not specified\"\n";
     print ERR1 "echo \"USAGE: set_dev_products <input-directory> <-d|-o|-p> <qualifiers>\"\n";
     print ERR1 "return 1\n";
@@ -65,6 +66,7 @@ if ( $srcbase eq "ups" ) {
     print ERR2 "unsetenv_ CETPKG_VERSION\n";
     print ERR2 "unsetenv_ CETPKG_QUAL\n";
     print ERR2 "unsetenv_ CETPKG_TYPE\n";
+    print ERR2 "unsetenv_ CETPKG_COMPILER\n";
     print ERR2 "echo \"ERROR: \"\n";
     print ERR2 "echo \"ERROR: you have an old copy of setup_for_development\"\n";
     print ERR2 "echo \"ERROR: please issue the following command\"\n";
@@ -111,6 +113,7 @@ if ( $qual ) {
     print ERR2 "unsetenv_ CETPKG_VERSION\n";
     print ERR2 "unsetenv_ CETPKG_QUAL\n";
     print ERR2 "unsetenv_ CETPKG_TYPE\n";
+    print ERR2 "unsetenv_ CETPKG_COMPILER\n";
     print ERR2 "echo \"ERROR: no qualifiers specified\"\n";
     print ERR2 "echo \"ERROR: add a defaultqual line to $pfile\"\n";
     print ERR2 "echo \"ERROR: or specify the qualifier(s) on the command line\"\n";
@@ -123,9 +126,73 @@ if ( $qual ) {
 }
 #print DIAG "set_dev_products debug info: qual $qual\n";
 
-$cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type, $sourcedir, $builddir );
 (%ohash) = find_optional_products( $pfile );
 ($ecount, @ehash) = find_only_for_build_products( $pfile );
+
+# Temporary variable connected as a filehandle.
+open( SETUP_CMDS, ">", \$setup_cmds) or
+  die "Could not open memory stream to variable.";
+
+# are there products without listed qualifiers?
+@pkeys = keys %phash;
+foreach $i ( 1 .. $#pkeys ) {
+  $p_has_qual = 0;
+  foreach $j ( 1 .. $ndeps ) {
+    if ( $pkeys[$i] eq $qlist[0][$j] ) {
+       $p_has_qual++;
+    }
+  }
+  if ( $p_has_qual == 0 ) {
+    print_setup_noqual( $pkeys[$i], $phash{$pkeys[$i]}, $ohash{$pkeys[$i]}, SETUP_CMDS );
+  }
+}
+# now loop over the qualifier list
+$match = 0;
+foreach $i ( 1 .. $#qlist ) {
+  if ( compare_qual( $qlist[$i][0], $qual ) ) {
+    $match++;
+    foreach $j ( 1 .. $ndeps ) {
+      if ($qlist[0][$j] eq "compiler") { # Compiler suite keyword
+        if ($qlist[$i][$j] and $qlist[$i][$j] ne '-') {
+          $compiler = $qlist[$i][$j];
+        } else {
+          undef $compiler;
+        }
+        next;
+      }
+      if ( $qlist[$i][$j] eq "-" ) {
+      } elsif ( $qlist[$i][$j] eq "-nq-" ) {
+        print_setup_noqual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ohash{$qlist[0][$j]}, SETUP_CMDS );
+	#print SETUP_CMDS "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
+      } elsif ( $qlist[$i][$j] eq "-b-" ) {
+        print_setup_noqual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ohash{$qlist[0][$j]}, SETUP_CMDS );
+	#print SETUP_CMDS "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
+      } else {
+	@qwords = split(/:/,$qlist[$i][$j]);
+	$ql="+".$qwords[0];
+	foreach $j ( 1 .. $#qwords ) {
+	  $ql = $ql.":+".$qwords[$j];
+	}
+        print_setup_qual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ql, $ohash{$qlist[0][$j]}, SETUP_CMDS );
+	#print SETUP_CMDS "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
+      }
+    }
+    last;
+  }
+}
+
+close(SETUP_CMDS);
+
+if (!$compiler) {
+  my @quals = split /:/, $qual;
+  if (grep /^(e[24]|gcc4[78])$/, @quals) {
+    $compiler = "gcc";
+  } else {
+    $compiler = "cc"; # Native.
+  }
+}
+
+$cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type, $sourcedir, $builddir, $compiler );
 
 print TSET "setenv UPS_OVERRIDE -B\n";
 print TSET "setenv CETPKG_NAME $product\n";
@@ -133,9 +200,11 @@ print TSET "setenv CETPKG_VERSION $version\n";
 if ( $simple ) {
   print TSET "unsetenv_ CETPKG_QUAL\n";
   print TSET "unsetenv_ CETPKG_TYPE\n";
+  print TSET "unsetenv_ CETPKG_COMPILER\n";
 } else {
   print TSET "setenv CETPKG_QUAL $qual\n";
   print TSET "setenv CETPKG_TYPE $type\n";
+  print TSET "setenv CETPKG_COMPILER $compiler\n";
 }
 print TSET "setup -B cetpkgsupport \n";
 print TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
@@ -147,44 +216,10 @@ foreach $i ( 1 .. $ecount ) {
     ##print TSET " echo \$setup_fail \n"; 
   }
 }
-# are there products without listed qualifiers?
-@pkeys = keys %phash;
-foreach $i ( 1 .. $#pkeys ) {
-  $p_has_qual = 0;
-  foreach $j ( 1 .. $ndeps ) {
-    if ( $pkeys[$i] eq $qlist[0][$j] ) {
-       $p_has_qual++;
-    }
-  }
-  if ( $p_has_qual == 0 ) {
-    print_setup_noqual( $pkeys[$i], $phash{$pkeys[$i]}, $ohash{$pkeys[$i]}, TSET );
-  }
-}
-# now loop over the qualifier list
-$match = 0;
-foreach $i ( 1 .. $#qlist ) {
-  if ( compare_qual( $qlist[$i][0], $qual ) ) {
-    $match++;
-    foreach $j ( 1 .. $ndeps ) {
-      if ( $qlist[$i][$j] eq "-" ) {
-      } elsif ( $qlist[$i][$j] eq "-nq-" ) {
-        print_setup_noqual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ohash{$qlist[0][$j]}, TSET );
-	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
-      } elsif ( $qlist[$i][$j] eq "-b-" ) {
-        print_setup_noqual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ohash{$qlist[0][$j]}, TSET );
-	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
-      } else {
-	@qwords = split(/:/,$qlist[$i][$j]);
-	$ql="+".$qwords[0];
-	foreach $j ( 1 .. $#qwords ) {
-	  $ql = $ql.":+".$qwords[$j];
-	}
-        print_setup_qual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ql, $ohash{$qlist[0][$j]}, TSET );
-	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
-      }
-    }
-  }
-}
+
+# Now write the setup commands.
+print TSET $setup_cmds;
+
 ##print TSET " echo \$setup_fail \n"; 
 ##print TSET "test \"\$setup_fail\" =  \"true\" && return 1\n"; 
 # allow for the case where there are no dependencies
