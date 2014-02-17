@@ -491,7 +491,7 @@ function process_gfargs() {
 }
 
 function reorder_quals() {
-  printf "$1" | tr ':' '\n' | sort | tr '\n' ':' | sed -e 's&:$&&'
+  printf "$1" | tr ':' '\n' | sort | tr '\n' ':' | sed -e 's/:$//'
 }
 
 # Main work
