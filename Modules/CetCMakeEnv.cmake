@@ -194,7 +194,7 @@ function( cet_have_qual findq )
     list(FIND qualifier_as_list ${findq} qual_index)
     #message(STATUS "cet_have_qual: qual_index is ${qual_index}")
   endif()
-  if( qual_index LESS 0 ) 
+  if( qual_index LESS 0 )
     set( ${ans_var} "FALSE" PARENT_SCOPE) # Not found.
   else()
     set( ${ans_var} "TRUE" PARENT_SCOPE) # Found.

@@ -25,7 +25,7 @@ no_fq_dir
 # The required "product version" line indicates that the remaining lines
 # define product/version pairs
 product		version
-cmake		v2_8_12_1
+cmake		v2_8_12_2
 
 # note that cetbuildtools depends only on products which have no qualifiers
 qualifier	cmake
