@@ -51,6 +51,11 @@
 #                [EXCLUDES exclusions] )
 # install_fhicl( LIST file_list )
 #
+# install_gdml( [SUBDIRS subdirectory_list]
+#                [EXTRAS extra_files]
+#                [EXCLUDES exclusions] )
+# install_gdml( LIST file_list )
+#
 # install_scripts( [SUBDIRS subdirectory_list]
 #                  [EXTRAS extra_files]
 #                  [EXCLUDES exclusions] )
@@ -374,3 +379,70 @@ macro( install_fhicl   )
     _cet_install_fhicl_without_list()
   endif()
 endmacro( install_fhicl )
+
+macro( _cet_copy_gdml )
+  set( mrb_build_dir $ENV{MRB_BUILDDIR} )
+  get_filename_component( gdmlpathname ${gdml_install_dir} NAME )
+  #message(STATUS "_cet_copy_gdml: copying to mrb ${mrb_build_dir}/${product}/${gdmlpathname} or cet ${CETPKG_BUILD}/${gdmlpathname}")
+  if( mrb_build_dir )
+    set( gdmlbuildpath ${mrb_build_dir}/${product}/${gdmlpathname} )
+  else()
+    set( gdmlbuildpath ${CETPKG_BUILD}/${gdmlpathname} )
+  endif()
+  #message(STATUS "_cet_copy_gdml: copying to ${gdmlbuildpath}")
+  foreach( gdmlfile ${ARGN} )
+    get_filename_component( gdmlname ${gdmlfile} NAME )
+    configure_file( ${gdmlname} ${gdmlbuildpath}/${gdmlname} COPYONLY )
+  endforeach(gdmlfile)
+endmacro( _cet_copy_gdml )
+
+macro( _cet_install_gdml_without_list   )
+  #message( STATUS "gdml scripts will be installed in ${gdml_install_dir}" )
+  FILE(GLOB gdml_files [^.]*.gdml [^.]*.C [^.]*.xml [^.]*.xsd README )
+  if( IGDML_EXCLUDES )
+    LIST( REMOVE_ITEM gdml_files ${IGDML_EXCLUDES} )
+  endif()
+  if( gdml_files )
+    #message( STATUS "installing gdml files ${gdml_files} in ${gdml_install_dir}")
+    _cet_copy_gdml( ${gdml_files} )
+    INSTALL ( FILES ${gdml_files}
+              DESTINATION ${gdml_install_dir} )
+  endif( gdml_files )
+  # now check subdirectories
+  if( IGDML_SUBDIRS )
+    foreach( sub ${IGDML_SUBDIRS} )
+      FILE(GLOB subdir_gdml_files
+                ${sub}/[^.]*.gdml )
+      if( IGDML_EXCLUDES )
+        LIST( REMOVE_ITEM subdir_gdml_files ${IGDML_EXCLUDES} )
+      endif()
+      if( subdir_gdml_files )
+        _cet_copy_gdml( ${subdir_gdml_files} )
+        INSTALL ( FILES ${subdir_gdml_files}
+                  DESTINATION ${gdml_install_dir} )
+      endif( subdir_gdml_files )
+    endforeach(sub)
+  endif( IGDML_SUBDIRS )
+endmacro( _cet_install_gdml_without_list )
+
+macro( install_gdml   )
+  cet_parse_args( IGDML "SUBDIRS;LIST;EXTRAS;EXCLUDES" "" ${ARGN})
+  set(gdml_install_dir ${${product}_gdml_dir} )
+  message( STATUS "install_gdml: gdml scripts will be installed in ${gdml_install_dir}" )
+  if( IGDML_LIST )
+    if( IGDML_SUBDIRS )
+      message( FATAL_ERROR
+               "ERROR: call install_gdml with EITHER LIST or SUBDIRS but not both")
+    endif( IGDML_SUBDIRS )
+    _cet_copy_gdml( ${IGDML_LIST} )
+    INSTALL ( FILES  ${IGDML_LIST}
+              DESTINATION ${gdml_install_dir} )
+  else()
+    if( IGDML_EXTRAS )
+      _cet_copy_gdml( ${IGDML_EXTRAS} )
+      INSTALL ( FILES  ${IGDML_EXTRAS}
+                DESTINATION ${gdml_install_dir} )
+    endif( IGDML_EXTRAS )
+    _cet_install_gdml_without_list()
+  endif()
+endmacro( install_gdml )

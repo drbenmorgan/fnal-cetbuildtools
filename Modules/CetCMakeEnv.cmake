@@ -144,6 +144,7 @@ macro(cet_cmake_env)
   cet_set_bin_directory()
   cet_set_inc_directory()
   cet_set_fcl_directory()
+  cet_set_gdml_directory()
 
   set(CETPKG_BUILD $ENV{CETPKG_BUILD})
   if(NOT CETPKG_BUILD)
@@ -268,7 +269,7 @@ macro( cet_set_bin_directory )
 endmacro( cet_set_bin_directory )
 
 macro( cet_set_fcl_directory )
-  # find $CETBUILDTOOLS_DIR/fcl/report_fcldir
+  # find $CETBUILDTOOLS_DIR/bin/report_fcldir
   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
   if( ${product} MATCHES "cetbuildtools" )
       # building cetbuildtools - use our copy
@@ -305,6 +306,45 @@ macro( cet_set_fcl_directory )
   endif()
   #message( STATUS "cet_set_fcl_directory: ${product}_fcl_dir is ${${product}_fcl_dir}")
 endmacro( cet_set_fcl_directory )
+
+macro( cet_set_gdml_directory )
+  # find $CETBUILDTOOLS_DIR/bin/report_gdmldir
+  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+  if( ${product} MATCHES "cetbuildtools" )
+      # building cetbuildtools - use our copy
+      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+      FIND_PROGRAM( REPORT_GDML_DIR report_gdmldir
+                    ${PROJECT_SOURCE_DIR}/bin  )
+  elseif( NOT CETBUILDTOOLS_DIR )
+      FIND_PROGRAM( REPORT_GDML_DIR report_gdmldir )
+  else()
+      FIND_PROGRAM( REPORT_GDML_DIR report_gdmldir
+                    ${CETBUILDTOOLS_DIR}/bin  )
+  endif ()
+  #message(STATUS "REPORT_GDML_DIR: ${REPORT_GDML_DIR}")
+  if( NOT REPORT_GDML_DIR )
+      message(FATAL_ERROR "Can't find report_gdmldir")
+  endif()
+  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
+  execute_process(COMMAND ${REPORT_GDML_DIR} 
+                          ${cet_ups_dir} 
+                  OUTPUT_VARIABLE REPORT_GDML_DIR_MSG
+		  OUTPUT_STRIP_TRAILING_WHITESPACE
+		  )
+  #message( STATUS "${REPORT_GDML_DIR} returned ${REPORT_GDML_DIR_MSG}")
+  if( ${REPORT_GDML_DIR_MSG} MATCHES "DEFAULT" )
+     set( ${product}_gdml_dir "NONE" CACHE STRING "Package gdml directory" FORCE )
+  elseif( ${REPORT_GDML_DIR_MSG} MATCHES "NONE" )
+     set( ${product}_gdml_dir ${REPORT_GDML_DIR_MSG} CACHE STRING "Package gdml directory" FORCE )
+  elseif( ${REPORT_GDML_DIR_MSG} MATCHES "ERROR" )
+     set( ${product}_gdml_dir ${REPORT_GDML_DIR_MSG} CACHE STRING "Package gdml directory" FORCE )
+  else()
+    STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" fdir1 "${REPORT_GDML_DIR_MSG}" )
+    STRING( REGEX REPLACE "product_dir" "${product}/${version}" fdir2 "${fdir1}" )
+    set( ${product}_gdml_dir ${fdir2}  CACHE STRING "Package gdml directory" FORCE )
+  endif()
+  #message( STATUS "cet_set_gdml_directory: ${product}_gdml_dir is ${${product}_gdml_dir}")
+endmacro( cet_set_gdml_directory )
 
 macro( cet_set_inc_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_incdir
