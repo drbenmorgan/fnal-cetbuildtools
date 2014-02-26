@@ -106,12 +106,12 @@ macro( _cet_check_build_directory )
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.icc
 	    )
   if( build_directory_files )
-    #message( STATUS "installing ${build_directory_files} in ${source_install_dir}")
+    #message( STATUS "_cet_check_build_directory: installing ${build_directory_files} in ${source_install_dir}")
     INSTALL( FILES ${build_directory_files}
              DESTINATION ${source_install_dir} )
   endif( build_directory_files )
   if( build_directory_headers )
-    #message( STATUS "installing ${build_directory_headers} in ${source_install_dir}")
+    #message( STATUS "_cet_check_build_directory: installing ${build_directory_headers} in ${source_install_dir}")
     INSTALL( FILES ${build_directory_headers}
              DESTINATION ${header_install_dir} )
   endif( build_directory_headers )
@@ -129,6 +129,7 @@ macro( _cet_install_generated_dictionary_code )
            COMMAND ${CMAKE_COMMAND} -E copy ${dict} ${dummy}
            DEPENDS ${dict}
         )
+        #message(STATUS "_cet_install_generated_dictionary_code: installing ${dict} in ${source_install_dir}" )
         INSTALL( FILES ${dict}
                  DESTINATION ${source_install_dir} )
      endforeach(dict)
@@ -381,6 +382,7 @@ macro( install_fhicl   )
 endmacro( install_fhicl )
 
 macro( _cet_copy_gdml )
+  cet_parse_args( CPGDML "SUBDIR;LIST" "" ${ARGN})
   set( mrb_build_dir $ENV{MRB_BUILDDIR} )
   get_filename_component( gdmlpathname ${gdml_install_dir} NAME )
   #message(STATUS "_cet_copy_gdml: copying to mrb ${mrb_build_dir}/${product}/${gdmlpathname} or cet ${CETPKG_BUILD}/${gdmlpathname}")
@@ -389,10 +391,13 @@ macro( _cet_copy_gdml )
   else()
     set( gdmlbuildpath ${CETPKG_BUILD}/${gdmlpathname} )
   endif()
+  if( CPGDML_SUBDIR )
+    set( gdmlbuildpath ${gdmlbuildpath}/${CPGDML_SUBDIR} )
+  endif( CPGDML_SUBDIR )
   #message(STATUS "_cet_copy_gdml: copying to ${gdmlbuildpath}")
-  foreach( gdmlfile ${ARGN} )
+  foreach( gdmlfile ${CPGDML_LIST} )
     get_filename_component( gdmlname ${gdmlfile} NAME )
-    configure_file( ${gdmlname} ${gdmlbuildpath}/${gdmlname} COPYONLY )
+    configure_file( ${gdmlfile} ${gdmlbuildpath}/${gdmlname} COPYONLY )
   endforeach(gdmlfile)
 endmacro( _cet_copy_gdml )
 
@@ -404,7 +409,7 @@ macro( _cet_install_gdml_without_list   )
   endif()
   if( gdml_files )
     #message( STATUS "installing gdml files ${gdml_files} in ${gdml_install_dir}")
-    _cet_copy_gdml( ${gdml_files} )
+    _cet_copy_gdml( LIST ${gdml_files} )
     INSTALL ( FILES ${gdml_files}
               DESTINATION ${gdml_install_dir} )
   endif( gdml_files )
@@ -412,14 +417,20 @@ macro( _cet_install_gdml_without_list   )
   if( IGDML_SUBDIRS )
     foreach( sub ${IGDML_SUBDIRS} )
       FILE(GLOB subdir_gdml_files
-                ${sub}/[^.]*.gdml )
+                ${sub}/[^.]*.gdml  
+		${sub}/[^.]*.C 
+		${sub}/[^.]*.xml 
+		${sub}/[^.]*.xsd 
+		${sub}/README
+		)
+      #message( STATUS "found ${sub} files ${subdir_gdml_files}")
       if( IGDML_EXCLUDES )
         LIST( REMOVE_ITEM subdir_gdml_files ${IGDML_EXCLUDES} )
       endif()
       if( subdir_gdml_files )
-        _cet_copy_gdml( ${subdir_gdml_files} )
+        _cet_copy_gdml( LIST ${subdir_gdml_files} SUBDIR ${sub} )
         INSTALL ( FILES ${subdir_gdml_files}
-                  DESTINATION ${gdml_install_dir} )
+                  DESTINATION ${gdml_install_dir}/${sub} )
       endif( subdir_gdml_files )
     endforeach(sub)
   endif( IGDML_SUBDIRS )
@@ -429,17 +440,19 @@ macro( install_gdml   )
   cet_parse_args( IGDML "SUBDIRS;LIST;EXTRAS;EXCLUDES" "" ${ARGN})
   set(gdml_install_dir ${${product}_gdml_dir} )
   message( STATUS "install_gdml: gdml scripts will be installed in ${gdml_install_dir}" )
+  #message( STATUS "install_gdml: IGDML_SUBDIRS is ${IGDML_SUBDIRS}")
+
   if( IGDML_LIST )
     if( IGDML_SUBDIRS )
       message( FATAL_ERROR
                "ERROR: call install_gdml with EITHER LIST or SUBDIRS but not both")
     endif( IGDML_SUBDIRS )
-    _cet_copy_gdml( ${IGDML_LIST} )
+    _cet_copy_gdml( LIST ${IGDML_LIST} )
     INSTALL ( FILES  ${IGDML_LIST}
               DESTINATION ${gdml_install_dir} )
   else()
     if( IGDML_EXTRAS )
-      _cet_copy_gdml( ${IGDML_EXTRAS} )
+      _cet_copy_gdml( LIST ${IGDML_EXTRAS} )
       INSTALL ( FILES  ${IGDML_EXTRAS}
                 DESTINATION ${gdml_install_dir} )
     endif( IGDML_EXTRAS )
