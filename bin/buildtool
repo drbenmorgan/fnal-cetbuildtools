@@ -538,8 +538,15 @@ function do_work() {
     local status
     (( status = $(cat "$TMP/status.dat") ))
     if (( status == 0 )) && [[ -s "$TMP/ctest.err" ]]; then
-      error "ERROR: Detected stderr output from ctest."
-      check_status 1
+      err=$(cat "$TMP/ctest.err")
+      if (( $(echo "$err" | wc -l) == 1 )) && \
+         [[ "$err" == "No tests were found!!!" ]]; then
+        # If this is the only output, then chances are there were no tests.
+       check_status $status
+      else
+        error "\nERROR: Detected stderr output from ctest."
+        check_status 1
+      fi
     else
       check_status $status
     fi
