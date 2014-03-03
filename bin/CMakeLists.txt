@@ -2,7 +2,7 @@
 install_scripts( LIST buildtool
  		      build_table
 		      build_version_file
-          cmake-graphviz-filt
+		      cmake-graphviz-filt
 		      code-dep-graph
 		      increment-version
 		      set_dev_products
@@ -10,6 +10,7 @@ install_scripts( LIST buildtool
 		      report_incdir
 		      report_libdir
 		      report_fcldir
+		      report_gdmldir
 		      report_product_info )
 
 INSTALL ( FILES cet_test_functions.sh
