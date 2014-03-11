@@ -13,7 +13,7 @@ if( $#ARGV < 1 ) {
 }
 
 $inputdir = $ARGV[0];
-$info_type = $ARGV[1];
+$info_type = lc $ARGV[1];
 
 $report=$inputdir."/cetpkg_variable_report";
 
@@ -36,8 +36,8 @@ while ( $line=<PIN> ) {
     }
   } elsif ( $words[0] eq "CETPKG_TYPE" ) {
     $info->{type} = $words[1];
-  } elsif ( $words[0] eq "CETPKG_COMPILER") {
-    $info->{compiler} = $words[1];
+  } elsif ( $words[0] =~ "CETPKG_(CC|CXX|FC)") {
+    $info->{lc ${1}} = $words[1];
   }
 }
 close(PIN);

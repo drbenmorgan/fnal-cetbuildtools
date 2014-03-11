@@ -136,6 +136,7 @@ sub create_quals {
       print TBL "    envSet( \${UPS_PROD_NAME_UC}_CFLAGS, \"$cflag\" )\n";
     }
     foreach $j ( 1 .. $ndeps ) {
+      next if $qlist[0][$j] eq "compiler";
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
         if( $ohash{$qlist[0][$j]} eq "optional" ) {

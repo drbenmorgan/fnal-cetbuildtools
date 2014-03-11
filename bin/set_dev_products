@@ -12,6 +12,14 @@
 use File::Basename;
 use lib dirname($0);
 
+my $default_fc = ( $^O eq "darwin" ) ? "" : "gfortran";
+
+my $compiler_table =
+  {
+   cc => { CC => "cc", CXX => "c++", FC => $default_fc },
+   gcc => { CC => "gcc", CXX => "g++", FC => "gfortran" },
+   icc => { CC => "icc", CXX => "icpc", FC => "ifort" },
+  };
 
 if( $#ARGV < 2 ) {
     $errfl1 = "problem_report";
@@ -21,7 +29,9 @@ if( $#ARGV < 2 ) {
     print ERR1 "unsetenv_ CETPKG_VERSION\n";
     print ERR1 "unsetenv_ CETPKG_QUAL\n";
     print ERR1 "unsetenv_ CETPKG_TYPE\n";
-    print ERR1 "unsetenv_ CETPKG_COMPILER\n";
+    print ERR1 "unsetenv_ CETPKG_CC\n";
+    print ERR1 "unsetenv_ CETPKG_CXX\n";
+    print ERR1 "unsetenv_ CETPKG_FC\n";
     print ERR1 "echo \"ERROR: directory and qualifiers not specified\"\n";
     print ERR1 "echo \"USAGE: set_dev_products <input-directory> <-d|-o|-p> <qualifiers>\"\n";
     print ERR1 "return 1\n";
@@ -66,7 +76,9 @@ if ( $srcbase eq "ups" ) {
     print ERR2 "unsetenv_ CETPKG_VERSION\n";
     print ERR2 "unsetenv_ CETPKG_QUAL\n";
     print ERR2 "unsetenv_ CETPKG_TYPE\n";
-    print ERR2 "unsetenv_ CETPKG_COMPILER\n";
+    print ERR2 "unsetenv_ CETPKG_CC\n";
+    print ERR2 "unsetenv_ CETPKG_CXX\n";
+    print ERR2 "unsetenv_ CETPKG_FC\n";
     print ERR2 "echo \"ERROR: \"\n";
     print ERR2 "echo \"ERROR: you have an old copy of setup_for_development\"\n";
     print ERR2 "echo \"ERROR: please issue the following command\"\n";
@@ -113,7 +125,9 @@ if ( $qual ) {
     print ERR2 "unsetenv_ CETPKG_VERSION\n";
     print ERR2 "unsetenv_ CETPKG_QUAL\n";
     print ERR2 "unsetenv_ CETPKG_TYPE\n";
-    print ERR2 "unsetenv_ CETPKG_COMPILER\n";
+    print ERR2 "unsetenv_ CETPKG_CC\n";
+    print ERR2 "unsetenv_ CETPKG_CXX\n";
+    print ERR2 "unsetenv_ CETPKG_FC\n";
     print ERR2 "echo \"ERROR: no qualifiers specified\"\n";
     print ERR2 "echo \"ERROR: add a defaultqual line to $pfile\"\n";
     print ERR2 "echo \"ERROR: or specify the qualifier(s) on the command line\"\n";
@@ -192,7 +206,17 @@ if (!$compiler) {
   }
 }
 
-$cetfl = cetpkg_info_file( $product, $version, $default_ver, $qual, $type, $sourcedir, $builddir, $compiler );
+$cetfl = cetpkg_info_file($product,
+                          $version,
+                          $default_ver,
+                          $qual,
+                          $type,
+                          $sourcedir,
+                          $builddir,
+                          $compiler_table->{$compiler}->{CC},
+                          $compiler_table->{$compiler}->{CXX},
+                          $compiler_table->{$compiler}->{FC},
+                         );
 
 print TSET "setenv UPS_OVERRIDE -B\n";
 print TSET "setenv CETPKG_NAME $product\n";
@@ -200,11 +224,16 @@ print TSET "setenv CETPKG_VERSION $version\n";
 if ( $simple ) {
   print TSET "unsetenv_ CETPKG_QUAL\n";
   print TSET "unsetenv_ CETPKG_TYPE\n";
-  print TSET "unsetenv_ CETPKG_COMPILER\n";
+  print TSET "unsetenv_ CETPKG_CC\n";
+  print TSET "unsetenv_ CETPKG_CXX\n";
+  print TSET "unsetenv_ CETPKG_FC\n";
+
 } else {
   print TSET "setenv CETPKG_QUAL $qual\n";
   print TSET "setenv CETPKG_TYPE $type\n";
-  print TSET "setenv CETPKG_COMPILER $compiler\n";
+  print TSET "setenv CETPKG_CC $compiler_table->{${compiler}}->{CC}\n";
+  print TSET "setenv CETPKG_CXX $compiler_table->{${compiler}}->{CXX}\n";
+  print TSET "setenv CETPKG_FC $compiler_table->{${compiler}}->{FC}\n";
 }
 print TSET "setup -B cetpkgsupport \n";
 print TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 

@@ -509,8 +509,8 @@ function do_work() {
   else
     announce_stage
     cmake_defs=${cmake_defs//,/;}
-    [[ -n "${CETPKG_COMPILER}" ]] && \
-        local ccenv="CC=${CETPKG_COMPILER}"
+    [[ -n "${CETPKG_CC}" ]] && \
+        local ccenv="CC=${CETPKG_CC} CXX=${CETPKG_CXX} FC=${CETPKG_FC}"
     ( cd "$CETPKG_BUILD" && \
         eval ${ccenv} cmake \
             -DCMAKE_INSTALL_PREFIX="$install_prefix" \
@@ -782,7 +782,11 @@ fi
 
 set_vars_from_report_file
 
-if [[ -z "$CETPKG_SOURCE" ]] || [[ -z "$CETPKG_TYPE" ]] || [[ -z "$CETPKG_COMPILER" ]]; then
+if [[ -z "$CETPKG_SOURCE" ]] || \
+    [[ -z "$CETPKG_TYPE" ]] || \
+    [[ -z "$CETPKG_CC" ]] || \
+    [[ -z "$CETPKG_CXX" ]] || \
+    [[ -z "$CETPKG_FC" ]]; then
   echo "ERROR: Missing required variable from cetpkg_variable_report: cetbuildtools version mismatch?" 1>&2
   exit 1
 fi

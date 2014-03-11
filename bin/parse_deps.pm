@@ -38,6 +38,7 @@
 # -b-	this dependent product is only used for the build - it will not be in the table
 
 use List::Util qw(min max); # Numeric min / max funcions.
+
 sub parse_product_list {
   my @params = @_;
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
@@ -560,7 +561,7 @@ sub cetpkg_info_file {
   # if there is a cmake cache file, we could check for the install prefix
   # cmake -N -L | grep CMAKE_INSTALL_PREFIX | cut -f2 -d=
   my @param_names =
-    qw (name version default_version qual type source build compiler);
+    qw (name version default_version qual type source build cc cxx fc);
   my @param_vals = @_;
   if (scalar @param_vals != scalar @param_names) {
     print STDERR "ERROR: cetpkg_info_file expects the following paramaters in order:\n",
