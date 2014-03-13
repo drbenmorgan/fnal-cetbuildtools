@@ -19,9 +19,11 @@ endif()
 
 include(CetGetProductInfo)
 
-macro(regex_escape val var)
-  string(REGEX REPLACE "(\\.|\\||\\^|\\$|\\*|\\(|\\)|\\[|\\]|\\+)" "\\\\\\1" ${var} "${val}")
-endmacro()
+function(regex_escape val var)
+  string(REGEX REPLACE "(\\.|\\||\\^|\\$|\\*|\\(|\\)|\\[|\\]|\\+)" "\\\\\\1" tmp "${val}")
+  string(REGEX REPLACE "/+" "/" tmp "${tmp}")
+  set(${var} "${tmp}" PARENT_SCOPE)
+endfunction()
 
 # Verify that the compiler is set as desired, and is consistent with our
 # current known use of qualifiers.
@@ -36,7 +38,8 @@ function(_verify_cc COMPILER)
     regex_escape("$ENV{GCC_FQ_DIR}/bin/${CMAKE_MATCH_0}" escaped_path)
     set(compiler_ref "^${escaped_path}$")
   elseif(COMPILER STREQUAL icc)
-    set(compiler_ref "$ENV{ICC_FQ_DIR}/bin/intel64/${COMPILER}")
+    regex_escape("$ENV{ICC_FQ_DIR}/bin/intel64/${COMPILER}" escaped_path)
+    set(compiler_ref "^${escaped_path}$")
   elseif(COMPILER STREQUAL clang)
     message(FATAL_ERROR "Clang not yet supported.")
   elseif(COMPILER MATCHES "[-_]gcc\\$")
