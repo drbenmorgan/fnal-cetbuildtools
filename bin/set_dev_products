@@ -12,7 +12,7 @@
 use File::Basename;
 use lib dirname($0);
 
-my $default_fc = ( $^O eq "darwin" ) ? "" : "gfortran";
+my $default_fc = ( $^O eq "darwin" ) ? "-" : "gfortran";
 
 my $compiler_table =
   {
