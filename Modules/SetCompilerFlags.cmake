@@ -1,4 +1,3 @@
-
 ########################################################################
 # cet_set_compiler_flags( [extra flags] ) 
 #
@@ -66,30 +65,44 @@
 #   optimization level.
 #
 ####################################
-# cet_add_compiler_flags(<options>)
+# cet_add_compiler_flags(<options> <flags>...)
 #
 #   Add the specified compiler flags.
 #
 # Options:
 #
-#   C <flags>
-#     Add <flags> to C compile flags.
+#   C
+#     Add <flags> to CMAKE_C_FLAGS.
 #
-#   CXX <flags>
-#    Add <flags> to CXX compile flags.
+#   CXX
+#    Add <flags> to CMAKE_CXX_FLAGS.
+#
+#   LANGUAGES <X>
+#    Add <flags> to CMAKE_<X>_FLAGS.
+#
+# Using any or all options is permissible. Using none is equivalent to
+# using C CXX.
+#
+# Duplicates are not removed.
 #
 ####################################
-# cet_remove_compiler_flags(<options>)
+# cet_remove_compiler_flags(<options> <flags>...)
 #
-#   Remove the specifiied compiler flag (one only).
+#   Remove the specified compiler flags.
 #
 # Options:
 #
-#   C <flag>
-#     Remove <flag> from C compile flags.
+#   C
+#     Remove <flags> from CMAKE_C_FLAGS.
 #
 #   CXX <flags>
-#    Remove <flag> from CXX compile flags.
+#     Remove <flags> from CMAKE_CXX_FLAGS.
+#
+#  LANGUAGES <X>
+#     Remove <flags> from CMAKE_<X>_FLAGS.
+#
+# Using any or all options is permissible. Using none is equivalent to
+# using C CXX.
 #
 ####################################
 # cet_report_compiler_flags()
@@ -102,14 +115,18 @@
 #   List the values of various variables
 #
 ########################################################################
-include(CetParseArgs)
+include(CMakeParseArguments)
 include(CetGetProductInfo)
+include(CetRegexEscape)
 
 macro( cet_report_compiler_flags )
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   message( STATUS "compiler flags for directory " ${CURRENT_SUBDIR} " and below")
-  message( STATUS "   C++ FLAGS:   ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
-  message( STATUS "   C   FLAGS:   ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+  message( STATUS "   C++     FLAGS: ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
+  message( STATUS "   C       FLAGS: ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+  if (CMAKE_Fortran_COMPILER)
+    message( STATUS "   Fortran FLAGS: ${CMAKE_Fortran_FLAGS_${BTYPE_UC}}")
+  endif()
 endmacro( cet_report_compiler_flags )
 
 macro( _cet_process_flags PTYPE_UC )
@@ -232,55 +249,66 @@ macro( cet_maybe_disable_asserts )
   endif()
 endmacro( cet_maybe_disable_asserts )
 
-macro( cet_add_compiler_flags )
-  CET_PARSE_ARGS(CSCF
-    "C;CXX"
-    ""
-    ${ARGN}
-    )
-  if (CSCF_DEFAULT_ARGS)
-    message(FATAL_ERROR "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider C OR CXX")
+macro (_parse_flags_options)
+  cmake_parse_arguments(CSCF "C;CXX" "" "LANGUAGES" ${ARGN})
+  if (CSCF_C)
+    list(APPEND CSCF_LANGUAGES "C")
   endif()
+  if (CSCF_CXX)
+    list(APPEND CSCF_LANGUAGES "CXX")
+  endif()
+  if (NOT CSCF_LANGUAGES)
+    SET(CSCF_LANGUAGES C CXX)
+  endif()
+endmacro()
 
-  STRING(REGEX REPLACE ";" " " CSCF_C "${CSCF_C}")
-  STRING(REGEX REPLACE ";" " " CSCF_CXX "${CSCF_CXX}")
-  STRING(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
-  IF (CSCF_C)
-    SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${CSCF_C}")
-    SET(CMAKE_C_FLAGS_OPT   "${CMAKE_C_FLAGS_OPT} ${CSCF_C}")
-    SET(CMAKE_C_FLAGS_PROF  "${CMAKE_C_FLAGS_PROF} ${CSCF_C}")
-  ENDIF()
-  IF (CSCF_CXX)
-    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CSCF_CXX}")
-    SET(CMAKE_CXX_FLAGS_OPT   "${CMAKE_CXX_FLAGS_OPT} ${CSCF_CXX}")
-    SET(CMAKE_CXX_FLAGS_PROF  "${CMAKE_CXX_FLAGS_PROF} ${CSCF_CXX}")
-  ENDIF()
+macro( cet_add_compiler_flags )
+  _parse_flags_options(${ARGN})
+  string(REGEX REPLACE ";" " " CSCF_ARGS "${CSCF_UNPARSED_ARGUMENTS}")
+  string(REGEX MATCH "(^| )-std=" CSCF_HAVE_STD ${CSCF_ARGS})
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  foreach(acf_lang ${CSCF_LANGUAGES})
+    if (CSCF_HAVE_STD)
+      cet_remove_compiler_flags(LANGUAGES ${acf_lang} REGEX "-std=[^ ]*")
+    endif()
+    set(CMAKE_${acf_lang}_FLAGS_${BTYPE_UC} "${CMAKE_${acf_lang}_FLAGS_${BTYPE_UC}} ${CSCF_ARGS}")
+  endforeach()
 endmacro( cet_add_compiler_flags )
 
-macro( cet_remove_compiler_flag )
-  CET_PARSE_ARGS(CSCF
-    "C;CXX"
-    ""
-    ${ARGN}
-    )
-  if (CSCF_DEFAULT_ARGS)
-    message(FATAL_ERROR "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider C OR CXX")
+macro(_rm_flag_trim_whitespace VAR FLAG)
+  if (NOT ("X${FLAG}" STREQUAL "X"))
+    string(REGEX REPLACE "(^| )${FLAG}( |$)" " " ${VAR} "${${VAR}}" )
   endif()
+  string(REGEX REPLACE "^ +" "" ${VAR} "${${VAR}}")
+  string(REGEX REPLACE " +$" "" ${VAR} "${${VAR}}")
+  string(REGEX REPLACE " +" " " ${VAR} "${${VAR}}")
+endmacro()
 
-
-  IF (CSCF_C)
-    STRING(REGEX REPLACE "${CSCF_C}" "" CMAKE_C_FLAGS_${BTYPE_UC} "${CMAKE_C_FLAGS_${BTYPE_UC}}" )
-  ENDIF()
-  IF (CSCF_CXX)
-    #message(STATUS "cet_remove_compiler_flag: removing ${CSCF_CXX}")
-    IF ( ${CSCF_CXX} MATCHES "-Werror" )
-      STRING(REGEX REPLACE "${CSCF_CXX} " " " CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}}" )
-    else()
-      STRING(REGEX REPLACE "${CSCF_CXX}" "" CMAKE_CXX_FLAGS_${BTYPE_UC} "${CMAKE_CXX_FLAGS_${BTYPE_UC}}" )
+macro( cet_remove_compiler_flags )
+  _parse_flags_options(${ARGN})
+  cmake_parse_arguments(CSCF "REGEX" "" "" ${CSCF_UNPARSED_ARGUMENTS})
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  foreach (arg ${CSCF_UNPARSED_ARGUMENTS})
+    if (NOT CSCF_REGEX)
+      cet_regex_escape("${arg}" arg 2)
     endif()
-  ENDIF()
+    foreach (rcf_lang ${CSCF_LANGUAGES})
+      _rm_flag_trim_whitespace(CMAKE_${rcf_lang}_FLAGS_${BTYPE_UC} ${arg})
+    endforeach()
+  endforeach()
+endmacro()
 
-endmacro(cet_remove_compiler_flag)
+macro(_remove_extra_std_flags VAR)
+  string(REGEX MATCHALL "(^| )-std=[^ ]*" found_std_flags "${${VAR}}")
+  list(LENGTH found_std_flags fsf_len)
+  if (fsf_len GREATER 1)
+    list(REMOVE_AT found_std_flags -1)
+    foreach (flag ${found_std_flags})
+      cet_regex_escape("${flag}" flag 2)
+      _rm_flag_trim_whitespace(${VAR} "${flag}")
+    endforeach()
+  endif()
+endmacro()
 
 macro( cet_set_compiler_flags )
   CET_PARSE_ARGS(CSCF
@@ -400,6 +428,10 @@ macro( cet_set_compiler_flags )
     message( STATUS "   DEFINE (-D): ${CSCF_CD}")
   endif()
  
+  _remove_extra_std_flags(CMAKE_C_FLAGS_${BTYPE_UC})
+  _remove_extra_std_flags(CMAKE_CXX_FLAGS_${BTYPE_UC})
+  _remove_extra_std_flags(CMAKE_Fortran_FLAGS_${BTYPE_UC})
+
 endmacro( cet_set_compiler_flags )
 
 macro( cet_query_system )

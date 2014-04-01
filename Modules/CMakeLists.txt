@@ -7,6 +7,7 @@ INSTALL(FILES
 	CetBasicConfigVersion-SameMajorVersion.cmake.in
   CetBuildTable.cmake
 	CetParseArgs.cmake
+  CetRegexEscape.cmake
 	CetTest.cmake
 	CetMake.cmake
 	CetCMakeConfig.cmake
