@@ -37,6 +37,7 @@ test -z "$db" && tnotnull BASH_SOURCE && set_ me=`dirname $BASH_SOURCE` && set_ 
 test -z "$db" -a "$ss" = csh && test $?history = 0 && set history=5  # make sure history 1 works
 test -z "$db" -a "$ss" = csh && set me=`history 1|sed 's/^[ 	0-9:]*//'` && test -n "$me" && set me=`dirname $me[2]` \
     && set db=`sh -c "cd $me >/dev/null 2>&1 && pwd"` && vecho_ 'setting db via interactive history'
+test -z "$db" -a "$ss" = sh && test "${shell%%*/}" = "zsh" && db=${${(%):-%N}%/*}
 #echo This script lives in $db
 
 test -z "$db" && echo "$msg2" || vecho_ "db=$db"
