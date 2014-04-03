@@ -331,7 +331,7 @@ macro( cet_set_compiler_flags )
   set( DFLAGS_CAUTIOUS "${DFLAGS_CAVALIER} -Wall -Werror=return-type" )
   set( DXXFLAGS_CAUTIOUS "${DXXFLAGS_CAVALIER}" )
   set( DFLAGS_VIGILANT "${DFLAGS_CAUTIOUS} -Wextra -Wno-long-long -Winit-self" )
-  if (CMAKE_C_COMPILER MATCHES "/?icc$") # Not understood by ICC
+  if (NOT CMAKE_C_COMPILER MATCHES "/?icc$") # Not understood by ICC
     set( DFLAGS_VIGILANT "${DFLAGS_VIGILANT} -Wno-unused-local-typedefs" )
   endif()
   set( DXXFLAGS_VIGILANT "${DXXFLAGS_CAUTIOUS} -Woverloaded-virtual" )
