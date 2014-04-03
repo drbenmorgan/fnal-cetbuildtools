@@ -59,6 +59,17 @@
 #    the test. The CET_TEST_GROUPS cache variable may additionally
 #    contain the optional values ALL or NONE.
 #
+# REF
+#   The standard output of the test will be captured and compared
+#    against the specified reference file. It is an error to specify
+#    this argument and either the PASS_REGULAR_EXPRESSION or
+#    FAIL_REGULAR_EXPRESSION test properties to the TEST_PROPERTIES
+#    argument. As for the above-mentioned properties, when speciifed
+#    this is the sole arbiter of test success -- the exit code of the
+#    test executable is ignored. Note that the specified file is read at
+#    CMake processing time, so CMake must be re-run (preferably via
+#    buildtool) in order to update the test when the file is changed.
+#
 # SOURCES
 #   Sources to use to build the target (default is ${target}.cc).
 #
@@ -71,7 +82,7 @@
 #
 # TEST_PROPERTIES
 #   Properties to be added to the test. See documentation of the cmake
-#   command, "set_tests_properties."
+#    command, "set_tests_properties."
 #
 ####################################
 # Cache variables
@@ -130,21 +141,13 @@
 ########################################################################
 
 # Need argument parser.
-include(CetParseArgs)
+include(CMakeParseArguments)
 # May need Boost Unit Test Framework library.
 include(FindUpsBoost)
 # Need cet_script for PREBUILT scripts
 include(CetMake)
-
-# Simple CAR implementation.
-MACRO(cet_car var)
-  SET(${var} ${ARGV1})
-ENDMACRO()
-
-# Simple CDR implementation.
-MACRO(cet_cdr var junk)
-  SET(${var} ${ARGN})
-ENDMACRO()
+# May need to escape a string to avoid misinterpretation as regex
+include(CetRegexEscape)
 
 # If Boost has been specified but the library hasn't, load the library.
 IF((NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND BOOST_VERS)
@@ -203,26 +206,28 @@ ENDFUNCTION()
 ####################################
 # Main macro definitions.
 MACRO(cet_test_env)
-  CET_PARSE_ARGS(CET_TEST
-    ""
+  CMAKE_PARSE_ARGUMENTS(CET_TEST
     "CLEAR"
+    ""
+    ""
     ${ARGN}
     )
   IF(CET_TEST_CLEAR)
     SET(CET_TEST_ENV "")
   ENDIF()
-  LIST(APPEND CET_TEST_ENV ${CET_TEST_DEFAULT_ARGS})
+  LIST(APPEND CET_TEST_ENV ${CET_TEST_UNPARSED_ARGUMENTS})
 ENDMACRO()
 
-MACRO(cet_test CET_TARGET)
+FUNCTION(cet_test CET_TARGET)
   # Parse arguments
   IF(${CET_TARGET} MATCHES .*/.*)
     MESSAGE(FATAL_ERROR "${CET_TARGET} shuld not be a path. Use a simple "
       "target name with the HANDBUILT and TEST_EXEC options instead.")
   ENDIF()
-  CET_PARSE_ARGS(CET
-    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;SOURCES;TEST_ARGS;TEST_EXEC;TEST_PROPERTIES"
+  CMAKE_PARSE_ARGUMENTS (CET
     "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE"
+    "REF;TEST_EXEC"
+    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;SOURCES;TEST_ARGS;TEST_PROPERTIES"
     ${ARGN}
     )
   IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
@@ -241,22 +246,16 @@ MACRO(cet_test CET_TARGET)
       MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot specify "
         "TEST_EXEC without HANDBUILT")
     ENDIF()
-    # Check we only specified one.
-    LIST(LENGTH CET_TEST_EXEC test_exec_length)
-    IF(test_exec_length GREATER 1)
-      MESSAGE(FATAL_ERROR "cet_test: expected only one value for TEST_EXEC "
-        "argument for target ${CET_TARGET}.")
-    ENDIF()
   ELSE()
     SET(CET_TEST_EXEC ${EXECUTABLE_OUTPUT_PATH}/${CET_TARGET})
   ENDIF()
-  # Assume any remaining arguments are date files.
-  IF(CET_DEFAULT_ARGS)
-    SET(CET_DATAFILES ${CET_DATAFILES} ${CET_DEFAULT_ARGS})
+  # Assume any remaining arguments are data files.
+  IF(CET_UNPARSED_ARGUMENTS)
+    SET(CET_DATAFILES ${CET_DATAFILES} ${CET_UNPARSED_ARGUMENTS})
   ENDIF()
   IF(CET_HANDBUILT AND CET_PREBUILT)
     # CET_HANDBUILT and CET_PREBUILT are mutually exclusive.
-    MESSAGE(SEND_ERROR "cet_test: target ${CET_TARGET} cannot have both CET_HANDBUILT "
+    MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot have both CET_HANDBUILT "
       "and CET_PREBUILT options set.")
   ELSEIF(CET_PREBUILT) # eg scripts.
     IF (NOT CET_INSTALL_BIN)
@@ -272,7 +271,7 @@ MACRO(cet_test CET_TARGET)
     IF(CET_USE_BOOST_UNIT)
       # Make sure we have the correct library available.
       IF (NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
-        MESSAGE(SEND_ERROR "cet_test: target ${CET_TARGET} has USE_BOOST_UNIT "
+        MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} has USE_BOOST_UNIT "
           "option set but Boost Unit Test Framework Library cannot be found: is "
           "boost set up?")
       ENDIF()
@@ -341,6 +340,24 @@ MACRO(cet_test CET_TARGET)
         SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES ENVIRONMENT "${CET_TEST_ENV}")
       ENDIF()
     ENDIF()
+    IF(DEFINED CET_REF)
+      GET_TEST_PROPERTY(${CET_TARGET} PASS_REGULAR_EXPRESSION has_pass_exp)
+      GET_TEST_PROPERTY(${CET_TARGET} FAIL_REGULAR_EXPRESSION has_fail_exp)
+      IF(has_pass_exp OR has_fail_exp)
+        MESSAGE(FATAL_ERROR "Cannot specify REF option for test ${CET_TARGET}, which already has\n"
+          "(PASS|FAIL)_REGULAR_EXPRESSION property set.")
+      ENDIF()
+      IF(CET_REF)
+        IF(EXISTS "${CET_REF}")
+          FILE(READ "${CET_REF}" CET_REF_TEXT)
+        ELSE()
+          MESSAGE(FATAL_ERROR "Specified REFerence file ${CET_REF} does not exist for test ${CET_TARGET}.")
+        ENDIF()
+      ENDIF()
+      cet_regex_escape("${CET_REF_TEXT}" CET_REF_TEXT)
+      SET(CET_REF_TEXT "^${CET_REF_TEXT}$")
+      SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES PASS_REGULAR_EXPRESSION "${CET_REF_TEXT}")
+    ENDIF()
   ENDIF()
   IF(CET_INSTALL_BIN)
     IF(CET_HANDBUILT)
@@ -362,9 +379,9 @@ MACRO(cet_test CET_TARGET)
       DESTINATION ${product}/${version}/source/test
       )
   ENDIF()
-ENDMACRO(cet_test)
+ENDFUNCTION(cet_test)
 
-MACRO (cet_test_assertion CONDITION FIRST_TARGET)
+FUNCTION(cet_test_assertion CONDITION FIRST_TARGET)
   IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
     SET_TESTS_PROPERTIES(${FIRST_TARGET} ${ARGN} PROPERTIES
       PASS_REGULAR_EXPRESSION
@@ -376,5 +393,5 @@ MACRO (cet_test_assertion CONDITION FIRST_TARGET)
       "Assertion `${CONDITION}' failed\\."
       )
   ENDIF()
-ENDMACRO()
+ENDFUNCTION()
 ########################################################################
