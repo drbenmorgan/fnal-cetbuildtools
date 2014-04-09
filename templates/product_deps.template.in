@@ -27,6 +27,8 @@ fcldir	product_dir	fcl
 libdir	fq_dir		lib
 bindir	fq_dir		bin
 
+# if define_pythonpath is enabled, the PYTHONPATH variable will be set
+#define_pythonpath
 #
 product		version
 gcc		v4_8_2

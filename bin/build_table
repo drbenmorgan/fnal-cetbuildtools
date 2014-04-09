@@ -178,6 +178,7 @@ sub create_table_bottom {
   $lib_directory = get_lib_directory( $pfile );
   $fcl_directory = get_fcl_directory( $pfile );
   $bin_directory = get_bin_directory( $pfile );
+  $def_python_path = get_python_path( $pfile );
 
   $pvername = $product."_VERSION";
   print TBL "\n";
@@ -203,13 +204,25 @@ sub create_table_bottom {
   print TBL "    exeActionRequired(GetProducts)\n";
   print TBL "\n";
   if( $lib_directory eq "default" ) {
-  print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib) \n";
-  table_ld_library();
-  print TBL "\n";
+    print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib) \n";
+    table_ld_library();
+    if( $def_python_path ne "none" ) {
+      print TBL "    # define PYTHONPATH\n";
+      print TBL "    pathPrepend(PYTHONPATH,  \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib/python2.7/site-packages )\n";
+    }
+    print TBL "\n";
   } elsif ( $lib_directory eq "none" )   {
+    if( $def_python_path ne "none" ) {
+      print TBL "    # define PYTHONPATH\n";
+      print TBL "    pathPrepend(PYTHONPATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib/python2.7/site-packages )\n";
+    }
   } else {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, $lib_directory) \n";
   table_ld_library();
+    if( $def_python_path eq "setme" ) {
+      print TBL "    # define PYTHONPATH\n";
+      print TBL "    pathPrepend(PYTHONPATH, $lib_directory/python2.7/site-packages )\n";
+    }
   print TBL "\n";
   }
   if( $fcl_directory eq "default" ) {
@@ -231,6 +244,10 @@ sub create_table_bottom {
   } else {
   print TBL "    # add the bin directory to the path\n";
   print TBL "    pathPrepend(PATH, $bin_directory )\n";
+  }
+  if( $def_python_path ne "none" ) {
+  print TBL "    # define PYTHONPATH\n";
+  print TBL "    pathPrepend(PYTHONPATH, ${def_python_path} )\n";
   }
   print TBL "\n";
   if( $have_fragment ) {

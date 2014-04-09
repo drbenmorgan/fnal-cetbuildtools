@@ -83,6 +83,9 @@ sub parse_product_list {
       } elsif( $words[0] eq "only_for_build" ) {
 	 $get_phash="";
          $get_quals="";
+      } elsif( $words[0] eq "define_pythonpath" ) {
+	 $get_phash="";
+         $get_quals="";
       } elsif( $words[0] eq "product" ) {
 	 $get_phash="true";
          $get_quals="";
@@ -156,6 +159,9 @@ sub parse_qualifier_list {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "only_for_build" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "define_pythonpath" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "product" ) {
@@ -256,6 +262,9 @@ sub find_optional_products {
          $get_quals="";
 	 $dq=$words[1];
       } elsif( $words[0] eq "only_for_build" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "define_pythonpath" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "product" ) {
@@ -471,6 +480,26 @@ sub get_gdml_directory {
   close(PIN);
   ##print "defining executable directory $gdmldir\n";
   return ($gdmldir);
+}
+
+sub get_python_path {
+  my @params = @_;
+  $pypath = "none";
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "define_pythonpath" ) {
+            $pypath = "setme";
+	 }
+    }
+  }
+  close(PIN);
+  ##print "defining executable directory $pypath\n";
+  return ($pypath);
 }
 
 sub check_fq_dir {
