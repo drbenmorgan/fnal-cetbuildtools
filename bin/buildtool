@@ -604,7 +604,7 @@ if (( $? != 4 )); then
   exit 1
 fi
 
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,clean-logs,force-top,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups,release: -o +ACD:I:RTbcfg:hij:lpqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,clean-logs,force-top,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups:,release -o +ACD:I:RTbcfg:hij:lpqt -- "${@}"`
 
 if (( $? )); then
   usage 1
