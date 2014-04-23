@@ -22,6 +22,7 @@ INSTALL(FILES
 	FindUpsGeant4.cmake
 	FindUpsPackage.cmake
 	FindUpsRoot.cmake
+	InstallPython.cmake
 	InstallSource.cmake
 	ParseUpsVersion.cmake
 	ProcessSmc.cmake
