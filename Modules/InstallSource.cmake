@@ -486,14 +486,13 @@ endmacro( _cet_copy_fw )
 
 macro( install_fw   )
   cet_parse_args( IFW "LIST;SUBDIRNAME" "" ${ARGN})
-  set(fw_install_dir ${${product}_fw_dir} )
+  set( fw_install_dir ${${product}_fw_dir} )
   message( STATUS "install_fw: fw scripts will be installed in ${fw_install_dir}" )
 
   if( IFW_LIST )
     _cet_copy_fw( ${ARGN} )
     # going to loose subdirectory information here
-    if ( SUBDIRNAME }
-    _cet_copy_fw( LIST ${IFW_LIST} )
+    if ( SUBDIRNAME )
       INSTALL ( FILES  ${IFW_LIST}
                 DESTINATION ${fw_install_dir}/${IFW_ SUBDIRNAME} )
     else()
@@ -501,7 +500,6 @@ macro( install_fw   )
                 DESTINATION ${fw_install_dir} )
     endif()
   else()
-      message( FATAL_ERROR
-               "ERROR: install_fw has no defaults, you must use LIST")
+      message( FATAL_ERROR "ERROR: install_fw has no defaults, you must use LIST")
   endif()
 endmacro( install_fw )
