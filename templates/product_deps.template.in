@@ -16,9 +16,10 @@ defaultqual	e5
 # Defaults:
 # incdir  product_dir  include
 # fcldir  product_dir  fcl
-# gdmldir -  
 # libdir  fq_dir       lib
 # bindir  fq_dir       bin
+# gdmldir -  
+# fwdir -  
 #
 # If a particular directory_type is not specified that item will not be
 # defined in the UPS table file.

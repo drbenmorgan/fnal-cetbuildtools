@@ -5,9 +5,10 @@
 #   parent       this_product   this_version
 #   [incdir      product_dir    include]
 #   [fcldir      product_dir    fcl]
-#   [gdmldir     -              gdml]
 #   [libdir      fq_dir	        lib]
 #   [bindir      fq_dir         bin]
+#   [fwdir       -              unspecified]
+#   [gdmldir     -              gdml]
 #
 #   product		version
 #   dependent_product	dependent_product_version [optional]
@@ -65,6 +66,9 @@ sub parse_product_list {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "fcldir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "fwdir" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "gdmldir" ) {
@@ -141,6 +145,9 @@ sub parse_qualifier_list {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "fcldir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "fwdir" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "gdmldir" ) {
@@ -243,6 +250,9 @@ sub find_optional_products {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "fcldir" ) {
+	 $get_phash="";
+         $get_quals="";
+      } elsif( $words[0] eq "fwdir" ) {
 	 $get_phash="";
          $get_quals="";
       } elsif( $words[0] eq "gdmldir" ) {
@@ -449,6 +459,41 @@ sub get_fcl_directory {
   close(PIN);
   ##print "defining executable directory $fcldir\n";
   return ($fcldir);
+}
+
+sub get_fw_directory {
+  my @params = @_;
+  $fwdir = "none";
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "fwdir" ) {
+         if( $words[1] eq "-" ) {
+	    $fwdir = "none";
+	 } else { 
+            if( ! $words[2] ) { 
+		  print "ERROR: the fwdir subdirectory must be specified, there is no default\n";
+	    } else {
+               if( $words[1] eq "product_dir" ) {
+		  $fwdir = "\${UPS_PROD_DIR}/".$words[2];
+               } elsif( $words[1] eq "fq_dir" ) {
+		  $fwdir = "\${\${UPS_PROD_NAME_UC}_FQ_DIR}/".$words[2];
+	       } else {
+		  print "ERROR: $words[1] is an invalid directory path\n";
+		  print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
+	       }
+	    }
+	 }
+      }
+    }
+  }
+  close(PIN);
+  ##print "defining executable directory $fwdir\n";
+  return ($fwdir);
 }
 
 sub get_gdml_directory {
@@ -811,6 +856,40 @@ sub get_cmake_fcl_directory {
   }
   close(PIN);
   return ($fcldir);
+}
+
+sub get_cmake_fw_directory {
+  my @params = @_;
+  $fwdir = "NONE";
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "fwdir" ) {
+         if( $words[1] eq "-" ) {
+	     $fwdir = "NONE";
+	 } else { 
+            if( ! $words[2] ) { 
+	       $fwdir = "ERROR";
+	    } else {
+	       $fwsubdir = $words[2];
+               if( $words[1] eq "product_dir" ) {
+		  $fwdir = "product_dir/$fwsubdir";
+               } elsif( $words[1] eq "fq_dir" ) {
+		  $fwdir = "flavorqual_dir/$fwsubdir";
+	       } else {
+		  $fwdir = "ERROR";
+	       }
+	    }
+	 }
+      }
+    }
+  }
+  close(PIN);
+  return ($fwdir);
 }
 
 sub get_cmake_gdml_directory {

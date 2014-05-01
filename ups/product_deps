@@ -13,6 +13,7 @@ parent cetbuildtools v3_10_01
 # incdir  product_dir  include
 # fcldir  product_dir  fcl
 # gdmldir -  
+# fwdir -  
 # libdir  fq_dir       lib
 # bindir  fq_dir       bin
 incdir      -
