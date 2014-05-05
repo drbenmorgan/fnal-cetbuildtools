@@ -179,6 +179,9 @@ sub create_table_bottom {
   $fcl_directory = get_fcl_directory( $pfile );
   $bin_directory = get_bin_directory( $pfile );
   $def_python_path = get_python_path( $pfile );
+  $fw_directory = get_fw_directory( $pfile );
+  $gdml_directory = get_gdml_directory( $pfile );
+  
 
   $pvername = $product."_VERSION";
   print TBL "\n";
@@ -208,31 +211,22 @@ sub create_table_bottom {
     table_ld_library();
     if( $def_python_path ne "none" ) {
       print TBL "    # define PYTHONPATH\n";
-      print TBL "    pathPrepend(PYTHONPATH,  \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib/python2.7/site-packages )\n";
+      print TBL "    pathPrepend(PYTHONPATH,  \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib )\n";
     }
     print TBL "\n";
   } elsif ( $lib_directory eq "none" )   {
     if( $def_python_path ne "none" ) {
       print TBL "    # define PYTHONPATH\n";
-      print TBL "    pathPrepend(PYTHONPATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib/python2.7/site-packages )\n";
+      print TBL "    pathPrepend(PYTHONPATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}/lib )\n";
     }
   } else {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_LIB, $lib_directory) \n";
   table_ld_library();
     if( $def_python_path eq "setme" ) {
       print TBL "    # define PYTHONPATH\n";
-      print TBL "    pathPrepend(PYTHONPATH, $lib_directory/python2.7/site-packages )\n";
+      print TBL "    pathPrepend(PYTHONPATH, $lib_directory )\n";
     }
   print TBL "\n";
-  }
-  if( $fcl_directory eq "default" ) {
-  print TBL "    # add the fcl directory to the fhicl file path\n";
-  print TBL "    pathPrepend(FHICL_FILE_PATH, \${UPS_PROD_DIR}/fcl )\n";
-  print TBL "\n";
-  } elsif ( $fcl_directory eq "none" )   {
-  } else {
-  print TBL "    # add the fcl directory to the path\n";
-  print TBL "    pathPrepend(FHICL_FILE_PATH, $fcl_directory )\n";
   }
   if( $bin_directory eq "default" ) {
   print TBL "    # add the bin directory to the path\n";
@@ -245,9 +239,28 @@ sub create_table_bottom {
   print TBL "    # add the bin directory to the path\n";
   print TBL "    pathPrepend(PATH, $bin_directory )\n";
   }
-  if( $def_python_path ne "none" ) {
-  print TBL "    # define PYTHONPATH\n";
-  print TBL "    pathPrepend(PYTHONPATH, ${def_python_path} )\n";
+  if( $fcl_directory eq "default" ) {
+  print TBL "    # add the fcl directory to the fhicl file path\n";
+  print TBL "    pathPrepend(FHICL_FILE_PATH, \${UPS_PROD_DIR}/fcl )\n";
+  print TBL "\n";
+  } elsif ( $fcl_directory eq "none" )   {
+  } else {
+  print TBL "    # add the fcl directory to the path\n";
+  print TBL "    pathPrepend(FHICL_FILE_PATH, $fcl_directory )\n";
+  }
+  if ( $fw_directory eq "none" )   {
+  } else {
+  print TBL "    # add $fw_directory to FW_SEARCH_PATH\n";
+  print TBL "    pathPrepend(FW_SEARCH_PATH, $fw_directory )\n";
+  }
+  if( $gdml_directory eq "default" ) {
+  print TBL "    # add the gdml directory to FW_SEARCH_PATH\n";
+  print TBL "    pathPrepend(FW_SEARCH_PATH, \${UPS_PROD_DIR}/gdml )\n";
+  print TBL "\n";
+  } elsif ( "$gdml_directory" eq "none" )   {
+  } else {
+  print TBL "    # add $gdml_directory directory to FW_SEARCH_PATH\n";
+  print TBL "    pathPrepend(FW_SEARCH_PATH, $gdml_directory )\n";
   }
   print TBL "\n";
   if( $have_fragment ) {

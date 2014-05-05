@@ -498,7 +498,7 @@ sub get_fw_directory {
 
 sub get_gdml_directory {
   my @params = @_;
-  $gdmldir = "default";
+  $gdmldir = "none";
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
   while ( $line=<PIN> ) {
     chop $line;
@@ -518,6 +518,7 @@ sub get_gdml_directory {
 	    print "ERROR: $words[1] is an invalid directory path\n";
 	    print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
 	    print "ERROR: using the default gdml directory path\n";
+	    $gdmldir = "\${UPS_PROD_DIR}/".$words[2];
 	 }
       }
     }
@@ -894,7 +895,7 @@ sub get_cmake_fw_directory {
 
 sub get_cmake_gdml_directory {
   my @params = @_;
-  $gdmldir = "DEFAULT";
+  $gdmldir = "NONE";
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
   while ( $line=<PIN> ) {
     chop $line;
