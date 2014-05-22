@@ -1,5 +1,6 @@
 
 INSTALL(FILES
+  BasicPlugin.cmake
 	BuildDictionary.cmake
 	BuildSubdirectories.cmake
 	CetBasicConfigVersion-AnyNewerVersion.cmake.in
