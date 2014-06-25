@@ -1,4 +1,42 @@
-# These macros are used by the FindUps modules
+########################################################################
+# Utility macros and functions, mostly for private use by other
+# cetbuildtools CMake utilities.
+#
+# Also provides the public function check_ups_version.
+#
+####################################
+# check_ups_version(product version minimum
+#                   [PRODUCT_OLDER_VAR <var>]
+#                   [PRODUCT_MATCHES_VAR <var>])
+#
+# Options and arguments:
+#
+# product
+#   The name of the UPS product whose version is to be tested.
+#
+# version
+#   The version of the product (eg from $ENV{<product>_VERSION}).
+#
+# minimum
+#   The minimum required version of the product.
+#
+# PRODUCT_OLDER_VAR
+#   If the product's version is does not satisfy the required minimum,
+#   the variable specified herein is set to TRUE. Otherwise it is set to
+#   FALSE.
+#
+# PRODUCT_MATCHES_VAR
+#   If the product's version is at least the requiremd minimum, the
+#   variable specified herein is set to TRUE. Otherwise it is set to
+#   FALSE.
+#
+# NOTES.
+#
+# * At least one of PRODUCT_OLDER_VAR or PRODUCT_MATCHES_VAR must be
+# supplied.
+########################################################################
+
+include(CMakeParseArguments)
 
 #internal macro
 macro(_get_dotver myversion )
@@ -67,9 +105,8 @@ macro(_parse_version version )
 endmacro(_parse_version)
 
 macro( _check_version product version minimum )
-
   _check_if_version_greater( ${product} ${version} ${minimum} )
-  if( ${product_version_less} MATCHES "TRUE" )
+  if( product_version_less )
     message( FATAL_ERROR "Bad Version: ${product} ${THISVER} is less than minimum required version ${MINVER}")
   endif()
 
@@ -134,56 +171,76 @@ macro( _compare_root_micro microversion micromin )
    endif( rcmin )
 endmacro( _compare_root_micro microversion micromin )
 
-macro( _check_if_version_greater product version minimum )
-   _parse_version( ${minimum}  )
-   set( MINVER ${dotver} )
-   set( MINCVER ${basicdotver} )
-   set( MINMAJOR ${major} )
-   set( MINMINOR ${minor} )
-   set( MINPATCH ${patch} )
-   set( MINCHAR ${patchchar} )
-   set( MINMICRO ${micro} )
-   _parse_version( ${version}  )
-   set( THISVER ${dotver} )
-   set( THISCVER ${basicdotver} )
-   set( THISMAJOR ${major} )
-   set( THISMINOR ${minor} )
-   set( THISPATCH ${patch} )
-   set( THISCHAR ${patchchar} )
-   set( THISMICRO ${micro} )
-   ##message(STATUS "_check_if_version_greater: ${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
-   ##message(STATUS "_check_if_version_greater: ${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
-   # initialize product_version_less
-   set( product_version_less FALSE )
-   if( ${product} MATCHES "ROOT" )
-      if( ${THISCVER} VERSION_LESS ${MINCVER} )
-	set( product_version_less TRUE )
-      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	  AND ${THISCHAR} STRLESS ${MINCHAR} )
-	set( product_version_less TRUE )
-      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	  AND ${THISCHAR} STREQUAL ${MINCHAR} )
-	# root micro versions require special handling
-	#message(STATUS "root versions match so far, compare  ${THISMICRO} to ${MINMICRO}")
-	_compare_root_micro( ${THISMICRO} ${MINMICRO} )
-      endif()
-   else()
-      if( ${THISCVER} VERSION_LESS ${MINCVER} )
-         set( product_version_less TRUE )
-      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	  AND ${THISCHAR} STRLESS ${MINCHAR} )
-	set( product_version_less TRUE )
-      elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	  AND ${THISCHAR} STREQUAL ${MINCHAR} 
-	  AND ${THISMICRO} LESS ${MINMICRO} )
-	set( product_version_less TRUE )
-      endif()
-   endif()
-   # check for special cases such as "nightly"
-   STRING(REGEX MATCH "([0-9]+)" isnumeric "${version}")
-   if( NOT isnumeric )
-     ##message(STATUS "_check_if_version_greater: ${product} ${version} is not numeric")
-     set( product_version_less FALSE )
-   endif()
-   ##message( STATUS "_check_if_version_greater: ${product} ${THISVER} check if greater returns ${product_version_less}")
-endmacro( _check_if_version_greater product version minimum )
+function( check_ups_version product version minimum )
+  cmake_parse_arguments(CV "" "PRODUCT_OLDER_VAR;PRODUCT_MATCHES_VAR" "" ${ARGN})
+  if ((NOT CV_PRODUCT_OLDER_VAR) AND (NOT CV_PRODUCT_MATCHES_VAR))
+    message(FATAL_ERROR "check_ups_version requires at least one of PRODUCT_OLDER_VAR or PRODUCT_MATCHES_VAR")
+  endif()
+  _parse_version( ${minimum}  )
+  set( MINVER ${dotver} )
+  set( MINCVER ${basicdotver} )
+  set( MINMAJOR ${major} )
+  set( MINMINOR ${minor} )
+  set( MINPATCH ${patch} )
+  set( MINCHAR ${patchchar} )
+  set( MINMICRO ${micro} )
+  _parse_version( ${version}  )
+  set( THISVER ${dotver} )
+  set( THISCVER ${basicdotver} )
+  set( THISMAJOR ${major} )
+  set( THISMINOR ${minor} )
+  set( THISPATCH ${patch} )
+  set( THISCHAR ${patchchar} )
+  set( THISMICRO ${micro} )
+  ##message(STATUS "check_ups_version: ${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
+  ##message(STATUS "check_ups_version: ${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
+  # initialize product_older
+  set( product_older FALSE )
+  if( ${product} MATCHES "ROOT" )
+    if( ${THISCVER} VERSION_LESS ${MINCVER} )
+	    set( product_older TRUE )
+    elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	      AND ${THISCHAR} STRLESS ${MINCHAR} )
+	    set( product_older TRUE )
+    elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	      AND ${THISCHAR} STREQUAL ${MINCHAR} )
+	    # root micro versions require special handling
+	    #message(STATUS "root versions match so far, compare  ${THISMICRO} to ${MINMICRO}")
+	    _compare_root_micro( ${THISMICRO} ${MINMICRO} )
+    endif()
+  else()
+    if( ${THISCVER} VERSION_LESS ${MINCVER} )
+      set( product_older TRUE )
+    elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	      AND ${THISCHAR} STRLESS ${MINCHAR} )
+	    set( product_older TRUE )
+    elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
+	      AND ${THISCHAR} STREQUAL ${MINCHAR} 
+	      AND ${THISMICRO} LESS ${MINMICRO} )
+	    set( product_older TRUE )
+    endif()
+  endif()
+  # check for special cases such as "nightly"
+  STRING(REGEX MATCH "([0-9]+)" isnumeric "${version}")
+  if( NOT isnumeric )
+    ##message(STATUS "check_ups_version: ${product} ${version} is not numeric")
+    set( product_older FALSE )
+  endif()
+  if (CV_PROUCT_OLDER_VAR)
+    set(${CV_PRODUCT_OLDER_VAR} ${product_older} PARENT_SCOPE)
+  endif()
+  if (CV_PRODUCT_MATCHES_VAR)
+    if (product_older)
+      set(${CV_PRODUCT_MATCHES_VAR} FALSE PARENT_SCOPE)
+    else()
+      set(${CV_PRODUCT_MATCHES_VAR} TRUE PARENT_SCOPE)
+    endif()
+  endif()
+  ##message( STATUS "check_ups_version: ${product} ${THISVER} check if greater returns ${product_older}")
+endfunction( check_ups_version product version minimum )
+
+# For backward compatibility.
+macro(_check_if_version_greater product version minimum)
+  check_ups_version(${product} ${version} ${minimum}
+    PRODUCT_OLDER_VAR product_version_less)
+endmacro(_check_if_version_greater product version minimum)
