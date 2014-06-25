@@ -60,13 +60,13 @@ cet_check_gcc()
 #include_directories ( $ENV{LIBSIGCPP_LIB}/sigc++-2.0/include )
 
 # define CLHEP
-#find_library( CLHEP  NAMES CLHEP   PATHS $ENV{CLHEP_BASE}/lib )
+#find_library( CLHEP  NAMES CLHEP   PATHS $ENV{CLHEP_BASE}/lib NO_DEFAULT_PATH )
 
 # define CETLIB
-#find_library( CETLIB NAMES cetlib PATHS $ENV{CETLIB_LIB} )
+#find_library( CETLIB NAMES cetlib PATHS $ENV{CETLIB_LIB} NO_DEFAULT_PATH )
 
 # define FHICLCPP
-#find_library( FHICLCPP NAMES fhiclcpp PATHS $ENV{FHICLCPP_LIB} )
+#find_library( FHICLCPP NAMES fhiclcpp PATHS $ENV{FHICLCPP_LIB} NO_DEFAULT_PATH )
 
 # have to make sure cmake doesn't select the system libraries
 # define libsigc
