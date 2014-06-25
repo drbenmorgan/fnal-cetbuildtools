@@ -5,7 +5,8 @@
 #                   [COMPILE_FLAGS <flags>]
 #                   [DICT_NAME_VAR <var>]
 #                   [DICTIONARY_LIBRARIES <library list>]
-#                   [NO_INSTALL])
+#                   [NO_INSTALL]
+#                   [DICT_FUNCTIONS])
 #
 # * <dictionary_name> defaults to a name based on the current source
 # code subdirectory.
@@ -15,6 +16,10 @@
 #
 # * Specify NO_INSTALL when building a dictionary for tests.
 #
+# * The default behavior is to generate a dictionary for data only. Use
+# the DICT_FUNCTIONS option to reactivate the generation of dictionary
+# entries for functions.
+#
 # * If DICT_NAME_VAR is specified, <var> will be set to contain the
 # dictionary name.
 #
@@ -22,7 +27,7 @@
 # only.
 #
 ########################################################################
-include(CetParseArgs)
+include(CMakeParseArguments)
 
 # define flags for genreflex
 set( GENREFLEX_FLAGS
@@ -49,16 +54,23 @@ macro( _set_dictionary_name )
    STRING( REGEX REPLACE "/" "_" dictname "${CURRENT_SUBDIR}" )
 endmacro( _set_dictionary_name )
 
-macro( _generate_dictionary )
-  set(generate_dictionary_usage "_generate_dictionary( [dictionary_name] )")
+function( _generate_dictionary )
+  cmake_parse_arguments(GD "DICT_FUNCTIONS" "" "" ${ARGN})
+  set(generate_dictionary_usage "_generate_dictionary( [DICT_FUNCTIONS] [dictionary_name] )")
   #message(STATUS "calling generate_dictionary with ${ARGC} arguments: ${ARGV}")
-  if(${ARGC} EQUAL 0)
-     _set_dictionary_name()
-  elseif(${ARGC} EQUAL 1)
-     set(dictname  "${ARGV0}")
+  if(NOT ${GD_UNPARSED_ARGUMENTS})
+    _set_dictionary_name()
   else()
-     message("_GENERATE_DICTIONARY: Too many arguments. ${ARGV}")
-     message(SEND_ERROR  ${generate_dictionary_usage})
+    list(LENGTH GD_UNPARSED_ARGUMENTS n_bad_args)
+    if (n_bad_args GREATER 1)
+      list(REMOVE_AT GD_UNPARSED_ARGUMENTS 0)
+      message("_GENERATE_DICTIONARY: unwanted extra arguments: ${GD_UNPARSED_ARGUMENTS}")
+      message(SEND_ERROR  ${generate_dictionary_usage})
+    endif()
+  endif()
+  list(GET GD_UNPARSED_ARGUMENTS 0 dictname)
+  if (NOT GD_DICT_FUNCTIONS)
+    set(GENREFLEX_FLAGS ${GENREFLEX_FLAGS} --dataonly)
   endif()
   #message(STATUS "_GENERATE_DICTIONARY: generate dictionary source code for ${dictname}")
   get_directory_property( genpath INCLUDE_DIRECTORIES )
@@ -108,28 +120,28 @@ macro( _generate_dictionary )
   # set variable for install_source
   set(cet_generated_code ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp 
                          ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp )
-endmacro( _generate_dictionary )
+endfunction( _generate_dictionary )
 
 # dictionaries are built in art with this
 function ( build_dictionary )
   #message(STATUS "BUILD_DICTIONARY: called with ${ARGC} arguments: ${ARGV}")
   set(build_dictionary_usage "USAGE: build_dictionary( [dictionary_name] [DICTIONARY_LIBRARIES <library list>] [COMPILE_FLAGS <flags>] [DICT_NAME_VAR <var>] [NO_INSTALL] )")
-  cet_parse_args( BD "DICTIONARY_LIBRARIES;COMPILE_FLAGS;DICT_NAME_VAR" "NOINSTALL;NO_INSTALL" ${ARGN})
-  #message(STATUS "BUILD_DICTIONARY: default arguments: ${BD_DEFAULT_ARGS}")
+  cmake_parse_arguments( BD "NOINSTALL;NO_INSTALL;DICT_FUNCTIONS" "DICT_NAME_VAR" "DICTIONARY_LIBRARIES;COMPILE_FLAGS" ${ARGN})
+  #message(STATUS "BUILD_DICTIONARY: unparsed arguments: ${BD_UNPARSED_ARGUMENTS}")
   #message(STATUS "BUILD_DICTIONARY: install flag is  ${BD_NO_INSTALL} ")
   #message(STATUS "BUILD_DICTIONARY: COMPILE_FLAGS: ${BD_COMPILE_FLAGS}")
   if( BD_NOINSTALL )
      message( SEND_ERROR "build_dictionary now requires NO_INSTALL, you have used the old NOINSTALL command")
   endif( BD_NOINSTALL )
-  if( BD_DEFAULT_ARGS )
-     list(LENGTH BD_DEFAULT_ARGS dlen)
-     if(dlen GREATER 1 )
-	message("BUILD_DICTIONARY: Too many arguments. ${ARGV}")
-	message(SEND_ERROR  ${build_dictionary_usage})
-     endif()
-     list(GET BD_DEFAULT_ARGS 0 dictname)
-     #message(STATUS "BUILD_DICTIONARY: have ${dlen} default arguments")
-     #message(STATUS "BUILD_DICTIONARY: default arguments dictionary name: ${dictname}")
+  if( BD_UNPARSED_ARGUMENTS )
+    list(LENGTH BD_UNPARSED_ARGUMENTS dlen)
+    if(dlen GREATER 1 )
+	    message("BUILD_DICTIONARY: Too many arguments. ${ARGV}")
+	    message(SEND_ERROR  ${build_dictionary_usage})
+    endif()
+    list(GET BD_UNPARSED_ARGUMENTS 0 dictname)
+    #message(STATUS "BUILD_DICTIONARY: have ${dlen} default arguments")
+    #message(STATUS "BUILD_DICTIONARY: default arguments dictionary name: ${dictname}")
   else()
      #message(STATUS "BUILD_DICTIONARY: no default arguments, call _set_dictionary_name")
      _set_dictionary_name()
