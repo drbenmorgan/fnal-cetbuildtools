@@ -119,7 +119,7 @@ function( _generate_dictionary )
   endif()
   # set variable for install_source
   set(cet_generated_code ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp 
-                         ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp )
+                         ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp PARENT_SCOPE)
 endfunction( _generate_dictionary )
 
 # dictionaries are built in art with this
@@ -169,6 +169,9 @@ function ( build_dictionary )
   target_link_libraries( ${dictname}_map  ${dictionary_liblist} )
   add_dependencies( ${dictname}_map  ${dictname}_dict )
   if( NOT BD_NO_INSTALL )
+    if (cet_generated_code) # Local scope, set by _generate_dictionary.
+      set(cet_generated_code ${cet_generated_code} PARENT_SCOPE)
+    endif()
      #message( STATUS "BUILD_DICTIONARY: installing ${dictname}_dict and ${dictname}_map" )
      install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
      install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )

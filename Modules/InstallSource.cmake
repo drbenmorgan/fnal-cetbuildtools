@@ -138,6 +138,7 @@ macro( _cet_install_generated_dictionary_code )
                  DESTINATION ${source_install_dir} )
      endforeach(dict)
   endif( cet_generated_code )
+  set(cet_generated_code) # Clear to avoid causing problems in subdirectories.
 endmacro( _cet_install_generated_dictionary_code )
 
 macro( _cet_install_without_list   )
