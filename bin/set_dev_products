@@ -52,7 +52,7 @@ my $builddir = $ARGV[1];
 my $simple = "";
 my $qual = "";
 my $dop;
-my $type;
+my $type = "";
 my $qdir = "";
 my $inputdir;
 my $setup_cmds;
