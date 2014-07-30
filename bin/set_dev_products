@@ -51,7 +51,7 @@ my $sourcedir = $ARGV[0];
 my $builddir = $ARGV[1];
 my $simple = "";
 my $qual = "";
-my $dop;
+my $dop = "";
 my $type = "";
 my $qdir = "";
 my $inputdir;
@@ -192,17 +192,16 @@ foreach $i ( 1 .. $#qlist ) {
       foreach $k ( 0 .. $plen ) {
         if( $plist[$k][0] eq $qlist[0][$j] ) { 
 	  if ( $plist[$k][2] ) {
-	    print DIAG "find $plist[$k][2] in $qlist[$i][0] for $plist[$k][0]\n";
 	    if ( match_qual( $plist[$k][2], $qlist[$i][0] ) ) {
 	      $piter=$k; 
-	      print DIAG "match $plist[$k][2] for $plist[$k][0]\n";
-	    } else {
-	      print DIAG "failed to match $plist[$k][2] for $plist[$k][0]\n";
 	    }
 	  } else {
 	    $piter=$k; 
 	  }
 	}
+      }
+      if ( $piter < 0 ) {
+         print DIAG "ERORR: failed to match $qlist[0][$j] in product list \n";
       }
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
