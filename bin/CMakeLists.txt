@@ -15,6 +15,7 @@ install_scripts( LIST buildtool
 		      report_product_info )
 
 INSTALL ( FILES cet_test_functions.sh
+                cmake_parse_deps.pm
                 parse_deps.pm
 		set_dep_check_report
 		set_dev_bin
