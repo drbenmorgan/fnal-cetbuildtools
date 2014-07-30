@@ -24,22 +24,22 @@ defaultqual	e5
 # If a particular directory_type is not specified that item will not be
 # defined in the UPS table file.
 incdir	product_dir	include
-fcldir	product_dir	fcl
+fcldir  -
 libdir	fq_dir		lib
 bindir	fq_dir		bin
 
 # if define_pythonpath is enabled, the PYTHONPATH variable will be set
 #define_pythonpath
-#
+
+# list all products here
+# the 4th field may be either optional or only_for_build
 product		version
 gcc		v4_8_2
 art		v1_09_00
 someprod	vx_yy_zz
 anotherprod	va_bb_cc
-
-# list products required ONLY for the build
-# any products here must NOT have qualifiers
-only_for_build	cetbuildtools	@version@
+cetbuildtools	@version@	-	only_for_build	
+end_product_list
  
 # e5  - with gcc 4.8.2 and -std=c++11 
 # e5 also implies cmake v2_8_12_2,which is pulled in by cetbuildtools
@@ -55,6 +55,7 @@ mu2e:e5:debug	mu2e:e5:debug	e5:debug	gcc482		-nq-	-std=c++11
 mu2e:e5:prof	mu2e:e5:prof	e5:prof		gcc482		-nq-	-std=c++11
 nu:e5:debug	nu:e5:debug	e5:debug	gcc482		-nq-	-std=c++11
 nu:e5:prof	nu:e5:prof	e5:prof		gcc482		-nq-	-std=c++11
+end_qualifier_list
 
 table_fragment_begin
 # this is a table file fragment

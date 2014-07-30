@@ -1,6 +1,9 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
 parent cetbuildtools v3_13_00
+# Notice that this product has no default qualifier
+# The no_fq_dir keyword indicates that this product is NULL flavored
+no_fq_dir
 
 # These optional lines define the installed directories where
 # headers, libraries, and executables will be found
@@ -19,22 +22,19 @@ parent cetbuildtools v3_13_00
 incdir      -
 fcldir      -
 libdir      -
-bindir      product_dir	bin
+bindir      product_dir        bin
 
-# The no_fq_dir keyword indicates that this product is NULL flavored
-no_fq_dir
-
-# The required "product version" line indicates that the remaining lines
-# define product/version pairs
-product		version
-cmake		v2_8_12_2
+product        version
+cmake          v2_8_12_2
+end_product_list
 
 # note that cetbuildtools depends only on products which have no qualifiers
-qualifier	cmake
--nq-		-nq-
+qualifier      cmake
+-nq-           -nq-
+end_qualifier_list
 
 table_fragment_begin
-if ( test `uname` = "Darwin" )
-  setupOptional(getopt v1_1_5)
-endif ( test `uname` = "Darwin" )
+    if ( test `uname` = "Darwin" )
+      setupOptional(getopt v1_1_5)
+    endif ( test `uname` = "Darwin" )
 table_fragment_end

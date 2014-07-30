@@ -2,6 +2,9 @@
 #
 # report product, version, etc.
 
+use strict;
+use warnings;
+
 if( $#ARGV < 1 ) {
     print "\n";
     print "USAGE: report_product_info <input-directory> <info>+\n";
@@ -12,16 +15,17 @@ if( $#ARGV < 1 ) {
     exit 1;
 }
 
-$inputdir = $ARGV[0];
-$info_type = lc $ARGV[1];
+my $inputdir = $ARGV[0];
+my $info_type = lc $ARGV[1];
 
-$report=$inputdir."/cetpkg_variable_report";
+my $report=$inputdir."/cetpkg_variable_report";
 
 open(PIN, "< $report") or die "Couldn't open $report";
 my $info = {};
+my $line;
 while ( $line=<PIN> ) {
   chop $line;
-  @words = split(/\s+/,$line);
+  my @words = split(/\s+/,$line);
   if ( $words[0] eq "CETPKG_NAME" ) {
     $info->{product} = $words[1];
   } elsif ( $words[0] eq "CETPKG_VERSION" ) {

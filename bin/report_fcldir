@@ -2,8 +2,13 @@
 #
 # use product_deps
 
+use strict;
+use warnings;
+
 use File::Basename;
 use lib dirname($0);
+
+my $inputdir;
 
 if( $#ARGV >= 0 ) {
    $inputdir = $ARGV[0];
@@ -16,10 +21,10 @@ if( $#ARGV >= 0 ) {
     exit 1;
 }
 
-require parse_deps;
+require cmake_parse_deps;
 
-$pfile=$inputdir."/product_deps";
-$fcl_directory = get_cmake_fcl_directory( $pfile );
+my $pfile=$inputdir."/product_deps";
+my $fcl_directory = get_cmake_fcl_directory( $pfile );
 print "$fcl_directory\n";
 
 exit 0;

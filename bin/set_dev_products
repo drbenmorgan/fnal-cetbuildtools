@@ -9,6 +9,9 @@
 # cetbuildtools must already be setup by setup_for_development
 # create a temporary file and return the temporary file name for use by setup_for_development
 
+use strict;
+use warnings;
+
 use File::Basename;
 use lib dirname($0);
 
@@ -22,7 +25,7 @@ my $compiler_table =
   };
 
 if( $#ARGV < 2 ) {
-    $errfl1 = "problem_report";
+    my $errfl1 = "problem_report";
     open(ERR1, "> $errfl1") or die "Couldn't open $errfl1";
     print ERR1 "\n";
     print ERR1 "unsetenv_ CETPKG_NAME\n";
@@ -33,16 +36,27 @@ if( $#ARGV < 2 ) {
     print ERR1 "unsetenv_ CETPKG_CXX\n";
     print ERR1 "unsetenv_ CETPKG_FC\n";
     print ERR1 "echo \"ERROR: directory and qualifiers not specified\"\n";
-    print ERR1 "echo \"USAGE: set_dev_products <input-directory> <-d|-o|-p> <qualifiers>\"\n";
+    print ERR1 "echo \"USAGE: set_dev_products <input-directory> <outupt-directory. <-d|-o|-p> <qualifiers>\"\n";
     print ERR1 "return 1\n";
     close(ERR1);
     print "$errfl1\n";
     exit 0;
 }
 
-$sourcedir = $ARGV[0];
-$builddir = $ARGV[1];
-$simple = "";
+my $i;
+my $j;
+my $k;
+
+my $sourcedir = $ARGV[0];
+my $builddir = $ARGV[1];
+my $simple = "";
+my $qual = "";
+my $dop;
+my $type;
+my $qdir = "";
+my $inputdir;
+my $setup_cmds;
+
 for $i ( 2 .. $#ARGV ) {
     if( $ARGV[$i] eq "-d" ) {
       $dop = "debug";
@@ -62,14 +76,14 @@ for $i ( 2 .. $#ARGV ) {
 }
 
 # use this file for debugging
-$diagfl = $builddir."/diag_report";
+my $diagfl = $builddir."/diag_report";
 open(DIAG, "> $diagfl") or die "Couldn't open $diagfl";
 
-$srcbase = basename($sourcedir);
+my $srcbase = basename($sourcedir);
 if ( $srcbase eq "ups" ) {
     $inputdir = $sourcedir;
     ##print DIAG "set_dev_products debug info: have the old setup_for_development\n";
-    $errfl2 = "problem_report";
+    my $errfl2 = "problem_report";
     open(ERR2, "> $errfl2") or die "Couldn't open $errfl2";
     print ERR2 "\n";
     print ERR2 "unsetenv_ CETPKG_NAME\n";
@@ -96,20 +110,23 @@ if ( $srcbase eq "ups" ) {
 
 require parse_deps;
 
-$pfile=$inputdir."/product_deps";
+my $pfile=$inputdir."/product_deps";
 
-($product, $version, $default_ver, $default_qual, %phash) = parse_product_list( $pfile );
+my ($product, $version, $default_ver, $default_qual, $have_fq) = get_parent_info( $pfile );
 
-$tmpfl = $builddir."/".$product."-".$version;
-open(TSET, "> $tmpfl") or die "Couldn't open $tmpfl";
+my $tmpfl = $builddir."/".$product."-".$version;
+open($set_dev_products::TSET, "> $tmpfl") or die "Couldn't open $tmpfl";
 
-($ndeps, @qlist) = parse_qualifier_list( $pfile, TSET );
+my ($plen, $plist_ref, $dqlen, $dqlist_ref) = get_product_list( $pfile );
+my @plist=@$plist_ref;
+my @dqlist=@$dqlist_ref;
+my ($ndeps, @qlist) = get_qualifier_list( $pfile, $set_dev_products::TSET );
 
 if ( $qual ) {
   $qual = $qual.$dop;
   $qdir = $qdir.$dop;
 } else {
-  $dq = find_default_qual( $pfile );
+  my $dq = find_default_qual( $pfile );
   if ( $dq ) {
     $qual = $dq.":";
     $qdir = $dq."-";
@@ -118,7 +135,7 @@ if ( $qual ) {
   } elsif ( $simple ) {
     $qual = "-nq-";
   } else {
-    $errfl2 = $builddir."/error-".$product."-".$version;
+    my $errfl2 = $builddir."/error-".$product."-".$version;
     open(ERR2, "> $errfl2") or die "Couldn't open $errfl2";
     print ERR2 "\n";
     print ERR2 "unsetenv_ CETPKG_NAME\n";
@@ -131,7 +148,7 @@ if ( $qual ) {
     print ERR2 "echo \"ERROR: no qualifiers specified\"\n";
     print ERR2 "echo \"ERROR: add a defaultqual line to $pfile\"\n";
     print ERR2 "echo \"ERROR: or specify the qualifier(s) on the command line\"\n";
-    print ERR2 "echo \"USAGE: set_dev_products <input-directory> <-d|-o|-p> <qualifiers>\"\n";
+    print ERR2 "echo \"USAGE: set_dev_products <input-directory> <outupt-directory. <-d|-o|-p> <qualifiers>\"\n";
     print ERR2 "return 1\n";
     close(ERR2);
     print "$errfl2\n";
@@ -140,28 +157,25 @@ if ( $qual ) {
 }
 #print DIAG "set_dev_products debug info: qual $qual\n";
 
-(%ohash) = find_optional_products( $pfile );
-($ecount, @ehash) = find_only_for_build_products( $pfile );
-
 # Temporary variable connected as a filehandle.
-open( SETUP_CMDS, ">", \$setup_cmds) or
+open( $set_dev_products::SETUP_CMDS, ">", \$setup_cmds) or
   die "Could not open memory stream to variable.";
 
 # are there products without listed qualifiers?
-@pkeys = keys %phash;
-foreach $i ( 1 .. $#pkeys ) {
-  $p_has_qual = 0;
+foreach $i ( 0 .. $plen ) {
+  my $p_has_qual = 0;
   foreach $j ( 1 .. $ndeps ) {
-    if ( $pkeys[$i] eq $qlist[0][$j] ) {
-       $p_has_qual++;
+    if( $plist[$i][0] eq $qlist[0][$j] ) {
+        ++$p_has_qual;
     }
   }
   if ( $p_has_qual == 0 ) {
-    print_setup_noqual( $pkeys[$i], $phash{$pkeys[$i]}, $ohash{$pkeys[$i]}, SETUP_CMDS );
+    print_setup_noqual( $plist[$i][0], $plist[$i][1], $plist[$i][3], $set_dev_products::SETUP_CMDS );
   }
 }
 # now loop over the qualifier list
-$match = 0;
+my $match = 0;
+my $compiler;
 foreach $i ( 1 .. $#qlist ) {
   if ( compare_qual( $qlist[$i][0], $qual ) ) {
     $match++;
@@ -174,28 +188,44 @@ foreach $i ( 1 .. $#qlist ) {
         }
         next;
       }
+      my $piter = -1;
+      foreach $k ( 0 .. $plen ) {
+        if( $plist[$k][0] eq $qlist[0][$j] ) { 
+	  if ( $plist[$k][2] ) {
+	    print DIAG "find $plist[$k][2] in $qlist[$i][0] for $plist[$k][0]\n";
+	    if ( match_qual( $plist[$k][2], $qlist[$i][0] ) ) {
+	      $piter=$k; 
+	      print DIAG "match $plist[$k][2] for $plist[$k][0]\n";
+	    } else {
+	      print DIAG "failed to match $plist[$k][2] for $plist[$k][0]\n";
+	    }
+	  } else {
+	    $piter=$k; 
+	  }
+	}
+      }
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
-        print_setup_noqual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ohash{$qlist[0][$j]}, SETUP_CMDS );
-	#print SETUP_CMDS "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
+        print_setup_noqual( $plist[$piter][0], $plist[$piter][1], $plist[$piter][3], $set_dev_products::SETUP_CMDS );
+	#print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] \n";
       } elsif ( $qlist[$i][$j] eq "-b-" ) {
-        print_setup_noqual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ohash{$qlist[0][$j]}, SETUP_CMDS );
-	#print SETUP_CMDS "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} \n";
+        print_setup_noqual( $plist[$piter][0], $plist[$piter][1], $plist[$piter][3], $set_dev_products::SETUP_CMDS );
+	#print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] \n";
       } else {
-	@qwords = split(/:/,$qlist[$i][$j]);
-	$ql="+".$qwords[0];
+	my @qwords = split(/:/,$qlist[$i][$j]);
+	my $ql="+".$qwords[0];
 	foreach $j ( 1 .. $#qwords ) {
 	  $ql = $ql.":+".$qwords[$j];
 	}
-        print_setup_qual( $qlist[0][$j], $phash{$qlist[0][$j]}, $ql, $ohash{$qlist[0][$j]}, SETUP_CMDS );
-	#print SETUP_CMDS "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
+        print_setup_qual( $plist[$piter][0], $plist[$piter][1], $ql, $plist[$piter][3], $set_dev_products::SETUP_CMDS );
+	#print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] -q $ql \n";
       }
     }
     last;
   }
 }
 
-close(SETUP_CMDS);
+close($set_dev_products::SETUP_CMDS);
 
 if (!$compiler) {
   my @quals = split /:/, $qual;
@@ -206,7 +236,7 @@ if (!$compiler) {
   }
 }
 
-$cetfl = cetpkg_info_file($product,
+my $cetfl = cetpkg_info_file($product,
                           $version,
                           $default_ver,
                           $qual,
@@ -218,56 +248,55 @@ $cetfl = cetpkg_info_file($product,
                           $compiler_table->{$compiler}->{FC},
                          );
 
-print TSET "setenv UPS_OVERRIDE -B\n";
-print TSET "setenv CETPKG_NAME $product\n";
-print TSET "setenv CETPKG_VERSION $version\n";
+print $set_dev_products::TSET "setenv UPS_OVERRIDE -B\n";
+print $set_dev_products::TSET "setenv CETPKG_NAME $product\n";
+print $set_dev_products::TSET "setenv CETPKG_VERSION $version\n";
 if ( $simple ) {
-  print TSET "unsetenv_ CETPKG_QUAL\n";
-  print TSET "unsetenv_ CETPKG_TYPE\n";
-  print TSET "unsetenv_ CETPKG_CC\n";
-  print TSET "unsetenv_ CETPKG_CXX\n";
-  print TSET "unsetenv_ CETPKG_FC\n";
-
+  print $set_dev_products::TSET "unsetenv_ CETPKG_QUAL\n";
+  print $set_dev_products::TSET "unsetenv_ CETPKG_TYPE\n";
+  print $set_dev_products::TSET "unsetenv_ CETPKG_CC\n";
+  print $set_dev_products::TSET "unsetenv_ CETPKG_CXX\n";
+  print $set_dev_products::TSET "unsetenv_ CETPKG_FC\n";
 } else {
-  print TSET "setenv CETPKG_QUAL $qual\n";
-  print TSET "setenv CETPKG_TYPE $type\n";
-  print TSET "setenv CETPKG_CC $compiler_table->{${compiler}}->{CC}\n";
-  print TSET "setenv CETPKG_CXX $compiler_table->{${compiler}}->{CXX}\n";
-  print TSET "setenv CETPKG_FC $compiler_table->{${compiler}}->{FC}\n";
+  print $set_dev_products::TSET "setenv CETPKG_QUAL $qual\n";
+  print $set_dev_products::TSET "setenv CETPKG_TYPE $type\n";
+  print $set_dev_products::TSET "setenv CETPKG_CC $compiler_table->{${compiler}}->{CC}\n";
+  print $set_dev_products::TSET "setenv CETPKG_CXX $compiler_table->{${compiler}}->{CXX}\n";
+  print $set_dev_products::TSET "setenv CETPKG_FC $compiler_table->{${compiler}}->{FC}\n";
 }
-print TSET "setup -B cetpkgsupport \n";
-print TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
-foreach $i ( 1 .. $ecount ) {
-  if( $ehash[$i][0] eq "cetbuildtools" ) {
-  } else {
-    print TSET "setup -B $ehash[$i][0] $ehash[$i][1]\n";
-    print TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
-    ##print TSET " echo \$setup_fail \n"; 
+print $set_dev_products::TSET "setup -B cetpkgsupport \n";
+print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
+foreach $i ( 0 .. $plen ) {
+  if (( $plist[$i][3] ) && ( $plist[$i][3] eq "only_for_build" )) {
+    if( $plist[$i][0] eq "cetbuildtools" ) {
+    } else {
+      print $set_dev_products::TSET "setup -B $plist[$i][0] $plist[$i][1]\n";
+      print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
+      ##print $set_dev_products::TSET " echo \$setup_fail \n"; 
+    }
   }
 }
 
 # Now write the setup commands.
-print TSET $setup_cmds;
+print $set_dev_products::TSET $setup_cmds;
 
-##print TSET " echo \$setup_fail \n"; 
-##print TSET "test \"\$setup_fail\" =  \"true\" && return 1\n"; 
 # allow for the case where there are no dependencies
 if ( $match == 0 ) {
-   if( $phash{none} eq "none" ) {
+   if( $plen < 0 ) {
      #print "this package has no dependencies\n";
    } else {
-     print TSET "\n";
-     print TSET "echo \"ERROR: failed to find any dependent products for $product $version -q $qual\"\n";
-     print TSET "echo \"       The following qualifier combinations are recognized:\"\n";
+     print $set_dev_products::TSET "\n";
+     print $set_dev_products::TSET "echo \"ERROR: failed to find any dependent products for $product $version -q $qual\"\n";
+     print $set_dev_products::TSET "echo \"       The following qualifier combinations are recognized:\"\n";
      foreach $i ( 1 .. $#qlist ) {
-	 print TSET "echo \"         $qlist[$i][0] \"\n";
+	 print $set_dev_products::TSET "echo \"         $qlist[$i][0] \"\n";
      }
-     print TSET "return 1\n";
-     print TSET "\n";
+     print $set_dev_products::TSET "return 1\n";
+     print $set_dev_products::TSET "\n";
    }
 }
 
-close(TSET);
+close($set_dev_products::TSET);
 print "$tmpfl\n";
 close(DIAG);
 

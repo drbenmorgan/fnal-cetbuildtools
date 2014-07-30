@@ -13,15 +13,15 @@ bindir      fq_dir      bin
 # define product/version pairs
 product		version
 gcc		v4_7_1
-
-# Build-only dependencies.
-only_for_build cetbuildtools	@version@
+cetbuildtools	@version@	-	only_for_build
+end_product_list
 
 # Matrix of qualifiers versus dependent products
 qualifier	gcc	notes
 a7:debug	-nq-
 a7:opt		-nq-
 a7:prof		-nq-
+end_qualifier_list
 
 table_fragment_begin
 # this is a table file fragment

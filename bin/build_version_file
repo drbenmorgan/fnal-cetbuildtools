@@ -1,8 +1,13 @@
 #!/usr/bin/env perl
 #
 
+use strict;
+use warnings;
+
 use POSIX;
 use File::Basename;
+
+package build_version_file;
 
 if( $#ARGV < 4 ) {
     print "\n";
@@ -11,11 +16,12 @@ if( $#ARGV < 4 ) {
     print "\n";
     exit 1;
 }
-$verfile = $ARGV[0];
-$product = $ARGV[1];
-$version = $ARGV[2];
-$default_version = $ARGV[3];
-$flvr    = $ARGV[4];
+my $verfile = $ARGV[0];
+my $product = $ARGV[1];
+my $version = $ARGV[2];
+my $default_version = $ARGV[3];
+my $flvr    = $ARGV[4];
+my $full_qual;
 if( $#ARGV > 4 ) {
     $full_qual = $ARGV[5];
 } else {
@@ -24,7 +30,7 @@ if( $#ARGV > 4 ) {
 
 print "creating version file for $product $version $flvr\n";
 
-$datime = strftime('%a %b %d %H:%M:%S %Z %Y',localtime);
+my $datime = &POSIX::strftime('%a %b %d %H:%M:%S %Z %Y',localtime);
 print "date $datime\n";
 open(TBL, "> $verfile") or die "Couldn't open $verfile";
 
@@ -45,8 +51,8 @@ print TBL "  TABLE_FILE = $product.table\n";
 close(TBL);
 
 if( $default_version eq "current" ) {
-    $mydir=dirname($verfile);
-    $curfile=$mydir."/".$flvr;
+    my $mydir=dirname($verfile);
+    my $curfile=$mydir."/".$flvr;
     open(TBL, "> $curfile") or die "Couldn't open $curfile";
 
     print TBL "FILE = chain\n";
