@@ -39,10 +39,10 @@
 # -nq-	this dependent product has no qualifier
 # -b-	this dependent product is only used for the build - it will not be in the table
 
+use List::Util qw(min max); # Numeric min / max funcions.
+
 use strict;
 use warnings;
-
-use List::Util qw(min max); # Numeric min / max funcions.
 
 sub get_parent_info {
   my @params = @_;
@@ -369,6 +369,40 @@ sub get_product_list {
 	 $get_phash="true";
       } elsif( $words[0] eq "end_product_list" ) {
 	 $get_phash="";
+      } elsif( $words[0] eq "end_qualifier_list" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "parent" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "no_fq_dir" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "incdir" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "fcldir" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "gdmldir" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "fwdir" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "libdir" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "bindir" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "defaultqual" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "only_for_build" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "define_pythonpath" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "product" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "table_fragment_end" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "qualifier" ) {
+         $get_phash="";
       } elsif( $get_phash ) {
         if(( $words[2] ) && ($words[2]eq "-" )) { $words[2] = ""; }
 	++$piter;
@@ -413,6 +447,38 @@ sub get_qualifier_list {
       ##print "get_qualifier_list: $line\n";
       @words=split(/\s+/,$line);
       if( $words[0] eq "end_qualifier_list" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "end_product_list" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "parent" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "no_fq_dir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "incdir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "fcldir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "gdmldir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "fwdir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "libdir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "bindir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "defaultqual" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "only_for_build" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "define_pythonpath" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "product" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "table_fragment_end" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "table_fragment_begin" ) {
          $get_quals="false";
       } elsif( $words[0] eq "qualifier" ) {
          $get_quals="true";
