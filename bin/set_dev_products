@@ -15,6 +15,8 @@ use warnings;
 use File::Basename;
 use lib dirname($0);
 
+require parse_deps;
+
 my $default_fc = ( $^O eq "darwin" ) ? "-" : "gfortran";
 
 my $compiler_table =
@@ -108,9 +110,13 @@ if ( $srcbase eq "ups" ) {
 ##print DIAG "set_dev_products debug info: source dir is $sourcedir\n";
 ##print DIAG "set_dev_products debug info: input dir is $inputdir\n";
 
-require parse_deps;
-
 my $pfile=$inputdir."/product_deps";
+
+if ( check_for_old_product_deps( $pfile ) ) {
+    print DIAG "WARNING: you appear to be using an old product_deps with cetbuildtools v4 or later\n";
+    print DIAG "WARNING: please issue the following command\n";
+    print DIAG "WARNING: cp \$CETBUILDTOOLS_DIR/templates/setup_for_development.template $inputdir/setup_for_development\n";
+}
 
 my ($product, $version, $default_ver, $default_qual, $have_fq) = get_parent_info( $pfile );
 

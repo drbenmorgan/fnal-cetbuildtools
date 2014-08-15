@@ -662,4 +662,27 @@ sub print_setup_qual {
   return 0;
 }
 
+sub check_for_old_product_deps {
+  my @params = @_;
+  my $retval = 1;
+  my $line;
+  my @words;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "end_product_list" ) {
+            $retval = 0;
+      } elsif( $words[0] eq "end_qualifier_list" ) {
+            $retval = 0;
+      }
+    }
+  }
+  close(PIN);
+  return $retval;
+}
+
 1;
