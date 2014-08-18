@@ -1,10 +1,27 @@
-# macro for State Machine Compiler
+########################################################################
+# process_smc
+#
+# Process state machine files (.sm) into C++ source for inclusion in a
+# library.
+#
+# Usage:
+#
+# process_smc(LIB_SOURCES_VAR [NO_INSTALL] <.sm files>)
+#
+####################################
+# Notes
+#
+# The LIB_SOURCES_VAR argument should be the name of a variable whose
+# contents after calling will be the list of C++ source files generated
+# by the state machine compiler.
+#
+########################################################################
 
-include(CetParseArgs)
+include(CMakeParseArguments)
 
-function(process_smc SMC_LIB_SOURCES)
-  cet_parse_args ( PSMC "" "NO_INSTALL" ${ARGN})
-  foreach(source ${PSMC_DEFAULT_ARGS})
+function(process_smc LIB_SOURCES_VAR)
+  cmake_parse_arguments ( PSMC "NO_INSTALL" "" "" ${ARGN})
+  foreach(source ${PSMC_UNPARSED_ARGUMENTS})
     string(REPLACE ".sm" "_sm.cpp" SMC_CPP_OUTPUT ${source})
     string(REPLACE ".sm" "_sm.h"   SMC_H_OUTPUT   ${source})
     string(REPLACE ".sm" "_sm.dot" SMC_DOT_OUTPUT ${source})
@@ -26,5 +43,5 @@ function(process_smc SMC_LIB_SOURCES)
   endforeach()
   set_source_files_properties(${TMP_SOURCES}
     PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter" )
-  set(${SMC_LIB_SOURCES} ${TMP_SOURCES} PARENT_SCOPE)
+  set(${LIB_SOURCES_VAR} ${TMP_SOURCES} PARENT_SCOPE)
 endfunction()
