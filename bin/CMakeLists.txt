@@ -12,7 +12,9 @@ install_scripts( LIST buildtool
 		      report_fcldir
 		      report_fwdir
 		      report_gdmldir
-		      report_product_info )
+		      report_product_info
+          update-to-v4
+          )
 
 INSTALL ( FILES cet_test_functions.sh
                 cmake_parse_deps.pm

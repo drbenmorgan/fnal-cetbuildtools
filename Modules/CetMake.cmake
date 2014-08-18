@@ -52,6 +52,7 @@
 #   it gets re-run if the script chagees.
 #
 ########################################################################
+cmake_policy(VERSION 3.0.1) # We've made this work for 3.0.1.
 
 include(CetParseArgs)
 include(InstallSource)
@@ -361,7 +362,7 @@ macro (cet_script)
     else()
        set(target ${target_name})
     endif()
-    add_custom_target(!${target} ALL
+    add_custom_target("+${target}" ALL
       ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}/"
       COMMAND ${CMAKE_COMMAND} -E
       copy "${CS_SOURCE_DIR}/${target_name}"
@@ -370,7 +371,7 @@ macro (cet_script)
       DEPENDS "${CS_SOURCE_DIR}/${target_name}"
       )
     if (CS_DEPENDENCIES)
-      add_dependencies(!${target} ${CS_DEPENDENCIES})
+      add_dependencies("+${target}" ${CS_DEPENDENCIES})
     endif()
     # Allow CUSTOM_COMMANDs using these scripts to be updated when the
     # script changes: just list the script in the DEPENDS of the

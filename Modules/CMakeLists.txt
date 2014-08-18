@@ -1,34 +1,35 @@
 
 INSTALL(FILES
   BasicPlugin.cmake
-	BuildDictionary.cmake
-	BuildSubdirectories.cmake
-	CetBasicConfigVersion-AnyNewerVersion.cmake.in
-	CetBasicConfigVersion-ExactVersion.cmake.in
-	CetBasicConfigVersion-SameMajorVersion.cmake.in
+  BuildDictionary.cmake
+  BuildSubdirectories.cmake
+  CetBasicConfigVersion-AnyNewerVersion.cmake.in
+  CetBasicConfigVersion-ExactVersion.cmake.in
+  CetBasicConfigVersion-SameMajorVersion.cmake.in
   CetBuildTable.cmake
-	CetParseArgs.cmake
-  CetRegexEscape.cmake
-	CetTest.cmake
-	CetMake.cmake
-	CetCMakeConfig.cmake
-	CetCMakeEnv.cmake
-	CetCMakeUtils.cmake
+  CetCMakeConfig.cmake
+  CetCMakeEnv.cmake
+  CetCMakeUtils.cmake
   CetGetProductInfo.cmake
-	CetRootCint.cmake
-	CheckUpsVersion.cmake
-	EnsureOutOfSourceBuild.cmake
-	FindCompilerVersion.cmake
-	FindUpsBoost.cmake
-	FindUpsGeant4.cmake
-	FindUpsPackage.cmake
-	FindUpsRoot.cmake
-	InstallPython.cmake
-	InstallSource.cmake
-	ParseUpsVersion.cmake
-	ProcessSmc.cmake
-	SetCompilerFlags.cmake
-	SetFlavorQual.cmake
-	UseCPack.cmake
+  CetHaveQual.cmake
+  CetMake.cmake
+  CetParseArgs.cmake
+  CetRegexEscape.cmake
+  CetRootCint.cmake
+  CetTest.cmake
+  CheckUpsVersion.cmake
+  EnsureOutOfSourceBuild.cmake
+  FindCompilerVersion.cmake
+  FindUpsBoost.cmake
+  FindUpsGeant4.cmake
+  FindUpsPackage.cmake
+  FindUpsRoot.cmake
+  InstallPython.cmake
+  InstallSource.cmake
+  ParseUpsVersion.cmake
+  ProcessSmc.cmake
+  SetCompilerFlags.cmake
+  SetFlavorQual.cmake
+  UseCPack.cmake
   DESTINATION ${product}/${version}/Modules
   )

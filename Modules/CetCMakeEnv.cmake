@@ -5,13 +5,6 @@
 # allow optional architecture declaration
 # noarch is recognized, others are used at your own discretion
 # 
-# make sure gcc has been setup
-# cet_check_gcc()
-# 
-# search for a particular qualifier string 
-# (e.g. "a7" in "a7:debug")
-# returns ${CET_HAVE_QUAL}
-# cet_have_qual( <qualifier> )
 
 # Dummy use of CET_TEST_GROUPS to quell warning.
 if (CET_TEST_GROUPS)
@@ -19,6 +12,7 @@ endif()
 
 include(CetGetProductInfo)
 include(CetRegexEscape)
+include(CetHaveQual)
 
 # Verify that the compiler is set as desired, and is consistent with our
 # current known use of qualifiers.
@@ -255,33 +249,6 @@ endmacro(cet_cmake_env)
 macro(cet_check_gcc)
   message(WARNING "Obsolete function cet_check_gcc called -- NOP.")
 endmacro(cet_check_gcc)
-
-function( cet_have_qual findq )
-  cet_parse_args(CHQ "" "REGEX" ${ARGN})
-  list(LENGTH CHQ_DEFAULT_ARGS chq_def_args_length)
-  if (chq_def_args_length GREATER 0)
-    list(GET CHQ_DEFAULT_ARGS 0 ans_var)
-  else()
-    set(ans_var CET_HAVE_QUAL)
-  endif()
-  if (CHQ_REGEX)
-    set(qual_index -1)
-    STRING(REGEX MATCH "(^|:)${findq}(:|$)" found_match "${full_qualifier}")
-    if (found_match)
-      set(qual_index 0)
-    endif()
-  else()
-    STRING( REGEX REPLACE ":" ";" qualifier_as_list "${full_qualifier}" )
-    list(FIND qualifier_as_list ${findq} qual_index)
-    #message(STATUS "cet_have_qual: qual_index is ${qual_index}")
-  endif()
-  if( qual_index LESS 0 )
-    set( ${ans_var} "FALSE" PARENT_SCOPE) # Not found.
-  else()
-    set( ${ans_var} "TRUE" PARENT_SCOPE) # Found.
-  endif()
-  #message(STATUS "cet_have_qual: returning ${CET_HAVE_QUAL}")
-endfunction(cet_have_qual)
 
 macro( cet_set_lib_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_libdir
