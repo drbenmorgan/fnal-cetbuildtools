@@ -13,7 +13,7 @@ install_scripts( LIST buildtool
 		      report_fwdir
 		      report_gdmldir
 		      report_product_info
-          update-to-v4
+                      migrate-package
           )
 
 INSTALL ( FILES cet_test_functions.sh

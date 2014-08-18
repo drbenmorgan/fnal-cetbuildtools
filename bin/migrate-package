@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 ########################################################################
-# update-to-v4
+# migrate-package
 #
 # Make necessary changes to product_deps and setup_for_development to
 # make a package compliant with cetbuildtools v4.
@@ -15,7 +15,7 @@ my $cetb_line = q&set_ cetb=` grep -e '^[ \t]*cetbuildtools' $CETPKG_SOURCE/ups/
 my $cetv_line = q&set_ cetv=` grep -e '^[ \t]*cetbuildtools' $CETPKG_SOURCE/ups/product_deps | grep  only_for_build| awk '{ print $2 }' `&;
 
 sub usage() {
-  print STDERR "update-to-v4 <pkg-top-dir>+\n";
+  print STDERR "migrate-package <pkg-top-dir>+\n";
   exit 1;
 }
 
