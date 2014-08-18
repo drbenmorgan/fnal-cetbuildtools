@@ -117,6 +117,7 @@
 ########################################################################
 include(CMakeParseArguments)
 include(CetGetProductInfo)
+include(CetHaveQual)
 include(CetRegexEscape)
 
 macro( cet_report_compiler_flags )
@@ -300,6 +301,41 @@ macro( cet_remove_compiler_flags )
   endforeach()
 endmacro()
 
+# Find the first -std flag in the incoming list and put it in the
+# outgoing var.
+function(_find_std_flag IN_VAR OUT_VAR)
+  string(REGEX MATCH "(^| )-std=[^ ]*" found_std_flag "${${IN_VAR}}")
+  set(${OUT_VAR} "${found_std_flag}" PARENT_SCOPE)
+endfunction()
+
+function(_find_extra_std_flags IN_VAR OUT_VAR)
+  string(REGEX MATCHALL "(^| )-std=[^ ]*" found_std_flags "${${IN_VAR}}")
+  list(LENGTH found_std_flags fsf_len)
+  if (fsf_len GREATER 1)
+    list(GET found_std_flags 0 tmp)
+    set(${OUT_VAR} "${tmp}" PARENT_SCOPE)
+  else()
+    unset(${OUT_VAR} PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(_std_flag_from_qual OUT_VAR)
+  cet_have_qual("e[245]" REGEX want_cpp11)
+  if (want_cpp11)
+    set(${OUT_VAR} "-std=c++11" PARENT_SCOPE)
+    return()
+  endif()
+  cet_have_qual("i[12]" REGEX want_cpp11)
+  if (want_cpp11)
+    set(${OUT_VAR} "-std=c++0x" PARENT_SCOPE)
+    return()
+  endif()
+  cet_have_qual("e6" want_cpp1y)
+  if (want_cpp1y)
+    set(${OUT_VAR} "-std=c++1y" PARENT_SCOPE)
+  endif()
+endfunction()
+
 macro(_remove_extra_std_flags VAR)
   string(REGEX MATCHALL "(^| )-std=[^ ]*" found_std_flags "${${VAR}}")
   list(LENGTH found_std_flags fsf_len)
@@ -321,6 +357,13 @@ macro( cet_set_compiler_flags )
 
   if (CSCF_DEFAULT_ARGS)
     message(FATAL_ERROR "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider EXTRA_FLAGS, EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
+  endif()
+
+  _find_std_flag(CSCF_EXTRA_CXX_FLAGS FOUND_STD_FLAG)
+  _std_flag_from_qual(QUAL_STD_FLAG)
+
+  if (FOUND_STD_FLAG AND QUAL_STD_FLAG AND NOT FOUND_STD_FLAG STREQUAL QUAL_STD_FLAG)
+    message(FATAL_ERROR "Qualifier specifies ${QUAL_STD_FLAG}, but user specifies ${FOUND_STD_FLAG}.\nPlease change qualifier or (preferably) remove user setting of ${FOUND_STD_FLAG}")
   endif()
 
   # turn a colon separated list into a space separated string
@@ -391,11 +434,11 @@ macro( cet_set_compiler_flags )
   endif()
 
   set( CMAKE_C_FLAGS_DEBUG "-g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
   set( CMAKE_C_FLAGS_MINSIZEREL "-O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
   set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
 
  _cet_add_build_types() 
 
