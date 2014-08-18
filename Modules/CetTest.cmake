@@ -139,6 +139,7 @@
 #   cet_test() or add_test() -- require at least one.
 #
 ########################################################################
+cmake_policy(VERSION 3.0.1) # We've made this work for 3.0.1.
 
 # Need argument parser.
 include(CMakeParseArguments)
@@ -233,7 +234,7 @@ FUNCTION(cet_test CET_TARGET)
   IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
     # Set up to handle a per-test work directory for parallel testing.
     SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
-    STRING(REPLACE "/" "!" wdtarget ${CET_TEST_WORKDIR})
+    STRING(REPLACE "/" "+" wdtarget ${CET_TEST_WORKDIR})
     ADD_CUSTOM_TARGET(${wdtarget} ALL
       COMMAND ${CMAKE_COMMAND} -E
       make_directory "${CET_TEST_WORKDIR}"
@@ -294,7 +295,7 @@ FUNCTION(cet_test CET_TARGET)
     # Name the target so that tests in different directories can use the same
     # data file.
     GET_FILENAME_COMPONENT(dfile_basename ${datafile} NAME)
-    STRING(REPLACE "/" "!" dtarget "${CET_TEST_WORKDIR}/${dfile_basename}")
+    STRING(REPLACE "/" "+" dtarget "${CET_TEST_WORKDIR}/${dfile_basename}")
     IF(IS_ABSOLUTE ${datafile})
       SET(abs_datafile ${datafile})
     ELSE()
