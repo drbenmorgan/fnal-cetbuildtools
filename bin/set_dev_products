@@ -115,7 +115,7 @@ my $pfile=$inputdir."/product_deps";
 if ( check_for_old_product_deps( $pfile ) ) {
     print DIAG "WARNING: you appear to be using an old product_deps with cetbuildtools v4 or later\n";
     print DIAG "WARNING: please issue the following command\n";
-    print DIAG "WARNING: cp \$CETBUILDTOOLS_DIR/templates/setup_for_development.template $inputdir/setup_for_development\n";
+    print DIAG "WARNING: migrate-package '$ENV{CETPKG_SOURCE}'\n";
 }
 
 my ($product, $version, $default_ver, $default_qual, $have_fq) = get_parent_info( $pfile );
