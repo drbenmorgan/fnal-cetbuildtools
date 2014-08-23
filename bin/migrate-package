@@ -30,11 +30,16 @@ foreach my $dir (@ARGV) {
   (-w "$dir/ups") or die "ERROR: $dir/ups is not writable.";
   my $pd = "$dir/ups/product_deps";
   my $sfd = "$dir/ups/setup_for_development";
+  my $sd = "$dir/ups/setup_deps";
   (-w "$pd") or die "ERROR: ups/product_deps does not exist under $dir or is not writable.";
   (-w "$sfd") or die "ERROR: ups/setup_for_development does not exist under $dir or is not writable.";
   print "INFO: Updating files in $dir.\n";
   update_pd($pd);
   update_sfd($sfd);
+  if (-f "$sd") {
+    (-w "$sd") or die "ERROR: ups/setup_deps exists, but is not writable.";
+    update_sd($sd);
+  }
 }
 
 1;
@@ -103,9 +108,10 @@ sub close_out_product_list {
 sub update_sfd {
   my $sfd = shift;
   my $ups_dir=dirname($sfd);
+  my $sfd_base = basename($sfd);
   system("cp \"$sfd\" \"$sfd.bak\"") == 0 or die "ERROR: Unable to make temporary file for $sfd.\n";
   open(SFD_IN, "$sfd.bak") or die "ERROR: Unable to read temporary file for conversion in $ups_dir.";
-  open(SFD_OUT, ">$sfd") or die "ERROR: Unable to open setup_for_development for write in $ups_dir.";
+  open(SFD_OUT, ">$sfd") or die "ERROR: Unable to open ${sfd_base} for write in $ups_dir.";
   while (<SFD_IN>) {
     if (m&^\s*set_\s+cetb\b.*&) {
       print SFD_OUT "$cetb_line\n";
@@ -118,4 +124,9 @@ sub update_sfd {
   }
   close(SFD_OUT);
   close(SFD_IN);
+}
+
+sub update_sd {
+  my $sd = shift;
+  update_sfd($sd); # All we need to do for now.
 }
