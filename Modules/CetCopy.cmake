@@ -57,6 +57,7 @@ function (cet_copy)
     add_custom_command(OUTPUT "${dest_path}"
       WORKING_DIRECTORY "${CETC_WORKING_DIRECTORY}"
       COMMAND ${CMAKE_COMMAND} -E copy "${source}" "${dest_path}"
+      COMMENT "Copying ${source} to ${dest_path}"
       DEPENDS "${source}" ${CETC_DEPENDENCIES}
       )
     if (CETC_PROGRAMS)
