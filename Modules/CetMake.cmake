@@ -349,6 +349,8 @@ macro( cet_make_library )
   endif( CML_WITH_STATIC_LIBRARY )
 endmacro( cet_make_library )
 
+file(MAKE_DIRECTORY "${EXECUTABLE_OUTPUT_PATH}/")
+
 macro (cet_script)
   cet_parse_args(CS "DEPENDENCIES" "GENERATED;NO_INSTALL;REMOVE_EXTENSIONS" ${ARGN})
   if (CS_GENERATED)
@@ -362,25 +364,11 @@ macro (cet_script)
     else()
        set(target ${target_name})
     endif()
-    add_custom_target("+${target}" ALL
-      ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}/"
-      COMMAND ${CMAKE_COMMAND} -E
-      copy "${CS_SOURCE_DIR}/${target_name}"
-      "${EXECUTABLE_OUTPUT_PATH}/${target}"
-      COMMAND chmod +x "${EXECUTABLE_OUTPUT_PATH}/${target}"
-      DEPENDS "${CS_SOURCE_DIR}/${target_name}"
+    cet_copy(${CS_SOURCE_DIR}/${target_name}
+      PROGRAMS
+      NAME ${target}
+      DESTINATION "${EXECUTABLE_OUTPUT_PATH}"
       )
-    if (CS_DEPENDENCIES)
-      add_dependencies("+${target}" ${CS_DEPENDENCIES})
-    endif()
-    # Allow CUSTOM_COMMANDs using these scripts to be updated when the
-    # script changes: just list the script in the DEPENDS of the
-    # CUSTOM_COMMAND.
-    add_executable(${target} IMPORTED GLOBAL)
-    set_target_properties(${target}
-      PROPERTIES IMPORTED_LOCATION "${CS_SOURCE_DIR}/${target_name}"
-      )
-
     # Install in product if desired.
     if (NOT CS_NO_INSTALL)
       install(PROGRAMS "${EXECUTABLE_OUTPUT_PATH}/${target}"

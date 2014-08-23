@@ -70,6 +70,7 @@
 ########################################################################
 
 include(CetParseArgs)
+include (CetCopy)
 
 macro( set_install_root )
   set( PACKAGE_TOP_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -124,19 +125,19 @@ endmacro( _cet_check_build_directory )
 macro( _cet_install_generated_dictionary_code )
   # check for dictionary code
   if( cet_generated_code )
-     foreach( dict ${cet_generated_code} )
-	STRING( REGEX REPLACE "^${CMAKE_CURRENT_BINARY_DIR}/(.*)$"  "\\1" dictname "${dict}")
-	# OK, this is hokey, but it works
-	set( dummy dummy_${dictname} )
-	add_custom_command(
-           OUTPUT ${dummy}
-           COMMAND ${CMAKE_COMMAND} -E copy ${dict} ${dummy}
-           DEPENDS ${dict}
+    foreach( dict ${cet_generated_code} )
+	    STRING( REGEX REPLACE "^${CMAKE_CURRENT_BINARY_DIR}/(.*)$"  "\\1" dictname "${dict}")
+	    # OK, this is hokey, but it works
+	    set( dummy dummy_${dictname} )
+	    add_custom_command(
+        OUTPUT ${dummy}
+        COMMAND ${CMAKE_COMMAND} -E copy ${dict} ${dummy}
+        DEPENDS ${dict}
         )
-        #message(STATUS "_cet_install_generated_dictionary_code: installing ${dict} in ${source_install_dir}" )
-        INSTALL( FILES ${dict}
-                 DESTINATION ${source_install_dir} )
-     endforeach(dict)
+      #message(STATUS "_cet_install_generated_dictionary_code: installing ${dict} in ${source_install_dir}" )
+      INSTALL( FILES ${dict}
+        DESTINATION ${source_install_dir} )
+    endforeach(dict)
   endif( cet_generated_code )
   set(cet_generated_code) # Clear to avoid causing problems in subdirectories.
 endmacro( _cet_install_generated_dictionary_code )
@@ -261,10 +262,7 @@ macro( _cet_copy_fcl )
     set( fclbuildpath ${CETPKG_BUILD}/${fclpathname} )
   endif()
   #message(STATUS "_cet_copy_fcl: copying to ${fclbuildpath}")
-  foreach( fclfile ${ARGN} )
-    get_filename_component( fclname ${fclfile} NAME )
-    configure_file( ${fclname} ${fclbuildpath}/${fclname} COPYONLY )
-  endforeach(fclfile)
+  cet_copy(${ARGN} DESTINATION "${fclbuildpath}")
 endmacro( _cet_copy_fcl )
 
 macro( _cet_install_fhicl_without_list   )
@@ -399,11 +397,8 @@ macro( _cet_copy_gdml )
   if( CPGDML_SUBDIR )
     set( gdmlbuildpath ${gdmlbuildpath}/${CPGDML_SUBDIR} )
   endif( CPGDML_SUBDIR )
+  cet_copy(${CPGDML_LIST} DESTINATION ${gdmlbuildpath})
   #message(STATUS "_cet_copy_gdml: copying to ${gdmlbuildpath}")
-  foreach( gdmlfile ${CPGDML_LIST} )
-    get_filename_component( gdmlname ${gdmlfile} NAME )
-    configure_file( ${gdmlfile} ${gdmlbuildpath}/${gdmlname} COPYONLY )
-  endforeach(gdmlfile)
 endmacro( _cet_copy_gdml )
 
 macro( _cet_install_gdml_without_list   )
@@ -479,10 +474,7 @@ macro( _cet_copy_fw )
     set( fwbuildpath ${fwbuildpath}/${CPFW_SUBDIRNAME} )
   endif( CPFW_SUBDIRNAME )
   #message(STATUS "_cet_copy_fw: copying to ${fwbuildpath}")
-  foreach( fwfile ${CPFW_LIST} )
-    get_filename_component( fwname ${fwfile} NAME )
-    configure_file( ${fwfile} ${fwbuildpath}/${fwname} COPYONLY )
-  endforeach(fwfile)
+  cet_copy(${CPFW_LIST} DESTINATION ${fwbuildpath})
 endmacro( _cet_copy_fw )
 
 macro( install_fw   )

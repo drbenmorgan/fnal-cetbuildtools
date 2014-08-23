@@ -143,6 +143,8 @@ cmake_policy(VERSION 3.0.1) # We've made this work for 3.0.1.
 
 # Need argument parser.
 include(CMakeParseArguments)
+# Copy function.
+include(CetCopy)
 # May need Boost Unit Test Framework library.
 include(FindUpsBoost)
 # Need cet_script for PREBUILT scripts
@@ -231,17 +233,9 @@ FUNCTION(cet_test CET_TARGET)
     "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;SOURCES;TEST_ARGS;TEST_PROPERTIES"
     ${ARGN}
     )
-  IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
-    # Set up to handle a per-test work directory for parallel testing.
-    SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
-    STRING(REPLACE "/" "+" wdtarget ${CET_TEST_WORKDIR})
-    ADD_CUSTOM_TARGET(${wdtarget} ALL
-      COMMAND ${CMAKE_COMMAND} -E
-      make_directory "${CET_TEST_WORKDIR}"
-      )
-  ELSE()
-    SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}")
-  ENDIF()
+  # Set up to handle a per-test work directory for parallel testing.
+  SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
+  file(MAKE_DIRECTORY "${CET_TEST_WORKDIR}")
   IF(CET_TEST_EXEC)
     IF(NOT CET_HANDBUILT)
       MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot specify "
@@ -254,6 +248,9 @@ FUNCTION(cet_test CET_TARGET)
   IF(CET_UNPARSED_ARGUMENTS)
     SET(CET_DATAFILES ${CET_DATAFILES} ${CET_UNPARSED_ARGUMENTS})
   ENDIF()
+  if (DEFINED CET_DATAFILES)
+    list(REMOVE_DUPLICATES CET_DATAFILES)
+  endif()
   IF(CET_HANDBUILT AND CET_PREBUILT)
     # CET_HANDBUILT and CET_PREBUILT are mutually exclusive.
     MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot have both CET_HANDBUILT "
@@ -291,31 +288,7 @@ FUNCTION(cet_test CET_TARGET)
     ENDIF()
     TARGET_LINK_LIBRARIES(${CET_TARGET} ${CET_LIBRARIES})
   ENDIF()
-  FOREACH(datafile ${CET_DATAFILES})
-    # Name the target so that tests in different directories can use the same
-    # data file.
-    GET_FILENAME_COMPONENT(dfile_basename ${datafile} NAME)
-    STRING(REPLACE "/" "+" dtarget "${CET_TEST_WORKDIR}/${dfile_basename}")
-    IF(IS_ABSOLUTE ${datafile})
-      SET(abs_datafile ${datafile})
-    ELSE()
-      SET(abs_datafile ${CMAKE_CURRENT_SOURCE_DIR}/${datafile})
-    ENDIF()
-    IF (TARGET ${dtarget})
-      # NOP.
-    ELSE()
-      # Allow same data file to be used in multiple tests safely
-      ADD_CUSTOM_TARGET(${dtarget} ALL
-        COMMAND ${CMAKE_COMMAND} -E
-        copy ${abs_datafile}
-        ${CET_TEST_WORKDIR}/
-        DEPENDS ${abs_datafile}
-        )
-      IF(wdtarget)
-        ADD_DEPENDENCIES(${dtarget} ${wdtarget})
-      ENDIF()
-    ENDIF()
-  ENDFOREACH()
+  cet_copy(${CET_DATAFILES} DESTINATION ${CET_TEST_WORKDIR} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   IF(CET_CONFIGURATIONS)
     SET(CONFIGURATIONS_CMD CONFIGURATIONS)
   ENDIF()
