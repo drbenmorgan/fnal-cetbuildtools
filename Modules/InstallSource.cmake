@@ -126,15 +126,6 @@ macro( _cet_install_generated_dictionary_code )
   # check for dictionary code
   if( cet_generated_code )
     foreach( dict ${cet_generated_code} )
-	    STRING( REGEX REPLACE "^${CMAKE_CURRENT_BINARY_DIR}/(.*)$"  "\\1" dictname "${dict}")
-	    # OK, this is hokey, but it works
-	    set( dummy dummy_${dictname} )
-	    add_custom_command(
-        OUTPUT ${dummy}
-        COMMAND ${CMAKE_COMMAND} -E copy ${dict} ${dummy}
-        DEPENDS ${dict}
-        )
-      #message(STATUS "_cet_install_generated_dictionary_code: installing ${dict} in ${source_install_dir}" )
       INSTALL( FILES ${dict}
         DESTINATION ${source_install_dir} )
     endforeach(dict)
