@@ -10,6 +10,7 @@ INSTALL(FILES
   CetCMakeConfig.cmake
   CetCMakeEnv.cmake
   CetCMakeUtils.cmake
+  CetCopy.cmake
   CetGetProductInfo.cmake
   CetHaveQual.cmake
   CetMake.cmake
