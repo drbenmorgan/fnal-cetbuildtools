@@ -230,6 +230,16 @@ macro( _cet_add_build_types )
 
 endmacro( _cet_add_build_types )
 
+function(_verify_cxx_std_flag FLAGS FLAG_VAR)
+  _find_std_flag(FLAGS FOUND_STD_FLAG)
+  _std_flag_from_qual(QUAL_STD_FLAG)
+
+  if (FOUND_STD_FLAG AND QUAL_STD_FLAG AND NOT FOUND_STD_FLAG STREQUAL QUAL_STD_FLAG)
+    message(FATAL_ERROR "Qualifier specifies ${QUAL_STD_FLAG}, but user specifies ${FOUND_STD_FLAG}.\nPlease change qualifier or (preferably) remove user setting of ${FOUND_STD_FLAG}")
+  endif()
+  set(${FLAG_VAR} ${QUAL_STD_FLAG} PARENT_SCOPE)
+endfunction()
+
 macro( cet_enable_asserts )
   remove_definitions(-DNDEBUG)
 endmacro( cet_enable_asserts )
@@ -268,6 +278,7 @@ macro( cet_add_compiler_flags )
   string(REGEX REPLACE ";" " " CSCF_ARGS "${CSCF_UNPARSED_ARGUMENTS}")
   string(REGEX MATCH "(^| )-std=" CSCF_HAVE_STD ${CSCF_ARGS})
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  _verify_cxx_std_flag(${CSCF_CXX})
   foreach(acf_lang ${CSCF_LANGUAGES})
     if (CSCF_HAVE_STD)
       cet_remove_compiler_flags(LANGUAGES ${acf_lang} REGEX "-std=[^ ]*")
@@ -359,12 +370,7 @@ macro( cet_set_compiler_flags )
     message(FATAL_ERROR "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider EXTRA_FLAGS, EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
   endif()
 
-  _find_std_flag(CSCF_EXTRA_CXX_FLAGS FOUND_STD_FLAG)
-  _std_flag_from_qual(QUAL_STD_FLAG)
-
-  if (FOUND_STD_FLAG AND QUAL_STD_FLAG AND NOT FOUND_STD_FLAG STREQUAL QUAL_STD_FLAG)
-    message(FATAL_ERROR "Qualifier specifies ${QUAL_STD_FLAG}, but user specifies ${FOUND_STD_FLAG}.\nPlease change qualifier or (preferably) remove user setting of ${FOUND_STD_FLAG}")
-  endif()
+  _verify_cxx_std_flag(CSCF_EXTRA_CXX_FLAGS QUAL_STD_FLAG)
 
   # turn a colon separated list into a space separated string
   STRING( REGEX REPLACE ";" " " CSCF_EXTRA_CXX_FLAGS "${CSCF_EXTRA_CXX_FLAGS}")
