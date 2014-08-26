@@ -187,43 +187,45 @@ foreach $i ( 1 .. $#qlist ) {
     $match++;
     foreach $j ( 1 .. $ndeps ) {
       if ($qlist[0][$j] eq "compiler") { # Compiler suite keyword
-        if ($qlist[$i][$j] and $qlist[$i][$j] ne '-') {
-          $compiler = $qlist[$i][$j];
-        } else {
-          undef $compiler;
+        if ($qlist[$i][$j]) {
+          if ($qlist[$i][$j] eq '-') {
+            undef $compiler;
+          } else {
+            $compiler = $qlist[$i][$j];
+          }
+          next;
         }
-        next;
       }
       my $piter = -1;
       foreach $k ( 0 .. $plen ) {
         if( $plist[$k][0] eq $qlist[0][$j] ) { 
-	  if ( $plist[$k][2] ) {
-	    if ( match_qual( $plist[$k][2], $qlist[$i][0] ) ) {
-	      $piter=$k; 
-	    }
-	  } else {
-	    $piter=$k; 
-	  }
-	}
+          if ( $plist[$k][2] ) {
+            if ( match_qual( $plist[$k][2], $qlist[$i][0] ) ) {
+              $piter=$k;
+            }
+          } else {
+            $piter=$k;
+          }
+        }
       }
       if ( $piter < 0 ) {
-         print DIAG "ERORR: failed to match $qlist[0][$j] in product list \n";
+        print DIAG "ERORR: failed to match $qlist[0][$j] in product list \n";
       }
       if ( $qlist[$i][$j] eq "-" ) {
       } elsif ( $qlist[$i][$j] eq "-nq-" ) {
         print_setup_noqual( $plist[$piter][0], $plist[$piter][1], $plist[$piter][3], $set_dev_products::SETUP_CMDS );
-	#print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] \n";
+        #print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] \n";
       } elsif ( $qlist[$i][$j] eq "-b-" ) {
         print_setup_noqual( $plist[$piter][0], $plist[$piter][1], $plist[$piter][3], $set_dev_products::SETUP_CMDS );
-	#print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] \n";
+        #print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] \n";
       } else {
-	my @qwords = split(/:/,$qlist[$i][$j]);
-	my $ql="+".$qwords[0];
-	foreach $j ( 1 .. $#qwords ) {
-	  $ql = $ql.":+".$qwords[$j];
-	}
+        my @qwords = split(/:/,$qlist[$i][$j]);
+        my $ql="+".$qwords[0];
+        foreach $j ( 1 .. $#qwords ) {
+          $ql = $ql.":+".$qwords[$j];
+        }
         print_setup_qual( $plist[$piter][0], $plist[$piter][1], $ql, $plist[$piter][3], $set_dev_products::SETUP_CMDS );
-	#print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] -q $ql \n";
+        #print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] -q $ql \n";
       }
     }
     last;
@@ -234,7 +236,7 @@ close($set_dev_products::SETUP_CMDS);
 
 if (!$compiler) {
   my @quals = split /:/, $qual;
-  if (grep /^(e[245]|gcc4[78])$/, @quals) {
+  if (grep /^(e|gcc)\d+$/, @quals) {
     $compiler = "gcc";
   } else {
     $compiler = "cc"; # Native.
@@ -270,14 +272,14 @@ if ( $simple ) {
   print $set_dev_products::TSET "setenv CETPKG_FC $compiler_table->{${compiler}}->{FC}\n";
 }
 print $set_dev_products::TSET "setup -B cetpkgsupport \n";
-print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
+print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
 foreach $i ( 0 .. $plen ) {
   if (( $plist[$i][3] ) && ( $plist[$i][3] eq "only_for_build" )) {
     if( $plist[$i][0] eq "cetbuildtools" ) {
     } else {
       print $set_dev_products::TSET "setup -B $plist[$i][0] $plist[$i][1]\n";
-      print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
-      ##print $set_dev_products::TSET " echo \$setup_fail \n"; 
+      print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
+      ##print $set_dev_products::TSET " echo \$setup_fail \n";
     }
   }
 }
