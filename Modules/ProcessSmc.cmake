@@ -19,6 +19,9 @@
 
 include(CMakeParseArguments)
 
+find_ups_product(smc_compiler v6_1_0)
+include_directories("$ENV{SMC_HOME}/lib/C++")
+
 function(process_smc LIB_SOURCES_VAR)
   cmake_parse_arguments ( PSMC "NO_INSTALL" "" "" ${ARGN})
   foreach(source ${PSMC_UNPARSED_ARGUMENTS})
