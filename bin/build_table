@@ -214,8 +214,9 @@ sub create_quals {
     if( $have_fq ) {
       print TBL "  Action = GetFQDir\n";
       print TBL "       # faking out unsetup\n";
-      print TBL "       envSet( \${UPS_PROD_NAME_UC}_FQ, \"\" )\n";
-      print TBL "       execute( \"get-directory-name subdir $qdot \${UPS_PROD_FLAVOR}\", NO_UPS_ENV, \${UPS_PROD_NAME_UC}_FQ )\n";
+      print TBL "       envSet( \${UPS_PROD_NAME_UC}_FS, \"\" )\n";
+      print TBL "       execute( \"get-directory-name subdir\", NO_UPS_ENV, \${UPS_PROD_NAME_UC}_FS )\n";
+      print TBL "       envSet( \${UPS_PROD_NAME_UC}_FQ, \${\${UPS_PROD_NAME_UC}_FS}.$qdot )\n";
       print TBL "       fileTest( \${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ}, -d, \"\${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED\")\n";
       print TBL "\n";
     }
@@ -344,6 +345,9 @@ sub create_table_bottom {
        print TBL "$flist[$i]\n";
     }
   }
+  print TBL "# hack - unsetup temp variables\n";
+  print TBL "envUnSet( \${UPS_PROD_NAME_UC}_FQ )\n";
+  print TBL "envUnSet( \${UPS_PROD_NAME_UC}_FS )\n";
   print TBL "End:\n";
   print TBL "# End Group definition\n";
   print TBL "#*************************************************\n";
