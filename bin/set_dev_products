@@ -58,6 +58,7 @@ my $type = "";
 my $qdir = "";
 my $inputdir;
 my $setup_cmds;
+my $input_qual = "";
 
 for $i ( 2 .. $#ARGV ) {
     if( $ARGV[$i] eq "-d" ) {
@@ -72,9 +73,18 @@ for $i ( 2 .. $#ARGV ) {
     } elsif( $ARGV[$i] eq "simple" ) {
       $simple = "true";
     } else {
-      $qual = $qual.$ARGV[$i].":";
-      $qdir = $qdir.$ARGV[$i]."-";
+      #$qual = $qual.$ARGV[$i].":";
+      #$qdir = $qdir.$ARGV[$i]."-";
+      $input_qual = $input_qual.$ARGV[$i].":";
     }
+}
+
+# sort now
+
+if ( $input_qual ) {
+  $qual = sort_qual ( $input_qual );
+  $qdir=$qual;
+  $qdir =~ s/:/-/g;
 }
 
 # use this file for debugging
@@ -129,15 +139,13 @@ my @dqlist=@$dqlist_ref;
 my ($ndeps, @qlist) = get_qualifier_list( $pfile, $set_dev_products::TSET );
 
 if ( $qual ) {
-  $qual = $qual.$dop;
-  $qdir = $qdir.$dop;
+  $qual = $qual.":".$dop;
+  $qdir = $qdir."-".$dop;
 } else {
   my $dq = find_default_qual( $pfile );
   if ( $dq ) {
-    $qual = $dq.":";
-    $qdir = $dq."-";
-    $qual = $qual.$dop;
-    $qdir = $qdir.$dop;
+    $qual = $dq.":".$dop;
+    $qdir = $dq."-".$dop;
   } elsif ( $simple ) {
     $qual = "-nq-";
   } else {
@@ -183,7 +191,7 @@ foreach $i ( 0 .. $plen ) {
 my $match = 0;
 my $compiler;
 foreach $i ( 1 .. $#qlist ) {
-  if ( compare_qual( $qlist[$i][0], $qual ) ) {
+  if ( $qlist[$i][0] eq $qual ) {
     $match++;
     foreach $j ( 1 .. $ndeps ) {
       if ($qlist[0][$j] eq "compiler") { # Compiler suite keyword

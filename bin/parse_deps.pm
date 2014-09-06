@@ -65,7 +65,7 @@ sub get_parent_info {
 	 $ver=$words[2];
 	 if( $words[3] ) { $extra=$words[3]; }
       } elsif( $words[0] eq "defaultqual" ) {
-	 $dq=$words[1];
+	 $dq= sort_qual( $words[1] );
       } elsif( $words[0] eq "no_fq_dir" ) {
           $fq = "";
       } else {
@@ -496,7 +496,7 @@ sub get_qualifier_list {
 	 }
 	 ##print "there are $qlen product entries out of $#words\n";
 	 for $i ( 0 .. $qlen ) {
-	   $qlist[$irow][$i] = $words[$i];
+	   $qlist[$irow][$i] = sort_qual( $words[$i] );
 	 }
 	 $irow++;
       } elsif( $get_quals eq "true" ) {
@@ -512,7 +512,7 @@ sub get_qualifier_list {
 	    exit 4;
 	 }
 	 for $i ( 0 .. $qlen ) {
-	   $qlist[$irow][$i] = $words[$i];
+	   $qlist[$irow][$i] = sort_qual( $words[$i] );
 	 }
 	 $irow++;
       } else {
@@ -525,6 +525,7 @@ sub get_qualifier_list {
   return ($qlen, @qlist);
 }
 
+# compare_qual is obsolete
 sub compare_qual {
   my @params = @_;
   my @ql1 = split(/:/,$params[0]);
@@ -554,6 +555,26 @@ sub match_qual {
       if( $q1 eq $ql2[$ii] )  { $retval = 1; }
   }
   return $retval;
+}
+
+sub sort_qual {
+  my @params = @_;
+  my @ql = split(/:/,$params[0]);
+  my $retval = 0;
+  my @tql = ();
+  my @rql = ();
+  my $dop="";
+  foreach my $ii ( 0 .. $#ql ) {
+      if(( $ql[$ii] eq "debug" ) || ( $ql[$ii] eq "opt" )   || ( $ql[$ii] eq "prof" )) {
+         $dop=$ql[$ii];
+      } else {
+         push @tql, $ql[$ii];
+      }
+  }
+  @rql = sort @tql;
+  if( $dop ) { push @rql, $dop; }
+  my $squal = join ( ":", @rql );
+  return $squal;
 }
 
 sub check_flags {
@@ -588,7 +609,7 @@ sub find_default_qual {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "defaultqual" ) {
-         $defq = $words[1];
+         $defq = sort_qual( $words[1] );
       }
     }
   }
