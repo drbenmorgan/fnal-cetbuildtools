@@ -188,10 +188,8 @@ sub no_quals {
 sub create_quals {
   foreach $create_quals::i ( 1 .. $#qlist ) {
     my @words = split(/:/,$qlist[$create_quals::i][0]);
-    my $qdot=$words[0];
-    foreach $create_quals::j ( 1 .. $#words ) {
-      $qdot = $qdot.".".$words[$create_quals::j];
-    }
+    my $qdot = $qlist[$create_quals::i][0];
+    $qdot =~ s/:/\./g;
     # skip this bit if $flagfile does not exist
     if ( $have_flagfile ) {
       $create_quals::cxxflag = "";
