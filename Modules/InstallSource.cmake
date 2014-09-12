@@ -473,7 +473,7 @@ macro( _cet_copy_fw )
 endmacro( _cet_copy_fw )
 
 macro( install_fw   )
-  cet_parse_args( IFW "" "SUBDIRNAME" "LIST" ${ARGN})
+  cmake_parse_arguments( IFW "" "SUBDIRNAME" "LIST" ${ARGN})
   set( fw_install_dir ${${product}_fw_dir} )
   message( STATUS "install_fw: fw scripts will be installed in ${fw_install_dir}" )
 
