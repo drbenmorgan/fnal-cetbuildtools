@@ -233,7 +233,11 @@ macro( cet_make )
   #message(STATUS "cet_make debug: known files ${cet_file_list}")
 
   # calculate base name
-  STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  if( PACKAGE_TOP_DIRECTORY )
+    STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  else()
+    STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  endif()
   STRING( REGEX REPLACE "/" "_" cet_make_name "${CURRENT_SUBDIR}" )
 
   if( have_library )
