@@ -179,6 +179,7 @@ macro(cet_cmake_env)
   message(STATUS "Product is ${product} ${version} ${full_qualifier}")
   message(STATUS "Module path is ${CMAKE_MODULE_PATH}")
 
+  set_install_root()
   enable_testing()
   
   include(CetParseArgs)
@@ -490,3 +491,8 @@ macro(_cet_debug_message)
       message( STATUS "${ARGN}")
     endif()
 endmacro(_cet_debug_message)
+
+macro( set_install_root )
+  set( PACKAGE_TOP_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  message( STATUS "set_install_root: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
+endmacro( set_install_root )

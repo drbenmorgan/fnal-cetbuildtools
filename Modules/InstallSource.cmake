@@ -72,11 +72,6 @@
 include(CMakeParseArguments)
 include (CetCopy)
 
-macro( set_install_root )
-  set( PACKAGE_TOP_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  message( STATUS "set_install_root: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
-endmacro( set_install_root )
-
 macro( _cet_check_inc_directory )
   if( ${${product}_inc_dir} MATCHES "NONE" )
      message(FATAL_ERROR "Please specify an include directory in product_deps")
