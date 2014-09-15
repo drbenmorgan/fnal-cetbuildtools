@@ -86,14 +86,24 @@ endif ()
 # compare for recursion
 #message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${cet_product_list}")
 list(FIND cet_product_list ${PRODUCTNAME} found_product_match)
-if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
+# now check to see if this product is labeled only_for_build
+set( PRODUCT_ONLY_FOR_BUILD FALSE )
+cet_get_product_info_item(ONLY_FOR_BUILD only_for_build_products)
+foreach( pkg ${only_for_build_products} )
+  if ( "${PRODUCTNAME}"  MATCHES "${pkg}" )
+     set( PRODUCT_ONLY_FOR_BUILD TRUE )
+  endif()
+endforeach( pkg )
+#message(STATUS "find_ups_product debug: is ${PRODUCTNAME} only for the build: ${PRODUCT_ONLY_FOR_BUILD}")
+#if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
+if( PRODUCT_ONLY_FOR_BUILD )
 elseif( ${found_product_match} LESS 0 )
   #message(STATUS "find_ups_product debug: ${found_product_match} for ${PRODUCTNAME} ")
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
   find_ups_product( ${PRODUCTNAME} ${fup_version} )")
   set(cet_product_list ${PRODUCTNAME} ${cet_product_list} )
-  #message(STATUS "adding find_ups_product( ${PRODUCTNAME} ${fup_version} )")
+  #message(STATUS "find_ups_product debug: adding find_ups_product( ${PRODUCTNAME} ${fup_version} )")
   #_cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
 endif()
 

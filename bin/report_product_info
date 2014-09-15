@@ -33,6 +33,8 @@ while ( $line=<PIN> ) {
       $info->{version} = $words[1];
     } elsif ( $words[0] eq "CETPKG_DEFAULT_VERSION" ) {
       $info->{default_version} = $words[1];
+    } elsif ( $words[0] eq "CETPKG_ONLY_FOR_BUILD" ) {
+      $info->{only_for_build} = $words[1];
     } elsif ( $words[0] eq "CETPKG_QUAL" ) {
       if ( $words[1] eq "-nq-" ) {
 	$info->{qualifier} = "";

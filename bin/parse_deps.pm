@@ -624,7 +624,7 @@ sub cetpkg_info_file {
   # if there is a cmake cache file, we could check for the install prefix
   # cmake -N -L | grep CMAKE_INSTALL_PREFIX | cut -f2 -d=
   my @param_names =
-    qw (name version default_version qual type source build cc cxx fc);
+    qw (name version default_version qual type source build cc cxx fc only_for_build);
   my @param_vals = @_;
   if (scalar @param_vals != scalar @param_names) {
     print STDERR "ERROR: cetpkg_info_file expects the following paramaters in order:\n",

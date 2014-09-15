@@ -87,6 +87,7 @@ if ( $input_qual ) {
   $qdir =~ s/:/-/g;
 }
 
+
 # use this file for debugging
 my $diagfl = $builddir."/diag_report";
 open(DIAG, "> $diagfl") or die "Couldn't open $diagfl";
@@ -251,6 +252,14 @@ if (!$compiler) {
   }
 }
 
+# find the only_for_build products
+my $onlyForBuild="";
+foreach $i ( 0 .. $plen ) {
+  if (( $plist[$i][3] ) && ( $plist[$i][3] eq "only_for_build" )) {
+    $onlyForBuild=$plist[$i][0].";".$onlyForBuild;
+  }
+}
+
 my $cetfl = cetpkg_info_file($product,
                           $version,
                           $default_ver,
@@ -261,6 +270,7 @@ my $cetfl = cetpkg_info_file($product,
                           $compiler_table->{$compiler}->{CC},
                           $compiler_table->{$compiler}->{CXX},
                           $compiler_table->{$compiler}->{FC},
+			  $onlyForBuild,
                          );
 
 print $set_dev_products::TSET "setenv UPS_OVERRIDE -B\n";
