@@ -197,6 +197,7 @@ macro(cet_cmake_env)
     include(EnsureOutOfSourceBuild)
     cet_ensure_out_of_source_build()
   endif()
+  ##message(STATUS "cet_cmake_env debug: ${arch} ${EOSB_DEFAULT_ARGS}")
 
   # Useful includes.
   include(FindUpsPackage)
@@ -215,7 +216,11 @@ macro(cet_cmake_env)
   _cet_init_config_var()
 
   # Make sure compiler is set as the configuration requires.
+  if( "${arch}" MATCHES "noarch" )
+  message(STATUS "${product} is null flavored")
+  else()
   _verify_compiler_quals()
+  endif()
 
   #set package version from ups version
   set_version_from_ups( ${version} )
