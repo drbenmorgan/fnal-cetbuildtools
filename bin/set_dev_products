@@ -179,10 +179,12 @@ open( $set_dev_products::SETUP_CMDS, ">", \$setup_cmds) or
 # are there products without listed qualifiers?
 foreach $i ( 0 .. $plen ) {
   my $p_has_qual = 0;
+  if( $ndeps ) {
   foreach $j ( 1 .. $ndeps ) {
     if( $plist[$i][0] eq $qlist[0][$j] ) {
         ++$p_has_qual;
     }
+  }
   }
   if ( $p_has_qual == 0 ) {
     print_setup_noqual( $plist[$i][0], $plist[$i][1], $plist[$i][3], $set_dev_products::SETUP_CMDS );
@@ -291,6 +293,7 @@ if ( $simple ) {
 }
 print $set_dev_products::TSET "setup -B cetpkgsupport \n";
 print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
+my $num_for_table=-1;
 foreach $i ( 0 .. $plen ) {
   if (( $plist[$i][3] ) && ( $plist[$i][3] eq "only_for_build" )) {
     if( $plist[$i][0] eq "cetbuildtools" ) {
@@ -299,6 +302,8 @@ foreach $i ( 0 .. $plen ) {
       print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
       ##print $set_dev_products::TSET " echo \$setup_fail \n";
     }
+  } else {
+    ++$num_for_table;
   }
 }
 
@@ -306,8 +311,9 @@ foreach $i ( 0 .. $plen ) {
 print $set_dev_products::TSET $setup_cmds;
 
 # allow for the case where there are no dependencies
+# a bit more complicated since only_for_build products are now in the dependency list
 if ( $match == 0 ) {
-   if( $plen < 0 ) {
+   if( $num_for_table < 0 ) {
      #print "this package has no dependencies\n";
    } else {
      print $set_dev_products::TSET "\n";
