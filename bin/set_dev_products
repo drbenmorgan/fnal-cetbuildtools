@@ -253,9 +253,7 @@ print TSET $setup_cmds;
 ##print TSET "test \"\$setup_fail\" =  \"true\" && return 1\n"; 
 # allow for the case where there are no dependencies
 if ( $match == 0 ) {
-   if( $phash{none} eq "none" ) {
-     #print "this package has no dependencies\n";
-   } else {
+   if( $phash ) {
      print TSET "\n";
      print TSET "echo \"ERROR: failed to find any dependent products for $product $version -q $qual\"\n";
      print TSET "echo \"       The following qualifier combinations are recognized:\"\n";
