@@ -437,7 +437,8 @@ sub get_qualifier_list {
   my $i;
   my $line;
   my @words;
-  my ($qlen, @qlist);
+  my $qlen = 0;
+  my @qlist = ();
   open(QIN, "< $params[0]") or die "Couldn't open $params[0]";
   while ( $line=<QIN> ) {
     chop $line;
