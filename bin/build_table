@@ -54,6 +54,7 @@ print "creating table file for $product $version\n";
 print "   default qualifier: $default_qual\n";
 print "   default version: $default_ver\n";
 if ( $build_table::debug eq "true" ) {
+  print "   number of dependencies: $ndeps\n";
   for $i ( 0 .. $dqlen ) {
     print "  distinguishing qualifier: $dqlist[$i]\n";
   }
@@ -76,10 +77,14 @@ if ( $build_table::debug eq "true" ) {
 my $table = $outputdir."/".$product.".table";
 open(TBL, "> $table") or die "Couldn't open $table";
 create_table_top();
-if ( $qlist[1][0] eq "-nq-"  ) {
-  no_quals();
+if ( $ndeps ) {
+  if ( $qlist[1][0] eq "-nq-"  ) {
+    no_quals();
+  } else {
+    create_quals();
+  }
 } else {
-  create_quals();
+  no_quals();
 }
 
 create_table_bottom();
@@ -343,9 +348,11 @@ sub create_table_bottom {
        print TBL "$flist[$i]\n";
     }
   }
+  if( $have_fq ) {
   print TBL "# hack - unsetup temp variables\n";
   print TBL "envUnSet( \${UPS_PROD_NAME_UC}_FQ )\n";
   print TBL "envUnSet( \${UPS_PROD_NAME_UC}_FS )\n";
+  }
   print TBL "End:\n";
   print TBL "# End Group definition\n";
   print TBL "#*************************************************\n";
