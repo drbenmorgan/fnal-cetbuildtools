@@ -7,16 +7,21 @@
 # NOTE: cet_make_exec and cet_make_test_exec are no longer part of 
 # cet_make or art_make and must be called explicitly.
 #
-# cet_make( LIBRARY_NAME <library name> 
+# cet_make( [LIBRARY_NAME <library name>]
 #           [LIBRARIES <library link list>]
 #           [SUBDIRS <source subdirectory>] (e.g., detail)
+#           [USE_PRODUCT_NAME]
 #           [EXCLUDE <ignore these files>] )
+#
+#   If USE_PRODUCT_NAME is specified, the product name will be prepended
+#   to the calculated library name 
+#   USE_PRODUCT_NAME and LIBRARY_NAME are mutually exclusive
 #
 #   NOTE: if your code includes art plugins, you MUST use art_make
 #   instead of cet_make: cet_make will ignore all known plugin code.
 #
-# cet_make_library( [LIBRARY_NAME <library name>]  
-#                   [SOURCE <source code list>] 
+# cet_make_library( LIBRARY_NAME <library name> 
+#                   SOURCE <source code list> 
 #                   [LIBRARIES <library list>] 
 #                   [WITH_STATIC_LIBRARY]
 #                   [NO_INSTALL] )
@@ -81,8 +86,7 @@ macro( cet_make_exec cet_exec_name )
   cet_parse_args( CME "LIBRARIES;SOURCE" "USE_BOOST_UNIT;NO_INSTALL" ${ARGN})
   # there are no default arguments
   if( CME_DEFAULT_ARGS )
-     message("CET_MAKE_EXEC: Incorrect arguments. ${ARGV}")
-     message(SEND_ERROR  ${cet_make_exec_usage})
+     message(FATAL_ERROR  " undefined arguments ${CME_DEFAULT_ARGS} \n ${cet_make_exec_usage}")
   endif()
   #message(STATUS "debug: cet_make_exec called with ${cet_exec_name} ${CME_LIBRARIES}")
   FILE( GLOB exec_src ${cet_exec_name}.c ${cet_exec_name}.cc ${cet_exec_name}.cpp ${cet_exec_name}.C ${cet_exec_name}.cxx )
@@ -100,7 +104,7 @@ macro( cet_make_exec cet_exec_name )
   IF(CME_USE_BOOST_UNIT)
     # Make sure we have the correct library available.
     IF (NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
-      MESSAGE(SEND_ERROR "cet_make_exec: target ${cet_exec_name} has USE_BOOST_UNIT "
+      MESSAGE(FATAL_ERROR "cet_make_exec: target ${cet_exec_name} has USE_BOOST_UNIT "
         "option set but Boost Unit Test Framework Library cannot be found: is "
         "boost set up?")
     ENDIF()
@@ -141,33 +145,36 @@ endmacro( cet_make_exec )
 
 macro( cet_make )
   set(cet_file_list "")
-  set(cet_make_usage "USAGE: cet_make( LIBRARY_NAME <library name> [LIBRARIES <library list>] [SUBDIRS <source subdirectory>] [EXCLUDE <ignore these files>] )")
+  set(cet_make_usage "USAGE: cet_make( [LIBRARY_NAME <library name>] [LIBRARIES <library list>] [SUBDIRS <source subdirectory>] [EXCLUDE <ignore these files>] )")
   #message(STATUS "cet_make debug: called with ${ARGN} from ${CMAKE_CURRENT_SOURCE_DIR}")
-  cet_parse_args( CM "LIBRARY_NAME;LIBRARIES;SUBDIRS;EXCLUDE" "WITH_STATIC_LIBRARY" ${ARGN})
+  cet_parse_args( CM "LIBRARY_NAME;LIBRARIES;SUBDIRS;EXCLUDE" "WITH_STATIC_LIBRARY;USE_PRODUCT_NAME" ${ARGN})
   # there are no default arguments
   if( CM_DEFAULT_ARGS )
-     message("CET_MAKE: Incorrect arguments. ${ARGV}")
-     message(SEND_ERROR  ${cet_make_usage})
+     message(FATAL_ERROR  " undefined arguments ${CM_DEFAULT_ARGS} \n ${cet_make_usage}")
+  endif()
+  # use either LIBRARY_NAME or USE_PRODUCT_NAME, not both
+  if (CM_USE_PRODUCT_NAME AND CM_LIBRARY_NAME)
+    message(FATAL_ERROR "CET_MAKE: USE_PRODUCT_NAME and LIBRARY_NAME are mutually exclusive.")
   endif()
   # check for extra link libraries
   if(CM_LIBRARIES)
      #set(cet_liblist ${CM_LIBRARIES})
-  set(cet_liblist "")
-  foreach (lib ${CM_LIBRARIES})
-    string(REGEX MATCH [/] has_path "${lib}")
-    if( has_path )
-      list(APPEND cet_liblist ${lib})
-    else()
-      string(TOUPPER  ${lib} ${lib}_UC )
-      #_cet_debug_message( "simple_plugin: check ${lib}" )
-      if( ${${lib}_UC} )
-        _cet_debug_message( "changing ${lib} to ${${${lib}_UC}}")
-        list(APPEND cet_liblist ${${${lib}_UC}})
-      else()
-        list(APPEND cet_liblist ${lib})
-      endif()
-    endif( has_path )
-  endforeach()
+     set(cet_liblist "")
+     foreach (lib ${CM_LIBRARIES})
+       string(REGEX MATCH [/] has_path "${lib}")
+       if( has_path )
+	 list(APPEND cet_liblist ${lib})
+       else()
+	 string(TOUPPER  ${lib} ${lib}_UC )
+	 #_cet_debug_message( "simple_plugin: check ${lib}" )
+	 if( ${${lib}_UC} )
+           _cet_debug_message( "changing ${lib} to ${${${lib}_UC}}")
+           list(APPEND cet_liblist ${${${lib}_UC}})
+	 else()
+           list(APPEND cet_liblist ${lib})
+	 endif()
+       endif( has_path )
+     endforeach()
   endif()
   # now look for other source files in this directory
   #message(STATUS "cet_make debug: listed files ${cet_file_list}")
@@ -239,6 +246,11 @@ macro( cet_make )
     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   endif()
   STRING( REGEX REPLACE "/" "_" cet_make_name "${CURRENT_SUBDIR}" )
+  #message(STATUS "cet_make debug:  calculated library name is  ${cet_make_name} for ${product}")
+  if (CM_USE_PRODUCT_NAME)
+    set( cet_make_name ${product}_${cet_make_name} )
+    #message(STATUS "cet_make debug:  calculated library name is now ${cet_make_name} for ${product}")
+  endif()
 
   if( have_library )
     if(CM_LIBRARY_NAME)
@@ -282,17 +294,20 @@ macro( cet_make_library )
   cet_parse_args( CML "LIBRARY_NAME;LIBRARIES;SOURCE" "WITH_STATIC_LIBRARY;NO_INSTALL" ${ARGN})
   # there are no default arguments
   if( CML_DEFAULT_ARGS )
-    message("CET_MAKE_LIBRARY: Incorrect arguments. ${ARGV}")
-    message(SEND_ERROR  ${cet_make_library_usage})
+    message(FATAL_ERROR  " undefined arguments ${CML_DEFAULT_ARGS} \n ${cet_make_library_usage}")
   endif()
   # check for a source code list
   if(CML_SOURCE)
     set(cet_src_list ${CML_SOURCE})
   else()
-    message("CET_MAKE_LIBRARY: Incorrect arguments. ${ARGV}")
-    message(SEND_ERROR  ${cet_make_library_usage})
+    message(FATAL_ERROR  "SOURCE is required \n ${cet_make_library_usage}")
   endif()
-  add_library( ${CML_LIBRARY_NAME} SHARED ${cet_src_list} )
+  # verify that the library name has been specified
+  if(CML_LIBRARY_NAME)
+    add_library( ${CML_LIBRARY_NAME} SHARED ${cet_src_list} )
+  else()
+    message(FATAL_ERROR  "LIBRARY_NAME is required \n ${cet_make_library_usage}")
+  endif()
   if(CML_LIBRARIES)
     set(cml_lib_list "")
     foreach (lib ${CML_LIBRARIES})
