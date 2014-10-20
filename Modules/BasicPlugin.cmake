@@ -9,6 +9,7 @@
 #                [USE_BOOST_UNIT]
 #                [ALLOW_UNDERSCORES]
 #                [BASENAME_ONLY]
+#                [USE_PRODUCT_NAME]
 #                [NO_INSTALL]
 #   )
 #
@@ -61,7 +62,10 @@ function(basic_plugin name type)
     ""
     ${ARGN})
   if (BP_NOINSTALL)
-    message(SEND_ERROR "basic_plugin now requires NO_INSTALL instead of NOINSTALL")
+    message(FATAL_ERROR "basic_plugin now requires NO_INSTALL instead of NOINSTALL")
+  endif()
+  if (BP_BASENAME_ONLY AND BP_USE_PRODUCT_NAME)
+    message(FATAL_ERROR "BASENAME_ONLY AND USE_PRODUCT_NAME are mutually exclusive")
   endif()
   if (BP_BASENAME_ONLY)
     set(plugin_name "${name}_${type}")
@@ -76,18 +80,21 @@ function(basic_plugin name type)
     if(NOT BP_ALLOW_UNDERSCORES )
       string(REGEX MATCH [_] has_underscore "${CURRENT_SUBDIR}")
       if( has_underscore )
-        message(SEND_ERROR  "found underscore in plugin subdirectory: ${CURRENT_SUBDIR}" )
+        message(FATAL_ERROR  "found underscore in plugin subdirectory: ${CURRENT_SUBDIR}" )
       endif( has_underscore )
       string(REGEX MATCH [_] has_underscore "${name}")
       if( has_underscore )
-        message(SEND_ERROR  "found underscore in plugin name: ${name}" )
+        message(FATAL_ERROR  "found underscore in plugin name: ${name}" )
       endif( has_underscore )
     endif()
     STRING( REGEX REPLACE "/" "_" plugname "${CURRENT_SUBDIR}" )
+    if (BP_USE_PRODUCT_NAME)
+      set( plugname ${product}_${plugname} )
+    endif()
     set(plugin_name "${plugname}_${name}_${type}")
   endif()
   set(codename "${name}_${type}.cc")
-  #message(STATUS "BASIC_PLUGIN: generating ${plugin_name}")
+  message(STATUS "BASIC_PLUGIN: generating ${plugin_name}")
   add_library(${plugin_name} SHARED ${codename} )
   # check the library list and substitute if appropriate
   ##set(basic_plugin_liblist "${BP_UNPARSED_ARGUMENTS}")
