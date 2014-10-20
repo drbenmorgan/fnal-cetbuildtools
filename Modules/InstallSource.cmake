@@ -15,7 +15,7 @@
 # install_scripts()
 #   Install scripts in the package binary directory.
 #   Default extensions:
-#     .sh .py .pl .rb
+#     .sh .py .pl .rb [.cfg when AS_TEST is specified]
 #
 # install_fhicl()
 #   Install fhicl scripts in a top level fcl subdirectory
@@ -32,6 +32,8 @@
 # The LIST option allows you to install from a list. When LIST is used,
 # we do not search for other files to install. Note that the LIST and
 # SUBDIRS options are mutually exclusive.
+#
+# The AS_TEST option for install_scripts will install scripts in a test subdirectory.
 #
 ####################################
 # Recommended use:
@@ -62,8 +64,9 @@
 #
 # install_scripts( [SUBDIRS subdirectory_list]
 #                  [EXTRAS extra_files]
-#                  [EXCLUDES exclusions] )
-# install_scripts( LIST file_list )
+#                  [EXCLUDES exclusions]
+#                  [AS_TEST] )
+# install_scripts( LIST file_list [AS_TEST] )
 #
 # set_install_root() defines PACKAGE_TOP_DIR
 #
@@ -212,8 +215,12 @@ macro( _cet_install_header_from_list header_list  )
 endmacro( _cet_install_header_from_list )
 
 macro( _cet_install_script_without_list   )
-  #message( STATUS "scripts will be installed in ${script_install_dir}" )
-  FILE(GLOB scripts [^.]*.sh [^.]*.py [^.]*.pl [^.]*.rb )
+  message( STATUS "_cet_install_script_without_list: scripts will be installed in ${script_install_dir}" )
+  if( IS_AS_TEST )
+    FILE(GLOB scripts [^.]*.sh [^.]*.py [^.]*.pl [^.]*.rb [^.]*.cfg )
+  else()
+    FILE(GLOB scripts [^.]*.sh [^.]*.py [^.]*.pl [^.]*.rb )
+  endif()
   if( IS_EXCLUDES )
     LIST( REMOVE_ITEM scripts ${IS_EXCLUDES} )
   endif()
@@ -225,8 +232,13 @@ macro( _cet_install_script_without_list   )
   # now check subdirectories
   if( IS_SUBDIRS )
     foreach( sub ${IS_SUBDIRS} )
-      FILE(GLOB subdir_scripts
-                ${sub}/[^.]*.sh ${sub}/[^.]*.py ${sub}/[^.]*.pl ${sub}/[^.]*.rb )
+      if( IS_AS_TEST )
+	FILE(GLOB subdir_scripts
+                  ${sub}/[^.]*.sh ${sub}/[^.]*.py ${sub}/[^.]*.pl ${sub}/[^.]*.rb ${sub}/[^.]*.cfg )
+      else()
+	FILE(GLOB subdir_scripts
+                  ${sub}/[^.]*.sh ${sub}/[^.]*.py ${sub}/[^.]*.pl ${sub}/[^.]*.rb )
+      endif()
       if( IS_EXCLUDES )
         LIST( REMOVE_ITEM subdir_scripts ${IS_EXCLUDES} )
       endif()
@@ -329,9 +341,13 @@ macro( install_headers   )
 endmacro( install_headers )
 
 macro( install_scripts   )
-  cmake_parse_arguments( IS "" "" "SUBDIRS;LIST;EXTRAS;EXCLUDES" ${ARGN})
-  set(script_install_dir ${${product}_bin_dir} )
-  #message( STATUS "install_scripts: scripts will be installed in ${script_install_dir}" )
+  cmake_parse_arguments( IS "AS_TEST" "" "SUBDIRS;LIST;EXTRAS;EXCLUDES" ${ARGN})
+  if( IS_AS_TEST )
+    set(script_install_dir ${${product}_bin_dir} )
+  else()
+    set(script_install_dir ${${product}_bin_dir} )
+  endif()
+  message( STATUS "install_scripts: scripts will be installed in ${script_install_dir}" )
   if( IS_LIST )
     if( IS_SUBDIRS )
       message( FATAL_ERROR

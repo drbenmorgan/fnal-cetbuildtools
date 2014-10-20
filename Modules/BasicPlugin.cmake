@@ -94,7 +94,7 @@ function(basic_plugin name type)
     set(plugin_name "${plugname}_${name}_${type}")
   endif()
   set(codename "${name}_${type}.cc")
-  message(STATUS "BASIC_PLUGIN: generating ${plugin_name}")
+  #message(STATUS "BASIC_PLUGIN: generating ${plugin_name}")
   add_library(${plugin_name} SHARED ${codename} )
   # check the library list and substitute if appropriate
   ##set(basic_plugin_liblist "${BP_UNPARSED_ARGUMENTS}")

@@ -236,6 +236,7 @@ macro(cet_cmake_env)
   cet_set_fcl_directory()
   cet_set_fw_directory()
   cet_set_gdml_directory()
+  cet_set_test_directory()
 
   set(CETPKG_BUILD $ENV{CETPKG_BUILD})
   if(NOT CETPKG_BUILD)
@@ -489,6 +490,46 @@ macro( cet_set_inc_directory )
   endif()
   #message( STATUS "cet_set_inc_directory: ${product}_inc_dir is ${${product}_inc_dir}")
 endmacro( cet_set_inc_directory )
+
+macro( cet_set_test_directory )
+  # The default is product_dir/test
+  # find $CETBUILDTOOLS_DIR/bin/report_testdir
+  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+  if( ${product} MATCHES "cetbuildtools" )
+      # building cetbuildtools - use our copy
+      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+      FIND_PROGRAM( REPORT_TEST_DIR report_testdir
+                    ${PROJECT_SOURCE_DIR}/bin  )
+  elseif( NOT CETBUILDTOOLS_DIR )
+      FIND_PROGRAM( REPORT_TEST_DIR report_testdir )
+  else()
+      FIND_PROGRAM( REPORT_TEST_DIR report_testdir
+                    ${CETBUILDTOOLS_DIR}/bin  )
+  endif ()
+  #message(STATUS "REPORT_TEST_DIR: ${REPORT_TEST_DIR}")
+  if( NOT REPORT_TEST_DIR )
+      message(FATAL_ERROR "Can't find report_testdir")
+  endif()
+  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
+  execute_process(COMMAND ${REPORT_TEST_DIR} 
+                          ${cet_ups_dir} 
+                  OUTPUT_VARIABLE REPORT_TEST_DIR_MSG
+		  OUTPUT_STRIP_TRAILING_WHITESPACE
+		  )
+  #message( STATUS "${REPORT_TEST_DIR} returned ${REPORT_TEST_DIR_MSG}")
+  if( ${REPORT_TEST_DIR_MSG} MATCHES "DEFAULT" )
+     set( ${product}_test_dir ${product}/${version}/test CACHE STRING "Package test directory" FORCE )
+  elseif( ${REPORT_TEST_DIR_MSG} MATCHES "NONE" )
+     set( ${product}_test_dir ${REPORT_TEST_DIR_MSG} CACHE STRING "Package test directory" FORCE )
+  elseif( ${REPORT_TEST_DIR_MSG} MATCHES "ERROR" )
+     set( ${product}_test_dir ${REPORT_TEST_DIR_MSG} CACHE STRING "Package test directory" FORCE )
+  else()
+    STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" bdir1 "${REPORT_TEST_DIR_MSG}" )
+    STRING( REGEX REPLACE "product_dir" "${product}/${version}" bdir2 "${bdir1}" )
+    set( ${product}_test_dir ${bdir2}  CACHE STRING "Package test directory" FORCE )
+  endif()
+  #message( STATUS "cet_set_test_directory: ${product}_test_dir is ${${product}_test_dir}")
+endmacro( cet_set_test_directory )
 
 macro(_cet_debug_message)
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
