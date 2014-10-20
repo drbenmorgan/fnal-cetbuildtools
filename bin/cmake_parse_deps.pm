@@ -9,6 +9,7 @@
 #   [bindir      fq_dir         bin]
 #   [fwdir       -              unspecified]
 #   [gdmldir     -              gdml]
+#   [testdir     product_dir    test]
 #
 #   product		version
 #   dependent_product	dependent_product_version [optional]
@@ -246,6 +247,40 @@ sub get_cmake_gdml_directory {
   }
   close(PIN);
   return ($gdmldir);
+}
+
+sub get_cmake_test_directory {
+  my @params = @_;
+  my $testdir = "DEFAULT";
+  my $line;
+  my $testsubdir;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      my @words = split(/\s+/,$line);
+      if( $words[0] eq "testdir" ) {
+	 if( $#words < 2 ) {
+	   $testsubdir = "test";
+	 } else {
+	   $testsubdir = $words[2];
+	 }
+         if( $words[1] eq "product_dir" ) {
+	    $testdir = "product_dir/$testsubdir";
+         } elsif( $words[1] eq "fq_dir" ) {
+	    $testdir = "flavorqual_dir/$testsubdir";
+         } elsif( $words[1] eq "-" ) {
+	    $testdir = "NONE";
+	 } else {
+	    $testdir = "ERROR";
+	 }
+      }
+    }
+  }
+  close(PIN);
+  return ($testdir);
 }
 
 1;
