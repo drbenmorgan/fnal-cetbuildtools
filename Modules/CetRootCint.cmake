@@ -9,8 +9,7 @@ macro( cet_rootcint rc_output_name )
 
   # there are no default arguments
   if( RC_DEFAULT_ARGS )
-     message("cet_rootcint: Incorrect arguments. ${ARGV}")
-     message(SEND_ERROR  ${cet_rootcint_usage})
+     message(FATAL_ERROR  "cet_rootcint: Incorrect arguments. ${ARGV} \n ${cet_rootcint_usage}")
   endif()
   ##message(STATUS "cet_rootcint debug: cet_rootcint called with ${rc_output_name}")
   ##get_filename_component(pkgname ${CMAKE_CURRENT_SOURCE_DIR} NAME )
