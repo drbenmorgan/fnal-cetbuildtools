@@ -57,7 +57,7 @@ endmacro()
 # Basic plugin libraries.
 function(basic_plugin name type)
   cmake_parse_arguments(BP
-    "USE_BOOST_UNIT;ALLOW_UNDERSCORES;BASENAME_ONLY;NO_INSTALL;NOINSTALL"
+    "USE_BOOST_UNIT;ALLOW_UNDERSCORES;BASENAME_ONLY;USE_PRODUCT_NAME;NO_INSTALL;NOINSTALL"
     ""
     ""
     ${ARGN})
