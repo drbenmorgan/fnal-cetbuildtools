@@ -45,8 +45,12 @@
 #
 # install_headers( [SUBDIRS subdirectory_list] 
 #                  [EXTRAS extra_files]
-#                  [EXCLUDES exclusions] )
-# install_headers( LIST file_list )
+#                  [EXCLUDES exclusions] 
+#                  [USE_PRODUCT_NAME] )
+# install_headers( LIST file_list 
+#                  [USE_PRODUCT_NAME] )
+#   If USE_PRODUCT_NAME is specified, the product name will be prepended
+#   to the install path
 #
 # install_fhicl( [SUBDIRS subdirectory_list]
 #                [EXTRAS extra_files]
@@ -301,7 +305,7 @@ macro( install_source   )
      STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   endif()
   set(source_install_dir ${product}/${version}/source/${CURRENT_SUBDIR} )
-  #message( STATUS "install_source: source code will be installed in ${source_install_dir}" )
+  message( STATUS "install_source: source code will be installed in ${source_install_dir}" )
   if( ISRC_LIST )
     if( ISRC_SUBDIRS )
       message( FATAL_ERROR
@@ -317,15 +321,23 @@ macro( install_source   )
 endmacro( install_source )
 
 macro( install_headers   )
-  cmake_parse_arguments( IHDR "" "" "SUBDIRS;LIST;EXTRAS;EXCLUDES" ${ARGN})
+  cmake_parse_arguments( IHDR "" "" "SUBDIRS;LIST;EXTRAS;EXCLUDES;USE_PRODUCT_NAME" ${ARGN})
   if( PACKAGE_TOP_DIRECTORY )
     STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   else()
     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   endif()
   _cet_check_inc_directory()
-  set(header_install_dir ${${product}_inc_dir}${CURRENT_SUBDIR} )
-  #message( STATUS "install_headers: headers will be installed in ${header_install_dir}" )
+  if (IHDR_USE_PRODUCT_NAME OR ART_MAKE_PREPEND_PRODUCT_NAME)
+    set(header_install_dir ${${product}_inc_dir}/${product}${CURRENT_SUBDIR} )
+  else()
+    set(header_install_dir ${${product}_inc_dir}${CURRENT_SUBDIR} )
+  endif()
+  ##message( STATUS "install_headers: ART_MAKE_PREPEND_PRODUCT_NAME is  ${ART_MAKE_PREPEND_PRODUCT_NAME}" )
+  ##message( STATUS "install_headers: PACKAGE_TOP_DIRECTORY is  ${PACKAGE_TOP_DIRECTORY}" )
+  ##message( STATUS "install_headers: CMAKE_SOURCE_DIR is  ${CMAKE_SOURCE_DIR}" )
+  ##message( STATUS "install_headers: CMAKE_CURRENT_SOURCE_DIR is  ${CMAKE_CURRENT_SOURCE_DIR}" )
+  ##message( STATUS "install_headers: headers will be installed in ${header_install_dir}" )
   if( IHDR_LIST )
     if( IHDR_SUBDIRS )
       message( FATAL_ERROR
