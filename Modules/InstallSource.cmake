@@ -507,10 +507,9 @@ macro( install_fw   )
 
   if( IFW_LIST )
     _cet_copy_fw( ${ARGN} WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" )
-    # going to loose subdirectory information here
-    if ( SUBDIRNAME )
+    if ( IFW_SUBDIRNAME )
       INSTALL ( FILES  ${IFW_LIST}
-                DESTINATION ${fw_install_dir}/${IFW_ SUBDIRNAME} )
+                DESTINATION ${fw_install_dir}/${IFW_SUBDIRNAME} )
     else()
       INSTALL ( FILES  ${IFW_LIST}
                 DESTINATION ${fw_install_dir} )
