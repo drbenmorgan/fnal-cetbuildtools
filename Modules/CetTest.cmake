@@ -60,15 +60,20 @@
 #    contain the optional values ALL or NONE.
 #
 # REF
-#   The standard output of the test will be captured and compared
-#    against the specified reference file. It is an error to specify
-#    this argument and either the PASS_REGULAR_EXPRESSION or
-#    FAIL_REGULAR_EXPRESSION test properties to the TEST_PROPERTIES
-#    argument. As for the above-mentioned properties, when speciifed
-#    this is the sole arbiter of test success -- the exit code of the
-#    test executable is ignored. Note that the specified file is read at
-#    CMake processing time, so CMake must be re-run (preferably via
-#    buildtool) in order to update the test when the file is changed.
+#  The standard output of the test will be captured and compared against
+#   the specified reference file. It is an error to specify this
+#   argument and either the PASS_REGULAR_EXPRESSION or
+#   FAIL_REGULAR_EXPRESSION test properties to the TEST_PROPERTIES
+#   argument: success is the logical AND of the exit code from execution
+#   of the test as originally specified, and the success of the
+#   filtering and subsequent comparison of the output (and optionally,
+#   the error stream). Optionally, a second element may be specified
+#   representing a reference for the error stream; otherwise, standard
+#   error will be ignored.
+#
+#  If REF is specified, then OUTPUT_FILTER and OUTPUT_FILTER_ARGS may
+#   also be specified. OUTPUT_FILTER must be a program which expects an
+#   input filename as argument and puts the filtered output on STDOUT.
 #
 # SOURCES
 #   Sources to use to build the target (default is ${target}.cc).
@@ -229,8 +234,8 @@ FUNCTION(cet_test CET_TARGET)
   ENDIF()
   CMAKE_PARSE_ARGUMENTS (CET
     "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE"
-    "REF;TEST_EXEC"
-    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;SOURCES;TEST_ARGS;TEST_PROPERTIES"
+    "OUTPUT_FILTER;TEST_EXEC"
+    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTER_ARGS;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
     )
   # Set up to handle a per-test work directory for parallel testing.
@@ -295,10 +300,52 @@ FUNCTION(cet_test CET_TARGET)
   _update_defined_test_groups(${CET_OPTIONAL_GROUPS})
   _check_want_test("${CET_OPTIONAL_GROUPS}" WANT_TEST)
   IF(NOT CET_NO_AUTO AND WANT_TEST)
-    # Add the test.
-    ADD_TEST(NAME ${CET_TARGET}
-      ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-      COMMAND ${CET_TEST_EXEC} ${CET_TEST_ARGS})
+    IF(CET_REF)
+      GET_TEST_PROPERTY(${CET_TARGET} PASS_REGULAR_EXPRESSION has_pass_exp)
+      GET_TEST_PROPERTY(${CET_TARGET} FAIL_REGULAR_EXPRESSION has_fail_exp)
+      IF(has_pass_exp OR has_fail_exp)
+        MESSAGE(FATAL_ERROR "Cannot specify REF option for test ${CET_TARGET} in conjunction with (PASS|FAIL)_REGULAR_EXPESSION.")
+      ENDIF()
+      LIST(LENGTH CET_REF CET_REF_LEN)
+      IF(CET_REF_LEN EQUAL 1)
+        SET(OUTPUT_REF ${CET_REF})
+      ELSE()
+        LIST(GET CET_REF 0 OUTPUT_REF)
+        LIST(GET CET_REF 1 ERROR_REF)
+        SET(DEF_ERROR_REF "-DTEST_REF_ERR=${ERROR_REF}")
+        SET(DEF_TEST_ERR "-DTEST_ERR=${CET_TARGET}.err")
+      ENDIF()
+      SEPARATE_ARGUMENTS(TEST_ARGS UNIX_COMMAND "${CET_TEST_ARGS}")
+      IF(CET_OUTPUT_FILTER)
+        SET(DEF_OUTPUT_FILTER "-DOUTPUT_FILTER=${CET_OUTPUT_FILTER}")
+      ENDIF()
+      IF(CET_OUTPUT_FILTER_ARGS)
+        SEPARATE_ARGUMENTS(FILTER_ARGS UNIX_COMMAND "${CET_OUTPUT_FILTER_ARGS}")
+        SET(DEF_OUTPUT_FILTER_ARGS "-DOUTPUT_FILTER_ARGS=${FILTER_ARGS}")
+      ENDIF()
+      IF (DEFINED ENV{CETBUILDTOOLS_DIR})
+        SET(COMPARE $ENV{CETBUILDTOOLS_DIR}/Modules/RunAndCompare.cmake)
+      ELSE() # Inside cetbuildtools itself.
+        SET(COMPARE ${PROJECT_SOURCE_DIR}/Modules/RunAndCompare.cmake)
+      ENDIF()
+      ADD_TEST(NAME ${CET_TARGET}
+        ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
+        COMMAND ${CMAKE_COMMAND}
+        -DTEST_EXEC=${CET_TEST_EXEC}
+        -DTEST_ARGS=${TEST_ARGS}
+        -DTEST_REF=${OUTPUT_REF}
+        ${DEF_ERROR_REF}
+        ${DEF_TEST_ERR}
+        -DTEST_OUT=${CET_TARGET}.out
+        ${DEF_OUTPUT_FILTER} ${DEF_OUTPUT_FILTER_ARGS}
+        -P ${COMPARE}
+        )
+    ELSE(CET_REF)
+      # Add the test.
+      ADD_TEST(NAME ${CET_TARGET}
+        ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
+        COMMAND ${CET_TEST_EXEC} ${CET_TEST_ARGS})
+    ENDIF(CET_REF)
     IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
       SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES WORKING_DIRECTORY ${CET_TEST_WORKDIR})
     ENDIF()
@@ -314,25 +361,19 @@ FUNCTION(cet_test CET_TARGET)
         SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES ENVIRONMENT "${CET_TEST_ENV}")
       ENDIF()
     ENDIF()
-    IF(DEFINED CET_REF)
-      GET_TEST_PROPERTY(${CET_TARGET} PASS_REGULAR_EXPRESSION has_pass_exp)
-      GET_TEST_PROPERTY(${CET_TARGET} FAIL_REGULAR_EXPRESSION has_fail_exp)
-      IF(has_pass_exp OR has_fail_exp)
-        MESSAGE(FATAL_ERROR "Cannot specify REF option for test ${CET_TARGET}, which already has\n"
-          "(PASS|FAIL)_REGULAR_EXPRESSION property set.")
+    IF(CET_REF)
+      GET_TEST_PROPERTY(${CET_TARGET} REQUIRED_FILES REQUIRED_FILES_TMP)
+      IF(REQUIRED_FILES_TMP)
+        SET_TESTS_PROPERTIES("${CET_TARGET}" PROPERTIES REQUIRED_FILES "${REQUIRED_FILES_TMP};${CET_REF}")
+      ELSE()
+        SET_TESTS_PROPERTIES("${CET_TARGET}" PROPERTIES REQUIRED_FILES "${CET_REF}")
       ENDIF()
-      IF(CET_REF)
-        IF(EXISTS "${CET_REF}")
-          FILE(READ "${CET_REF}" CET_REF_TEXT)
-        ELSE()
-          MESSAGE(FATAL_ERROR "Specified REFerence file ${CET_REF} does not exist for test ${CET_TARGET}.")
-        ENDIF()
-      ENDIF()
-      cet_regex_escape("${CET_REF_TEXT}" CET_REF_TEXT)
-      SET(CET_REF_TEXT "^${CET_REF_TEXT}$")
-      SET_TESTS_PROPERTIES(${CET_TARGET} PROPERTIES PASS_REGULAR_EXPRESSION "${CET_REF_TEXT}")
     ENDIF()
-  ENDIF()
+  ELSE(NOT CET_NO_AUTO AND WANT_TEST)
+    IF(CET_OUTPUT_FILTER OR CET_OUTPUT_FILTER_ARGS)
+      MESSAGE(FATAL_ERROR "OUTPUT_FILTER and OUTPUT_FILTER_ARGS are not accepted if REF is not specified.")
+    ENDIF()
+  ENDIF(NOT CET_NO_AUTO AND WANT_TEST)
   IF(CET_INSTALL_BIN)
     IF(CET_HANDBUILT)
       MESSAGE(WARNING "INSTALL_BIN option ignored for HANDBUILT tests.")

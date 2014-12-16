@@ -29,6 +29,7 @@ INSTALL(FILES
   InstallSource.cmake
   ParseUpsVersion.cmake
   ProcessSmc.cmake
+  RunAndCompare.cmake
   SetCompilerFlags.cmake
   SetFlavorQual.cmake
   UseCPack.cmake
