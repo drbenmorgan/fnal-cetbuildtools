@@ -17,7 +17,7 @@ install_scripts( LIST buildtool
   migrate-package
   )
 
-cet_script(filter-output)
+cet_script(filter-output cet_exec_test)
 
 INSTALL ( FILES cet_test_functions.sh
   cmake_parse_deps.pm
