@@ -31,7 +31,7 @@
 # Utility function.
 function(filter_and_compare FILE REF)
   execute_process(COMMAND ${OUTPUT_FILTER} ${OUTPUT_FILTER_ARGS} "${FILE}"
-    OUTPUT_FILE  "${FILE}-filtered"
+    OUTPUT_FILE "${FILE}-filtered"
     RESULT_VARIABLE FILTER_FAILED
     )
 
@@ -39,13 +39,13 @@ function(filter_and_compare FILE REF)
     message(FATAL_ERROR "Production of filtered output from ${FILE} failed.")
   endif()
 
-  execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files "${REF}" "${FILE}-filtered"
-    OUTPUT_QUIET
+  execute_process(COMMAND diff -u "${REF}" "${FILE}-filtered"
+    OUTPUT_VARIABLE DIFF_OUTPUT
     RESULT_VARIABLE COMPARE_FAILED
     )
 
   if (COMPARE_FAILED)
-    message(FATAL_ERROR "Comparison of filtered output ${FILE}-filtered with ${REF} failed.")
+    message(FATAL_ERROR "Comparison of filtered output ${FILE}-filtered with ${REF} failed:${DIFF_OUTPUT}")
   endif()
 endfunction()
 
