@@ -1,7 +1,16 @@
 #!/usr/bin/perl -w
-
-# Filter out some things that would affect the utility of a comparison with reference.
-
+########################################################################
+# filter-output.
+#
+# Filter out some things that would affect the utility of a comparison
+# with reference.
+#
+# If this is not sufficient for your needs, write your own and use the
+# OUTPUT_FILTER option of cet_test() to override. See CetTest.cmake
+# documentation for details.
+#
+# 2014/12/16 CHG.
+########################################################################
 use strict;
 
 while (<>) {
