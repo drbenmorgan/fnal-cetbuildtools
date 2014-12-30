@@ -9,7 +9,12 @@ set( CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH} )
 
 set( CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0 )
 set( CPACK_GENERATOR TBZ2 )
-set( CPACK_PACKAGE_NAME ${product} )
+set( mrb_project $ENV{MRB_PROJECT} )
+if ( mrb_project )
+  set( CPACK_PACKAGE_NAME ${mrb_project} )
+else()
+  set( CPACK_PACKAGE_NAME ${product} )
+endif()
 
 find_compiler()
 
