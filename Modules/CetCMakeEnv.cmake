@@ -142,8 +142,14 @@ macro(_get_cetpkg_info)
   set(product ${rproduct} CACHE STRING "Package UPS name" FORCE)
   set(version ${rversion} CACHE STRING "Package UPS version" FORCE)
   set(default_version ${rdefault_version} CACHE STRING "Package UPS default version" FORCE)
-  set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
-  #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${full_qualifier}")
+  set( mrb_qual $ENV{MRB_QUALS} )
+  if ( mrb_qual )
+    set(full_qualifier ${mrb_qual} CACHE STRING "Package UPS full_qualifier" FORCE)
+  else()
+    set(full_qualifier ${rqual} CACHE STRING "Package UPS full_qualifier" FORCE)
+  endif()
+  set(${product}_full_qualifier ${rqual} CACHE STRING "Package UPS ${product}_full_qualifier" FORCE)
+  #message(STATUS "_get_cetpkg_info: found ${product} ${version} ${${product}_full_qualifier}")
 
   set( cet_ups_dir ${CMAKE_CURRENT_SOURCE_DIR}/ups CACHE STRING "Package UPS directory" FORCE )
   ##message( STATUS "_get_cetpkg_info: cet_ups_dir is ${cet_ups_dir}")
@@ -160,23 +166,23 @@ macro(cet_cmake_env)
 
   _get_cetpkg_info()
 
-  if( full_qualifier )
+  if( ${product}_full_qualifier )
     # extract base qualifier
-    STRING( REGEX REPLACE ":debug" "" Q1 "${full_qualifier}" )
+    STRING( REGEX REPLACE ":debug" "" Q1 "${${product}_full_qualifier}" )
     STRING( REGEX REPLACE ":opt" "" Q2 "${Q1}" )
     STRING( REGEX REPLACE ":prof" "" Q3 "${Q2}" )
     set(qualifier ${Q3} CACHE STRING "Package UPS qualifier" FORCE)
     if(qualifier)
       # NOP to quell warning
     endif()
-    #message( STATUS "full qual ${full_qualifier} reduced to ${qualifier}")
+    message( STATUS "full qual ${${product}_full_qualifier} reduced to ${qualifier}")
   endif()
 
   # do not embed full path in shared libraries or executables
   # because the binaries might be relocated
   set(CMAKE_SKIP_RPATH)
 
-  message(STATUS "Product is ${product} ${version} ${full_qualifier}")
+  message(STATUS "Product is ${product} ${version} ${${product}_full_qualifier}")
   message(STATUS "Module path is ${CMAKE_MODULE_PATH}")
 
   set_install_root()

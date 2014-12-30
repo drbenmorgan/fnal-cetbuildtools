@@ -102,8 +102,8 @@ if ( NOT OSTYPE )
 endif ()
 
 # all qualifiers are passed
-STRING( REGEX REPLACE ":" "." QUAL_SUBDIR "${full_qualifier}" )
-#message(STATUS "qualifiers: ${full_qualifier} ${QUAL_SUBDIR}")
+STRING( REGEX REPLACE ":" "." QUAL_SUBDIR "${${product}_full_qualifier}" )
+#message(STATUS "qualifiers: ${${product}_full_qualifier} ${QUAL_SUBDIR}")
 
 if( ${arch} MATCHES "noarch" )
     SET (flavorqual ${OSTYPE}.${QUAL_SUBDIR} )

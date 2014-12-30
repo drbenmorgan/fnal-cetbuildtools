@@ -70,15 +70,19 @@ macro( cet_version_file )
 ##                    OUTPUT_VARIABLE datime
 ##                    OUTPUT_STRIP_TRAILING_WHITESPACE )
 
-   STRING( REGEX REPLACE ":" "_" VQUAL "${full_qualifier}" )
-   ##message( STATUS "calling ${BUILD_VERSION_FILE_NAME} with ${product} ${version} ${default_version} ${UPSFLAVOR}")
+   if ( ${qualifier} MATCHES "-nq-" )
+     set( VQUAL "" )
+   else ()
+     STRING( REGEX REPLACE ":" "_" VQUAL "${${product}_full_qualifier}" )
+   endif()
+   ##message( STATUS "calling ${BUILD_VERSION_FILE_NAME} with ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} ${product} ${version} ${default_version} ${UPSFLAVOR} ${${product}_full_qualifier}")
    execute_process(COMMAND ${BUILD_VERSION_FILE_NAME} 
 			   ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}
 			   ${product}
 			   ${version}
 			   ${default_version}
 			   ${UPSFLAVOR}
-			   ${full_qualifier}
+			   ${${product}_full_qualifier}
                    OUTPUT_VARIABLE MSG
 		   OUTPUT_STRIP_TRAILING_WHITESPACE
 		   )
