@@ -1,9 +1,5 @@
 # create the cmake configure files for this package
 #
-# set_flavor_qual( [arch] )
-# allow optional architecture declaration
-# noarch is recognized, others are used at your own discretion
-#
 # cet_cmake_config( [NO_FLAVOR] )
 #   build and install PackageConfig.cmake and PackageConfigVersion.cmake
 #   these files are installed in ${flavorqual_dir}/lib/PACKAGE/cmake
