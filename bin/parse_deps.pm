@@ -650,16 +650,18 @@ sub cetpkg_info_file {
 sub print_setup_noqual {
   my @params = @_;
   my $efl = $params[3];
+  my $thisqual = $params[1];
+  if( $params[1] eq "-" ) {  $thisqual = ""; }
   if(( $params[2] ) && ( $params[2] eq "optional" )) { 
   print $efl "# setup of $params[0] is optional\n"; 
   print $efl "unset have_prod\n"; 
-  print $efl "ups exist $params[0] $params[1]\n"; 
+  print $efl "ups exist $params[0] $thisqual\n"; 
   print $efl "test \"\$?\" = 0 && set_ have_prod=\"true\"\n"; 
-  print $efl "test \"\$have_prod\" = \"true\" || echo \"will not setup $params[0] $params[1]\"\n"; 
-  print $efl "test \"\$have_prod\" = \"true\" && setup -B $params[0] $params[1] \n";
+  print $efl "test \"\$have_prod\" = \"true\" || echo \"will not setup $params[0] $thisqual\"\n"; 
+  print $efl "test \"\$have_prod\" = \"true\" && setup -B $params[0] $thisqual \n";
   print $efl "unset have_prod\n"; 
   } else {
-  print $efl "setup -B $params[0] $params[1] \n";
+  print $efl "setup -B $params[0] $thisqual \n";
   print $efl "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
   }
   return 0;
@@ -668,16 +670,18 @@ sub print_setup_noqual {
 sub print_setup_qual {
   my @params = @_;
   my $efl = $params[4];
+  my $thisqual = $params[1];
+  if( $params[1] eq "-" ) {  $thisqual = ""; }
   if(( $params[3] ) && ( $params[3] eq "optional" )) { 
   print $efl "# setup of $params[0] is optional\n"; 
   print $efl "unset have_prod\n"; 
-  print $efl "ups exist $params[0] $params[1] -q $params[2]\n"; 
+  print $efl "ups exist $params[0] $thisqual -q $params[2]\n"; 
   print $efl "test \"\$?\" = 0 && set_ have_prod=\"true\"\n"; 
-  print $efl "test \"\$have_prod\" = \"true\" || echo \"will not setup $params[0] $params[1] -q $params[2]\"\n"; 
-  print $efl "test \"\$have_prod\" = \"true\" && setup -B $params[0] $params[1] -q $params[2] \n";
+  print $efl "test \"\$have_prod\" = \"true\" || echo \"will not setup $params[0] $thisqual -q $params[2]\"\n"; 
+  print $efl "test \"\$have_prod\" = \"true\" && setup -B $params[0] $thisqual -q $params[2] \n";
   print $efl "unset have_prod\n"; 
   } else {
-  print $efl "setup -B $params[0] $params[1] -q $params[2]\n";
+  print $efl "setup -B $params[0] $thisqual -q $params[2]\n";
   print $efl "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n"; 
 	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
   }
