@@ -72,17 +72,19 @@ macro( cet_version_file )
 
    if ( ${qualifier} MATCHES "-nq-" )
      set( VQUAL "" )
+     set( FQUAL "" )
    else ()
      STRING( REGEX REPLACE ":" "_" VQUAL "${${product}_full_qualifier}" )
+     set( FQUAL ${${product}_full_qualifier} )
    endif()
-   ##message( STATUS "calling ${BUILD_VERSION_FILE_NAME} with ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} ${product} ${version} ${default_version} ${UPSFLAVOR} ${${product}_full_qualifier}")
+   ##message( STATUS "calling ${BUILD_VERSION_FILE_NAME} with ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} ${product} ${version} ${default_version} ${UPSFLAVOR} ${FQUAL}")
    execute_process(COMMAND ${BUILD_VERSION_FILE_NAME} 
 			   ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}
 			   ${product}
 			   ${version}
 			   ${default_version}
 			   ${UPSFLAVOR}
-			   ${${product}_full_qualifier}
+			   ${FQUAL}
                    OUTPUT_VARIABLE MSG
 		   OUTPUT_STRIP_TRAILING_WHITESPACE
 		   )
