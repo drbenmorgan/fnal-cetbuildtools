@@ -112,24 +112,26 @@ sub print_no_qual_setup {
   my $piter=$params[1];
   foreach $print_no_qual_setup::k ( 0 .. $#plist ) {
     if( $plist[$print_no_qual_setup::k][0] eq $qlist[0][$piter] ) {
+      my $thisver = $plist[$print_no_qual_setup::k][1];
+      if ( $plist[$print_no_qual_setup::k][1] eq "-" ) { $thisver = ""; }
       if ( $plist[$print_no_qual_setup::k][2] ) {
 	my @kwords = split(/:/,$qlist[$qiter][0]);
 	foreach $print_qual_setup::j ( 0 .. $#kwords ) {
 	  if ( $plist[$print_no_qual_setup::k][2] eq $kwords[$print_qual_setup::j] ) {
 	    if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
 	    } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
-	      print TBL "    setupOptional( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] )\n";
+	      print TBL "    setupOptional( $qlist[0][$piter] $thisver )\n";
 	    } else {
-	      print TBL "    setupRequired( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] )\n";
+	      print TBL "    setupRequired( $qlist[0][$piter] $thisver )\n";
 	    }
 	  }
 	}
       } else {
 	  if (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "only_for_build" )) {
 	  } elsif (( $plist[$print_no_qual_setup::k][3] ) && ( $plist[$print_no_qual_setup::k][3] eq "optional" )) {
-	    print TBL "    setupOptional( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] )\n";
+	    print TBL "    setupOptional( $qlist[0][$piter] $thisver )\n";
 	  } else {
-	    print TBL "    setupRequired( $qlist[0][$piter] $plist[$print_no_qual_setup::k][1] )\n";
+	    print TBL "    setupRequired( $qlist[0][$piter] $thisver )\n";
 	  }
        }
     }
