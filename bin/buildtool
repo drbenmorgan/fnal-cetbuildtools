@@ -403,7 +403,7 @@ function report() {
 
 function error() {
   local errmsg="$*"
-  printf "$errmsg\n\n" 1>&2
+  printf -- "$errmsg\n\n" 1>&2
   log_no_tee && echo "$errmsg" 1>&4
 }
 
@@ -491,7 +491,7 @@ function process_gfargs() {
 }
 
 function reorder_quals() {
-  printf "$1" | tr ':' '\n' | sort | tr '\n' ':' | sed -e 's/:$//'
+  printf -- "$1" | tr ':' '\n' | sort | tr '\n' ':' | sed -e 's/:$//'
 }
 
 # Main work
@@ -846,10 +846,10 @@ if (( ${clean:-0} )); then
     echo "       Double-check value and contents of \$CETPKG_BUILD." 1>&2
     exit 2
   fi
-  trap "f=$?; printf \"\nAborted\n\" 1>&2; cleanup; exit $f" 2
-  printf "INFO: About to clean \"$CETPKG_BUILD\": ctrl-C to abort within 5 seconds "
-  for i in 1 2 3 4 5; do printf "."; sleep 1; done
-  printf "\n";
+  trap "f=$?; printf -- \"\nAborted\n\" 1>&2; cleanup; exit $f" 2
+  printf -- "INFO: About to clean \"$CETPKG_BUILD\": ctrl-C to abort within 5 seconds "
+  for i in 1 2 3 4 5; do printf -- "."; sleep 1; done
+  printf -- "\n";
   pushd /tmp >/dev/null # 2>&1
   report "INFO: Cleaning \"$CETPKG_BUILD\""
   if ! { find "$CETPKG_BUILD" -mindepth 1 -maxdepth 1 \
@@ -865,8 +865,8 @@ else # Check consistency.
   # setup_for_development. If it's changed since then, we have a
   # problem.
   if [[ "$CETPKG_SOURCE/ups/product_deps" -nt "$CETPKG_BUILD/cetpkg_variable_report" ]]; then
-    printf "ERROR: product_deps has changed since the last time setup_for_development\n"
-    printf "       was sourced: re-source before building.\n" 1>&2
+    printf -- "ERROR: product_deps has changed since the last time setup_for_development\n"
+    printf -- "       was sourced: re-source before building.\n" 1>&2
     exit 2
   fi
   check_build_type="$(cmake_var CMAKE_BUILD_TYPE)"
