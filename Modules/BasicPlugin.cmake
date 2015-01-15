@@ -5,12 +5,13 @@
 #
 # USAGE:
 # basic_plugin( <name> <plugin type>
-#                [library list]
+#                [<libraries>]
 #                [USE_BOOST_UNIT]
 #                [ALLOW_UNDERSCORES]
 #                [BASENAME_ONLY]
 #                [USE_PRODUCT_NAME]
 #                [NO_INSTALL]
+#                [SOURCE <sources>]
 #   )
 #
 # The plugin library's name is constructed from the specified name, its
@@ -44,6 +45,13 @@
 #    If specified, the plugin library will not be part of the installed
 #    product (use for test modules, etc.).
 #
+# SOURCE
+#
+#    If specified, the provided sources will be used to create the
+#    library. Otherwise, the generated name <name>_<plugin_type>.cc will
+#    be used and this will be expected to be found in
+#    ${CMAKE_CURRENT_SOURCE_DIR}.
+#
 ########################################################################
 include(CMakeParseArguments)
 
@@ -59,7 +67,7 @@ function(basic_plugin name type)
   cmake_parse_arguments(BP
     "USE_BOOST_UNIT;ALLOW_UNDERSCORES;BASENAME_ONLY;USE_PRODUCT_NAME;NO_INSTALL;NOINSTALL"
     ""
-    ""
+    "SOURCE"
     ${ARGN})
   if (BP_NOINSTALL)
     message(FATAL_ERROR "basic_plugin now requires NO_INSTALL instead of NOINSTALL")
@@ -93,9 +101,11 @@ function(basic_plugin name type)
     endif()
     set(plugin_name "${plugname}_${name}_${type}")
   endif()
-  set(codename "${name}_${type}.cc")
+  if(NOT BP_SOURCE)
+    set(BP_SOURCE "${name}_${type}.cc")
+  endif()
   #message(STATUS "BASIC_PLUGIN: generating ${plugin_name}")
-  add_library(${plugin_name} SHARED ${codename} )
+  add_library(${plugin_name} SHARED ${BP_SOURCE} )
   # check the library list and substitute if appropriate
   ##set(basic_plugin_liblist "${BP_UNPARSED_ARGUMENTS}")
   set(basic_plugin_liblist "")
@@ -123,7 +133,7 @@ function(basic_plugin name type)
     list(INSERT basic_plugin_liblist 0 ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
   endif()
   if(COMMAND find_tbb_offloads)
-    find_tbb_offloads(FOUND_VAR have_tbb_offload ${codename})
+    find_tbb_offloads(FOUND_VAR have_tbb_offload ${BP_SOURCE})
     if(have_tbb_offload)
       set_target_properties(${plugin_name} PROPERTIES LINK_FLAGS ${TBB_OFFLOAD_FLAG})
     endif()
