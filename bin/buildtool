@@ -9,16 +9,9 @@
 # 2011/11/10
 ########################################################################
 
-function set_pwd_P_arg() {
-  ( cd / ; /bin/pwd -P ) >/dev/null 2>&1
-  if (( $? == 0 )); then
-    pwd_P_arg="-P"
-  fi
-}
-
 function real_dir() {
   [[ -n "$1" ]] || return 1
-  ( cd "$1" >/dev/null 2>&1 && /bin/pwd ${pwd_P_arg} 2>/dev/null; exit $? )
+  ( cd "$1" >/dev/null 2>&1 && pwd -P 2>/dev/null; exit $? )
 }
 
 function set_vars_from_report_file() {
@@ -26,9 +19,6 @@ function set_vars_from_report_file() {
     { echo "ERROR: Unable to find report_product_info: source setup_for_development?" 1>&2; exit 1; }
   eval $(report_product_info "${CETPKG_BUILD}" all)
 }
-
-# Make sure we can use pwd properly.
-set_pwd_P_arg
 
 # Program name.
 prog=${0##*/}
