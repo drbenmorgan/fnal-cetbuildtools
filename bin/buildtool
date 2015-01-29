@@ -42,11 +42,14 @@ Mode options: [-C|--cmake-only|-A|--all|--info] ||
 Combo options: [-R|--release] || [-T|--test-all]
 
 Misc options: [-D<CMake-definition>]+ [-I|--install-prefix <install-location>]
-              [-c|--clean] [--clean-logs] [-f|--force-top]
+              [-c|--clean] [--clean-logs]
+              [--cmake-debug] [--cmake-trace]
+              [-f|--force-top]
               [-g|--grapviz=<dot-file> [--gfilt <gfilt-opt>[,<gfilt-opt>]+]]
               [-j #] [-l|--log[=<log-file>]|--log-file[=<log-file>]]
               [-q|--quiet] [--tee]
               [--test-groups|--groups <group>[<;|,><group>]+]
+              [-v|--verbose]
 
 Options suffixed with '+' are repeatable and cumulative.
 
@@ -181,6 +184,14 @@ MISC. OPTIONS.
 
   Remove .log files in the \${CETPKG_BUILD} top directory.
 
+--cmake-debug
+
+  Add --debug-output to the cmake command-line options.
+
+--cmake-trace
+
+  Add --trace to the cmake command-line options.
+
 --force-top
 
   Force build and test stages (if applicable) to take place in the
@@ -270,6 +281,11 @@ MISC. OPTIONS.
   groups are delimited with semicolons they should be escaped or
   quoted to protect them from the shell. A warning shall be issued if
   this option is specified but the CMake stage is not to be executed.
+
+-v
+--verbose
+
+  Extra information about the commands being executed at each step
 
 
 EXAMPLES.
@@ -362,7 +378,7 @@ function package_info() {
     msg="$msg
       Selected test groups:  ${selected_test_groups}."
   banner "$msg"
-  log_no_tee && report "$msg" 1>&3
+  (( ${redirected:-0} )) && printf -- "$msg\n" 1>&3
 }
 
 # Banner line
@@ -385,14 +401,28 @@ function log_no_tee() {
   [[ -n "$log" ]] && (( ! ${tee:-0} ))
 }
 
+function writeStuff() {
+  printf -- "$*\n"
+  (( ${redirected:-0} )) && printf -- "$*\n" 1>&3
+}
+
 function report() {
-  (( ${report:-0} )) && echo "$*"
+  writeStuff "$*"
+}
+
+function verbose() {
+  (( ${do_verbose:-0} )) && writeStuff "VERBOSE: $*"
+}
+
+function cmd() {
+  (( ${do_verbose:-0} )) && writeStuff "CWD: $(pwd -P)\nCOMMAND: $*"
+  "$@"
 }
 
 function error() {
   local errmsg="$*"
   printf -- "$errmsg\n\n" 1>&2
-  log_no_tee && echo "$errmsg" 1>&4
+  (( ${redirected:-0} )) && printf -- "$errmsg\n" 1>&4
 }
 
 # Check status and exit if necessary
@@ -403,11 +433,11 @@ function check_status() {
   fi
   if (( status == 0 )); then
     banner "INFO: Stage $stage successful."
-    log_no_tee && \
-        report "INFO: Stage $stage successful." 1>&3
+    (( ${redirected:-0} )) && \
+        echo "INFO: Stage $stage successful." 1>&3
   else
     banner 2 "ERROR: Stage $stage failed."
-    log_no_tee && \
+    (( ${redirected:-0} )) && \
         echo "ERROR: Stage $stage failed with code $status: see $log for details." 1>&4
     exit $status
   fi
@@ -417,8 +447,8 @@ function check_status() {
 # Announce the next stage.
 function announce_stage() {
   banner "INFO: Stage $stage${@}."
-  if log_no_tee; then
-    report "INFO: Stage $stage${@}." 1>&3
+  if (( ${redirected:-0} )); then
+    echo "INFO: Stage $stage${@}." 1>&3
   fi
 }
 
@@ -445,7 +475,7 @@ function maybe_force_top_and_announce() {
 
 # Clean up
 function restore_output_streams() {
-  if log_no_tee; then
+  if (( ${redirected:-0} )); then
     exec 2>&4- 1>&3-
   fi
 }
@@ -486,6 +516,7 @@ function reorder_quals() {
 function do_work() {
   if log_no_tee; then
     exec 3>&1 4>&2 >"$log" 2>&1
+    (( redirected = 1 ))
     trap "restore_output_streams; cleanup" EXIT
   fi
   stage=cmake
@@ -500,7 +531,7 @@ function do_work() {
     [[ -n "${CETPKG_CC}" ]] && \
         local ccenv="CC=${CETPKG_CC} CXX=${CETPKG_CXX} FC=${CETPKG_FC}"
     ( cd "$CETPKG_BUILD" && \
-        eval ${ccenv} cmake \
+        cmd eval ${ccenv} cmake ${cmake_debug} ${cmake_trace} \
             -DCMAKE_INSTALL_PREFIX="$install_prefix" \
             -DCMAKE_BUILD_TYPE=$CETPKG_TYPE \
             $garg ${cmake_defs}${CETPKG_SOURCE}
@@ -524,8 +555,6 @@ function do_work() {
       if [[ -n "${fq_dir}" ]] && [[ -d "${install_prefix}/${fq_dir}" ]]; then
         fq_dir="${install_prefix}/${fq_dir}"
         report "INFO: Cleaning flavor-specific install dir \"${fq_dir}\""
-        log_no_tee && \
-         report "INFO: Cleaning flavor-specific install dir \"${fq_dir}\"" 1>&3
         rm -rf "${fq_dir}"
       fi
     fi
@@ -536,7 +565,7 @@ function do_work() {
     stage=build
     maybe_force_top_and_announce
     check_curdir_in_build_tree
-    time make $jarg "$@"
+    cmd time make $jarg "$@"
     check_status
   fi
 
@@ -546,7 +575,7 @@ function do_work() {
     check_curdir_in_build_tree
     # Trap and tee *only* stderr from ctest. Yes, this is fiddly.
     exec 5>&1
-    { ctest $jarg 2>&1 >&5 5>&-; echo $? > "$TMP/status.dat"; } | tee "$TMP/ctest.err" 5>&-
+    { cmd ctest $jarg 2>&1 >&5 5>&-; echo $? > "$TMP/status.dat"; } | tee "$TMP/ctest.err" 5>&-
     exec 5>&-
     local status
     (( status = $(cat "$TMP/status.dat") ))
@@ -568,14 +597,13 @@ function do_work() {
   if [[ -n "$targets" ]]; then
     stage="install / package"
     announce_stage
-    ( cd "$CETPKG_BUILD" && make $jarg $targets )
+    ( cd "$CETPKG_BUILD" && cmd make $jarg $targets )
     check_status
   fi
 }
 
 # Defaults.
 log_default="build_`date \"+%Y-%m-%d\"`.log"
-(( report = 1 ))
 (( tred = 1 ))
 
 # Temporary directory.
@@ -592,7 +620,7 @@ if (( $? != 4 )); then
   exit 1
 fi
 
-TEMP=`getopt -n "$prog" --long all,cmake-only,install-prefix:,build,clean,clean-logs,force-top,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups:,release -o +ACD:I:RTbcfg:hij:lpqt -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-debug,cmake-only,cmake-trace,install-prefix:,build,clean,clean-logs,force-top,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups:,release,verbose -o +ACD:I:RTbcfg:hij:lpqtv -- "${@}"`
 
 if (( $? )); then
   usage 1
@@ -642,6 +670,14 @@ while true; do
       ;;
     -c|--clean)
       (( clean = 1 ))
+      shift
+      ;;
+    --cmake-debug)
+      cmake_debug=--debug-output
+      shift
+      ;;
+    --cmake-trace)
+      cmake_trace=--trace
       shift
       ;;
     -f|--force-top)
@@ -726,6 +762,10 @@ while true; do
       shift
       shift
       ;;
+    -v|--verbose)
+      (( do_verbose = 1 ))
+      shift
+      ;;
     --)
       shift
       break
@@ -799,15 +839,11 @@ fi
 # Make sure output will appear as we'd like.
 if (( ${tee:-0} )); then
   # You asked for stuff to the screen -- that's what you'll get.
+  echo "WARNING: --tee option overrides --quiet." 1>&2
   unset quiet
-  unset report
-elif (( ${quiet:-0} )); then
-  # If we're not teeing a logfile, you don't want screen reports.
-  unset report
 fi
 
-# If you're logging to file (but not using tee) we don't want quiet (but
-# reports may be turned off).
+# If you're logging to file (but not using tee) we don't want quiet.
 if log_no_tee; then
   unset quiet
 fi
