@@ -19,7 +19,6 @@ function set_pwd_P_arg() {
 function real_dir() {
   [[ -n "$1" ]] || return 1
   ( cd "$1" >/dev/null 2>&1 && /bin/pwd ${pwd_P_arg} 2>/dev/null; exit $? )
-  return $?
 }
 
 function set_vars_from_report_file() {
@@ -394,7 +393,6 @@ EOF
 
 function log_no_tee() {
   [[ -n "$log" ]] && (( ! ${tee:-0} ))
-  return $?
 }
 
 function report() {
