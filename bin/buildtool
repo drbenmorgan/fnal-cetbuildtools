@@ -686,12 +686,12 @@ while true; do
       shift
       ;;
     --log|--log-file)
-      if [[ -d "$1" ]]; then
-        log="$2/${log_default}"
-      else
-        log="${2:-${log:-${log_default}}}"
-      fi
       shift
+      if [[ -d "$1" ]]; then
+        log="$1/${log_default}"
+      else
+        log="${1:-${log:-${log_default}}}"
+      fi
       shift
       ;;
     -p|--package)
