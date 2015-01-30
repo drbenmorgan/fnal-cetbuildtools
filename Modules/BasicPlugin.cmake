@@ -5,7 +5,7 @@
 #
 # USAGE:
 # basic_plugin( <name> <plugin type>
-#                [<libraries>]
+#                [[NOP] <libraries>]
 #                [USE_BOOST_UNIT]
 #                [ALLOW_UNDERSCORES]
 #                [BASENAME_ONLY]
@@ -21,10 +21,6 @@
 #
 # Options:
 #
-# USE_BOOST_UNIT
-#
-#    Allow the use of Boost Unit Test facilities.
-#
 # ALLOW_UNDERSCORES
 #
 #    Allow underscores in subdirectory names. Discouraged, as it creates
@@ -38,12 +34,18 @@
 #    filename in different packages or different subdirectories within
 #    the same package. The latter case is not possible however, because
 #    CMake will throw an error because the two CMake targets will have
-#    the same name and that is not permitted.
+#    the same name and that is not permitted. Mutually exclusive with
+#    USE_PRODUCT_NAME.
 #
 # NO_INSTALL
 #
 #    If specified, the plugin library will not be part of the installed
 #    product (use for test modules, etc.).
+#
+# NOP
+#
+#    Dummy option for the purpose of separating (say) multi-option
+#    arguments from non-option arguments.
 #
 # SOURCE
 #
@@ -51,6 +53,15 @@
 #    library. Otherwise, the generated name <name>_<plugin_type>.cc will
 #    be used and this will be expected to be found in
 #    ${CMAKE_CURRENT_SOURCE_DIR}.
+#
+# USE_BOOST_UNIT
+#
+#    Allow the use of Boost Unit Test facilities.
+#
+# USE_PRODUCT_NAME
+#
+#    Prepend the product name to the plugin library name. Mutually
+#    exclusive with BASENAME_ONLY.
 #
 ########################################################################
 include(CMakeParseArguments)
@@ -65,7 +76,7 @@ endmacro()
 # Basic plugin libraries.
 function(basic_plugin name type)
   cmake_parse_arguments(BP
-    "USE_BOOST_UNIT;ALLOW_UNDERSCORES;BASENAME_ONLY;USE_PRODUCT_NAME;NO_INSTALL;NOINSTALL"
+    "USE_BOOST_UNIT;ALLOW_UNDERSCORES;BASENAME_ONLY;USE_PRODUCT_NAME;NO_INSTALL;NOINSTALL;NOP"
     ""
     "SOURCE"
     ${ARGN})
