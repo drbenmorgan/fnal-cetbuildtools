@@ -515,6 +515,16 @@ function add_deleted_headers() {
   IFS="$oifs"
 }
 
+# Delete references to deleted headers.
+function find_and_remove_deleted_header_refs() {
+  eval grep -Z -l -I -F -w \
+       -r $(for file in "${deleted_headers[@]}"; do
+            printf -- "${file+-e '$file' }"; done) . | \
+    while read -r -d $'' ff; do
+      grep -q -I -e '^INFO: buildtool log started' "$ff" || rm -fv "$ff"
+    done
+}
+
 # Funky argument parsing.
 function process_gfargs() {
   local oifs="$IFS"
@@ -568,12 +578,7 @@ function do_work() {
         { (( ${#deleted_headers[@]} )) &&
             [[ -d CMakeFiles ]] &&
             cmd -d "Remove references to deleted headers." \
-              eval grep -Z -l -I -F -w \
-              -r $(for file in "${deleted_headers[@]}"; do
-                   printf -- "${file+-e \'$file\' }"; done) . \| \
-              while read -r -d \$\'\' ff\; do \
-                grep -q -I -e "'^INFO: buildtool log started'" \"\$ff\" \|\| \
-                  rm -fv \"\$ff\" 1\>\&4\; done
+              find_and_remove_deleted_header_refs
           cmd -d "Execute CMake." \
             eval ${ccenv} cmake ${cmake_debug} ${cmake_trace} \
             -DCMAKE_INSTALL_PREFIX="$install_prefix" \
