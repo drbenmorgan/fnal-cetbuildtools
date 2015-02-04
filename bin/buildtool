@@ -44,6 +44,7 @@ Combo options: [-R|--release] || [-T|--test-all]
 Misc options: [-D<CMake-definition>]+ [-I|--install-prefix <install-location>]
               [-c|--clean] [--clean-logs]
               [--cmake-debug] [--cmake-trace]
+              [--deleted-header[s] <header>[,<header>]+]
               [-f|--force-top]
               [-g|--grapviz=<dot-file> [--gfilt <gfilt-opt>[,<gfilt-opt>]+]]
               [-j #] [-l|--log[=<log-file>]|--log-file[=<log-file>]]
@@ -191,6 +192,12 @@ MISC. OPTIONS.
 --cmake-trace
 
   Add --trace to the cmake command-line options.
+
+--deleted-header[s] <header>[,<header>]+
+
+  Indicate that named headers have been removed from the source, to
+  allow removal and regeneration of dependency files containing
+  references to same.
 
 --force-top
 
@@ -484,9 +491,21 @@ function cleanup() {
   [[ -n "$TMP" ]] && [[ -d "$TMP" ]] && rm -rf "$TMP"
 }
 
+declare -a deleted_headers
+
+# Deleted headers.
+function add_deleted_headers() {
+  local oifs="$IFS"
+  IFS=","
+  for file in $1; do
+    deleted_headers[${#deleted_headers[@]}]=$file
+  done
+  IFS="$oifs"
+}
+
 # Funky argument parsing.
 function process_gfargs() {
-  oifs="$IFS"
+  local oifs="$IFS"
   IFS=,
   for opt in $1; do
     case $opt in
@@ -530,12 +549,21 @@ function do_work() {
     cmake_defs=${cmake_defs//,/;}
     [[ -n "${CETPKG_CC}" ]] && \
         local ccenv="CC=${CETPKG_CC} CXX=${CETPKG_CXX} FC=${CETPKG_FC}"
+    export deleted_headers
     ( cd "$CETPKG_BUILD" && \
-        cmd eval ${ccenv} cmake ${cmake_debug} ${cmake_trace} \
-            -DCMAKE_INSTALL_PREFIX="$install_prefix" \
-            -DCMAKE_BUILD_TYPE=$CETPKG_TYPE \
-            $garg ${cmake_defs}${CETPKG_SOURCE}
+        { (( ${#deleted_headers[@]} )) &&
+            [[ -d CMakeFiles ]] &&
+            cmd eval grep -Z -l -I -F -w \
+              -r $(for file in "${deleted_headers[@]}"; do
+                   printf -- "${file+-e \'$file\' }"; done) . \| \
+              while read -r -d \$\'\' ff\; do rm -f \"\$ff\"\; done
+          cmd eval ${ccenv} cmake ${cmake_debug} ${cmake_trace} \
+              -DCMAKE_INSTALL_PREFIX="$install_prefix" \
+              -DCMAKE_BUILD_TYPE=$CETPKG_TYPE \
+              $garg ${cmake_defs}${CETPKG_SOURCE}
+        }
     ) || check_status # Fail here if there's a problem.
+    export -n deleted_headers
     if [[ -f "${gtmpfile}" ]]; then
       if (( ${gfilt:-0} )); then
         if (( ${tred:-0} )); then
@@ -620,7 +648,7 @@ if (( $? != 4 )); then
   exit 1
 fi
 
-TEMP=`getopt -n "$prog" --long all,cmake-debug,cmake-only,cmake-trace,install-prefix:,build,clean,clean-logs,force-top,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups:,release,verbose -o +ACD:I:RTbcfg:hij:lpqtv -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-debug,cmake-only,cmake-trace,install-prefix:,build,clean,clean-logs,deleted-header:,deleted-headers:,force-top,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups:,release,verbose -o +ACD:I:RTbcfg:hij:lpqtv -- "${@}"`
 
 if (( $? )); then
   usage 1
@@ -678,6 +706,11 @@ while true; do
       ;;
     --cmake-trace)
       cmake_trace=--trace
+      shift
+      ;;
+    --deleted-header|--deleted_headers)
+      shift
+      [[ -n "$1" ]] && add_deleted_headers "$1"
       shift
       ;;
     -f|--force-top)
