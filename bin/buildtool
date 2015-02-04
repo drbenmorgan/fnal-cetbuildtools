@@ -546,7 +546,9 @@ function reorder_quals() {
 # Main work
 function do_work() {
   if log_no_tee; then
+    report "INFO: Redirecting output to $log"
     exec 3>&1 4>&2 >"$log" 2>&1
+    report "INFO: buildtool log started at $(date)"
     (( redirected = 1 ))
     trap "restore_output_streams; cleanup" EXIT
   fi
@@ -569,7 +571,9 @@ function do_work() {
               eval grep -Z -l -I -F -w \
               -r $(for file in "${deleted_headers[@]}"; do
                    printf -- "${file+-e \'$file\' }"; done) . \| \
-              while read -r -d \$\'\' ff\; do rm -f \"\$ff\"\; done
+              while read -r -d \$\'\' ff\; do \
+                grep -q -I -e "'^INFO: buildtool log started'" \"\$ff\" \|\| \
+                  rm -fv \"\$ff\" 1\>\&4\; done
           cmd -d "Execute CMake." \
             eval ${ccenv} cmake ${cmake_debug} ${cmake_trace} \
             -DCMAKE_INSTALL_PREFIX="$install_prefix" \
