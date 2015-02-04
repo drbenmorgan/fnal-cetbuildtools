@@ -422,7 +422,19 @@ function verbose() {
 }
 
 function cmd() {
-  (( ${do_verbose:-0} )) && writeStuff "CWD: $(pwd -P)\nCOMMAND: $*"
+  while getopts :d: OPT; do
+    case $OPT in
+      d)
+        local desc="$OPTARG"
+        ;;
+      *)
+        error "INTERNAL ERROR: check buildtool's use of cmd function."
+        exit 1
+    esac
+  done
+  shift $(( OPTIND - 1 ))
+  OPTIND=1
+  (( ${do_verbose:-0} )) && writeStuff "CWD: $(pwd -P)\nCOMMAND: $*${desc+\nDESCRIPTION: ${desc}}"
   "$@"
 }
 
@@ -553,14 +565,16 @@ function do_work() {
     ( cd "$CETPKG_BUILD" && \
         { (( ${#deleted_headers[@]} )) &&
             [[ -d CMakeFiles ]] &&
-            cmd eval grep -Z -l -I -F -w \
+            cmd -d "Remove references to deleted headers." \
+              eval grep -Z -l -I -F -w \
               -r $(for file in "${deleted_headers[@]}"; do
                    printf -- "${file+-e \'$file\' }"; done) . \| \
               while read -r -d \$\'\' ff\; do rm -f \"\$ff\"\; done
-          cmd eval ${ccenv} cmake ${cmake_debug} ${cmake_trace} \
-              -DCMAKE_INSTALL_PREFIX="$install_prefix" \
-              -DCMAKE_BUILD_TYPE=$CETPKG_TYPE \
-              $garg ${cmake_defs}${CETPKG_SOURCE}
+          cmd -d "Execute CMake." \
+            eval ${ccenv} cmake ${cmake_debug} ${cmake_trace} \
+            -DCMAKE_INSTALL_PREFIX="$install_prefix" \
+            -DCMAKE_BUILD_TYPE=$CETPKG_TYPE \
+            $garg ${cmake_defs}${CETPKG_SOURCE}
         }
     ) || check_status # Fail here if there's a problem.
     export -n deleted_headers
@@ -593,7 +607,7 @@ function do_work() {
     stage=build
     maybe_force_top_and_announce
     check_curdir_in_build_tree
-    cmd time make $jarg "$@"
+    cmd -d "Execute build. " time make $jarg "$@"
     check_status
   fi
 
@@ -603,7 +617,9 @@ function do_work() {
     check_curdir_in_build_tree
     # Trap and tee *only* stderr from ctest. Yes, this is fiddly.
     exec 5>&1
-    { cmd ctest $jarg 2>&1 >&5 5>&-; echo $? > "$TMP/status.dat"; } | tee "$TMP/ctest.err" 5>&-
+    { cmd -d "Execute tests." \
+      ctest $jarg 2>&1 >&5 5>&-; echo $? > "$TMP/status.dat"; } | \
+     tee "$TMP/ctest.err" 5>&-
     exec 5>&-
     local status
     (( status = $(cat "$TMP/status.dat") ))
@@ -625,7 +641,7 @@ function do_work() {
   if [[ -n "$targets" ]]; then
     stage="install / package"
     announce_stage
-    ( cd "$CETPKG_BUILD" && cmd make $jarg $targets )
+    ( cd "$CETPKG_BUILD" && cmd -d "Install / test." make $jarg $targets )
     check_status
   fi
 }
