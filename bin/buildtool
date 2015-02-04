@@ -840,20 +840,24 @@ if [[ -z "$CETPKG_BUILD" ]]; then
   exit 1
 elif [[ ! -d "$CETPKG_BUILD" ]] || [[ ! -w "$CETPKG_BUILD" ]]; then
   echo "ERROR: CETPKG_BUILD \"$CETPKG_BUILD\" does not exist,
-is not a directory or is not writable." 1>&2
+       is not a directory or is not writable." 1>&2
   exit 1
 elif [[ $(real_dir "$CETPKG_BUILD") == $(real_dir "$CETPKG_SOURCE") ]]; then
   echo "ERROR: CETPKG_BUILD ($CETPKG_BUILD) is identical to
-CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
+       CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
   exit 1
 elif [[ $(real_dir "$CETPKG_BUILD") == $(real_dir "$CETPKG_SOURCE")/* ]]; then
   echo "ERROR: CETPKG_BUILD ($CETPKG_BUILD) is a subdir of
-CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
+       CETPKG_SOURCE (${CETPKG_SOURCE})." 1>&2
   exit 1
 elif [[ $(real_dir "$CETPKG_SOURCE") == $(real_dir "$CETPKG_BUILD")/* ]]; then
   echo "ERROR: CETPKG_SOURCE ($CETPKG_SOURCE) is a subdir of
-CETPKG_BUILD (${CETPKG_BUILD})." 1>&2
+       CETPKG_BUILD (${CETPKG_BUILD})." 1>&2
   exit 1
+elif [[ -f "${CETPKG_BUILD}/CMakeLists.txt" ]]; then
+   echo "ERROR: CETPKG_BUILD (${CETPKG_BUILD}) has a CMakeLists.txt file:
+       also a source area?" 1>&2
+   exit 1
 elif [[ "$CETPKG_BUILD" == "/" ]]; then
   echo "ERROR: CETPKG_BUILD == /" 1>&2
   exit 1
