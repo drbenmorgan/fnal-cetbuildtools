@@ -32,7 +32,7 @@ macro( parse_ups_version UPS_VERSION )
     STRING( REGEX REPLACE "^[v](.*)[_](.*)[_](.*)[_](.*)$" "\\3" VPRJ "${UPS_VERSION}" )
     STRING( REGEX REPLACE "^[v](.*)[_](.*)[_](.*)[_](.*)$" "\\4" VPT "${UPS_VERSION}" )
   endif()
-  ##message(STATUS "parse_ups_version: version parses to ${VMAJ}.${VMIN}.${VPRJ}" )
+  ##message(STATUS "parse_ups_version: version parses to ${VMAJ}.${VMIN}.${VPRJ}.${VPT}" )
 
 endmacro( parse_ups_version )
 
@@ -43,7 +43,8 @@ macro( set_version_from_ups UPS_VERSION )
   set( VERSION_MAJOR ${VMAJ} CACHE STRING "Package major version" FORCE)
   set( VERSION_MINOR ${VMIN} CACHE STRING "Package minor version" FORCE )
   set( VERSION_PATCH ${VPRJ} CACHE STRING "Package patch version" FORCE )
-  ##message(STATUS "set_version_from_ups: project version is ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
+  set( VERSION_TWEAK ${VPT} CACHE STRING "Package tweak version" FORCE )
+  ##message(STATUS "set_version_from_ups: project version is ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_TWEAK}" )
 
 endmacro( set_version_from_ups )
 
