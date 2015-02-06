@@ -2,11 +2,10 @@
 #
 include(FindCompilerVersion)
 
-# note that parse_ups_version is used to define VERSION_MAJOR, etc.
-set( CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR} )
-set( CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR} )
-set( CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH} )
-set( CPACK_PACKAGE_VERSION_TWEAK ${VERSION_TWEAK} )
+set( CPACK_PACKAGE_VERSION ${cet_dot_version} )
+##message(STATUS "cet_dot_version version is ${cet_dot_version}" )
+message(STATUS "CPACK_PACKAGE_VERSION is ${CPACK_PACKAGE_VERSION}" )
+
 
 set( CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0 )
 set( CPACK_GENERATOR TBZ2 )
