@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent cetbuildtools v4_07_01
+parent cetbuildtools v4_07_02
 # Notice that this product has no default qualifier
 # The no_fq_dir keyword indicates that this product is NULL flavored
 no_fq_dir
@@ -35,7 +35,8 @@ end_qualifier_list
 
 table_fragment_begin
     if ( test `uname` = "Darwin" )
-      setupOptional(getopt v1_1_5)
+      # Optional until conditional is actually honored by UPS.
+      setupOptional(getopt v1_1_6)
     endif ( test `uname` = "Darwin" )
 table_fragment_end
 
