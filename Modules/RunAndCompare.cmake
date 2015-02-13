@@ -9,8 +9,6 @@
 #
 # TEST_EXEC
 #   Exec to be tested.
-# TEST_ARGS
-#   CMake list (;-separated) of test exec arguments.
 # TEST_REF
 #   File against which to compare STDOUT.
 # TEST_OUT
@@ -18,6 +16,8 @@
 #
 # Optional parameters (via -D):
 #
+# TEST_ARGS
+#   CMake list (;-separated) of test exec arguments.
 # TEST_REF_ERR
 #   File against which to compare STDERR.
 # TEST_ERR
@@ -52,10 +52,6 @@ endfunction()
 # Input checks.
 if (NOT TEST_EXEC)
   message(FATAL_ERROR "CMake variable TEST_EXEC not defined.")
-endif()
-
-if (NOT TEST_ARGS)
-  message(FATAL_ERROR "CMake variable TEST_ARGS not defined.")
 endif()
 
 if (NOT TEST_REF)
