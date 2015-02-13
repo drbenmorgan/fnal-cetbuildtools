@@ -13,14 +13,56 @@
 ########################################################################
 use strict;
 
+my ($in_tt, $in_mm, $mm_format, $final_mm_clause);
+my $n_sep = 0;
+
 while (<>) {
+  ########################################################################
   # Several date-time formats.
   s&\d{4}-(?:0\d|1[0-2])-(?:[0-2]\d|3[01])T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:,\d+)?(Z[-+]?\d+)?&<date-time>&g;
   s&\d{4}-(?:0\d|1[0-2])-(?:[0-2]\d|3[01])(?:\s+(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?(?:\s+(?:[-+]\d+|[A-Z]{3}))?)?)?&<date-time>&g;
   s&\d+-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{4}(?:\s+(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?(?:\s+(?:[-+]\d+|[A-Z]{3}))?)?)?&<date-time>&g;
+  ########################################################################
   # Messagefacility messages.
   s&^(\%MSG.*?:\s+).*?(<date-time>)&${1}${2}&; # OS X does not currently print application.
+  ########################################################################
   # TimeReport lines.
   m&^TimeReport& and s&[\d\.]+&<duration>&g;
+  ########################################################################
+  # TimeTracker summary lines
+  if ($in_tt) {
+    if (m&^={20}& and ++$n_sep == 2) {
+      $n_sep = 0;
+      undef $in_tt;
+      next;
+    }
+    s&^((?:Full event|\S+))\s+(?:\S+\s+){5}&${1}\t<duration> <duration> <duration> <duration> <duration> &;
+  }
+  m&^TimeTracker printout& and $in_tt = 1;
+  ########################################################################
+  # MemoryTracker summary lines
+  if ($in_mm) {
+    if ($final_mm_clause and m&^={20}& and ++$n_sep == 2) {
+      # Done. Clean up.
+      undef $in_mm;
+      undef $final_mm_clause;
+      undef $mm_format;
+      $n_sep = 0;
+    } elsif ($mm_format == 1) {
+      s&\s+(Peak virtual memory usage \(VmPeak\):)\s+(.*)$&${1}\t<mem-size>&;
+      s&^(Module \S+|Event \S+)\s+(\[ (?:MOD \] \S+|EVT \]\s+#:\s+\d+)).*$&${1}\t${2}\t<mem-size>\t<mem-size>&;
+    } else { # $mm_format == 2
+      s&^\s+(\[[\s\d]+\])\s+(run.*?event:\s*\d+).*$& ${1}\t${2}\t<mem-size>\t<mem-size>\t<mem-size>\t<mem-size>&;
+    }
+  }
+  if (m&^MemoryTracker General SUMMARY&) {
+    $in_mm = 1;
+    $mm_format = 1;
+  } elsif ($in_mm and m&^MemoryTracker Per-event SUMMARY&) {
+    $mm_format = 2;
+  } elsif ($in_mm and m&^Modules with large Vsize&) {
+    $final_mm_clause = 1;
+  }
+  ########################################################################
   print;
 }
