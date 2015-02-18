@@ -61,7 +61,6 @@ while (<>) {
         if ($in_ev_list) {
           undef $in_ev_list;
           print " <ev-info>\n";
-          next;
         }
       }
     }
