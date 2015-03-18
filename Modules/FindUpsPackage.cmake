@@ -70,70 +70,76 @@ endmacro( _use_find_package_noversion )
 # since variables are passed, this is implemented as a macro
 macro( find_ups_product PRODUCTNAME fup_version )
 
-# get upper and lower case versions of the name
-string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
-string(TOLOWER  ${PRODUCTNAME} ${PRODUCTNAME}_LC )
+if( ${PRODUCTNAME}_UPS_VERSION )
+  ##message( STATUS "find_ups_product debug: ${PRODUCTNAME}_UPS_VERSION ${${PRODUCTNAME}_UPS_VERSION} is defined" )
+else()
+  ##message( STATUS "find_ups_product debug: ${PRODUCTNAME}_UPS_VERSION ${${PRODUCTNAME}_UPS_VERSION} is NOT defined" )
 
-# require ${${PRODUCTNAME}_UC}_VERSION or ${${PRODUCTNAME}_UC}_UPS_VERSION
-set( ${${PRODUCTNAME}_UC}_VERSION $ENV{${${PRODUCTNAME}_UC}_VERSION} )
-if ( NOT ${${PRODUCTNAME}_UC}_VERSION )
-  set( ${${PRODUCTNAME}_UC}_VERSION $ENV{${${PRODUCTNAME}_UC}_UPS_VERSION} )
+  # get upper and lower case versions of the name
+  string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
+  string(TOLOWER  ${PRODUCTNAME} ${PRODUCTNAME}_LC )
+
+  # require ${${PRODUCTNAME}_UC}_VERSION or ${${PRODUCTNAME}_UC}_UPS_VERSION
+  set( ${${PRODUCTNAME}_UC}_VERSION $ENV{${${PRODUCTNAME}_UC}_VERSION} )
   if ( NOT ${${PRODUCTNAME}_UC}_VERSION )
-     message(FATAL_ERROR "${${PRODUCTNAME}_UC} has not been setup")
+    set( ${${PRODUCTNAME}_UC}_VERSION $ENV{${${PRODUCTNAME}_UC}_UPS_VERSION} )
+    if ( NOT ${${PRODUCTNAME}_UC}_VERSION )
+       message(FATAL_ERROR "${${PRODUCTNAME}_UC} has not been setup")
+    endif ()
   endif ()
-endif ()
 
-# compare for recursion
-#message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${cet_product_list}")
-list(FIND cet_product_list ${PRODUCTNAME} found_product_match)
-# now check to see if this product is labeled only_for_build
-set( PRODUCT_ONLY_FOR_BUILD FALSE )
-cet_get_product_info_item(ONLY_FOR_BUILD only_for_build_products)
-foreach( pkg ${only_for_build_products} )
-  if ( "${PRODUCTNAME}"  MATCHES "${pkg}" )
-     set( PRODUCT_ONLY_FOR_BUILD TRUE )
+  # compare for recursion
+  #message(STATUS "find_ups_product debug: ${PRODUCTNAME} ${cet_product_list}")
+  list(FIND cet_product_list ${PRODUCTNAME} found_product_match)
+  # now check to see if this product is labeled only_for_build
+  set( PRODUCT_ONLY_FOR_BUILD FALSE )
+  cet_get_product_info_item(ONLY_FOR_BUILD only_for_build_products)
+  foreach( pkg ${only_for_build_products} )
+    if ( "${PRODUCTNAME}"  MATCHES "${pkg}" )
+       set( PRODUCT_ONLY_FOR_BUILD TRUE )
+    endif()
+  endforeach( pkg )
+  #message(STATUS "find_ups_product debug: is ${PRODUCTNAME} only for the build: ${PRODUCT_ONLY_FOR_BUILD}")
+  #if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
+  if( PRODUCT_ONLY_FOR_BUILD )
+  elseif( ${found_product_match} LESS 0 )
+    #message(STATUS "find_ups_product debug: ${found_product_match} for ${PRODUCTNAME} ")
+    # add to product list
+    set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
+    find_ups_product( ${PRODUCTNAME} ${fup_version} )")
+    set(cet_product_list ${PRODUCTNAME} ${cet_product_list} )
+    #message(STATUS "find_ups_product debug: adding find_ups_product( ${PRODUCTNAME} ${fup_version} )")
+    #_cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
   endif()
-endforeach( pkg )
-#message(STATUS "find_ups_product debug: is ${PRODUCTNAME} only for the build: ${PRODUCT_ONLY_FOR_BUILD}")
-#if( ${PRODUCTNAME} MATCHES "cetbuildtools" )
-if( PRODUCT_ONLY_FOR_BUILD )
-elseif( ${found_product_match} LESS 0 )
-  #message(STATUS "find_ups_product debug: ${found_product_match} for ${PRODUCTNAME} ")
-  # add to product list
-  set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-  find_ups_product( ${PRODUCTNAME} ${fup_version} )")
-  set(cet_product_list ${PRODUCTNAME} ${cet_product_list} )
-  #message(STATUS "find_ups_product debug: adding find_ups_product( ${PRODUCTNAME} ${fup_version} )")
-  #_cet_debug_message("find_ups_product: ${PRODUCTNAME} version is ${${${PRODUCTNAME}_UC}_VERSION} ")
-endif()
 
-# MUST use a unique variable name for the config path
-find_file( ${${PRODUCTNAME}_UC}_CONFIG_PATH 
-           NAMES ${${PRODUCTNAME}_LC}-config.cmake  or ${PRODUCTNAME}Config.cmake
-           PATHS $ENV{${${PRODUCTNAME}_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${${PRODUCTNAME}_UC}_DIR}/cmake )
-if(${${PRODUCTNAME}_UC}_CONFIG_PATH)
-  #_cet_debug_message("find_ups_product: found a cmake configure file in ${${${PRODUCTNAME}_UC}_CONFIG_PATH}")
-  # look for the case where there are no underscores
-  string(REGEX MATCHALL "_" nfound ${${${PRODUCTNAME}_UC}_VERSION} )
-  list(LENGTH nfound nfound)
-  if( ${nfound} EQUAL 0 )
-    _use_find_package_noversion( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} )
+  # MUST use a unique variable name for the config path
+  find_file( ${${PRODUCTNAME}_UC}_CONFIG_PATH 
+             NAMES ${${PRODUCTNAME}_LC}-config.cmake  or ${PRODUCTNAME}Config.cmake
+             PATHS $ENV{${${PRODUCTNAME}_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake $ENV{${${PRODUCTNAME}_UC}_DIR}/cmake )
+  if(${${PRODUCTNAME}_UC}_CONFIG_PATH)
+    #_cet_debug_message("find_ups_product: found a cmake configure file in ${${${PRODUCTNAME}_UC}_CONFIG_PATH}")
+    # look for the case where there are no underscores
+    string(REGEX MATCHALL "_" nfound ${${${PRODUCTNAME}_UC}_VERSION} )
+    list(LENGTH nfound nfound)
+    if( ${nfound} EQUAL 0 )
+      _use_find_package_noversion( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} )
+    else()
+      _use_find_package( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} ${fup_version} )
+    endif()
   else()
-    _use_find_package( ${PRODUCTNAME} ${${PRODUCTNAME}_UC} ${fup_version} )
+    #_cet_debug_message("find_ups_product: ${PRODUCTNAME} cmake config NOT FOUND")
+    _check_version( ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_VERSION} ${fup_version} )
   endif()
-else()
-  #_cet_debug_message("find_ups_product: ${PRODUCTNAME} cmake config NOT FOUND")
-  _check_version( ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_VERSION} ${fup_version} )
+
+  # add include directory to include path if it exists
+  set( ${${PRODUCTNAME}_UC}_INC $ENV{${${PRODUCTNAME}_UC}_INC} )
+  if ( NOT ${${PRODUCTNAME}_UC}_INC )
+    #message(STATUS "find_ups_product: ${PRODUCTNAME} ${${PRODUCTNAME}_UC} has no ${${PRODUCTNAME}_UC}_INC")
+  else()
+    include_directories ( ${${${PRODUCTNAME}_UC}_INC} )
+    #message( STATUS "find_ups_product: ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_INC} added to include path" )
+  endif ()
+
 endif()
-
-# add include directory to include path if it exists
-set( ${${PRODUCTNAME}_UC}_INC $ENV{${${PRODUCTNAME}_UC}_INC} )
-if ( NOT ${${PRODUCTNAME}_UC}_INC )
-  #message(STATUS "find_ups_product: ${PRODUCTNAME} ${${PRODUCTNAME}_UC} has no ${${PRODUCTNAME}_UC}_INC")
-else()
-  include_directories ( ${${${PRODUCTNAME}_UC}_INC} )
-  #message( STATUS "find_ups_product: ${PRODUCTNAME} ${${${PRODUCTNAME}_UC}_INC} added to include path" )
-endif ()
-
 
 endmacro( find_ups_product )
