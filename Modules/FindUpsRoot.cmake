@@ -16,7 +16,7 @@ endif ()
 
 # only execute if this macro has not already been called
 if( NOT ROOT_VERSION )
-  message( STATUS "find_ups_root: ROOT_VERSION is NOT defined" )
+  ##message( STATUS "find_ups_root debug: ROOT_VERSION is NOT defined" )
 
 SET ( ROOT_STRING $ENV{SETUP_ROOT} )
 set( ROOT_VERSION $ENV{ROOT_VERSION} )
