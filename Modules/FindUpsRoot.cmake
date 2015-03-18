@@ -13,6 +13,11 @@ set( ROOTSYS $ENV{ROOTSYS} )
 if ( NOT ROOTSYS )
   message(FATAL_ERROR "root has not been setup")
 endif ()
+
+# only execute if this macro has not already been called
+if( NOT ROOT_VERSION )
+  message( STATUS "find_ups_root: ROOT_VERSION is NOT defined" )
+
 SET ( ROOT_STRING $ENV{SETUP_ROOT} )
 set( ROOT_VERSION $ENV{ROOT_VERSION} )
 if ( NOT ROOT_VERSION )
@@ -171,5 +176,6 @@ set(ROOT_EVE_LIB_LIST   ${ROOT_EVE}
                         ${ROOT_RGL}
                         ${ROOT_GUI_LIB_LIST}
 )
+endif( NOT ROOT_VERSION )
 
 endmacro( find_ups_root )
