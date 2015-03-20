@@ -56,6 +56,18 @@
 #   list its name in the DEPENDS clause of the CUSTOM_COMMAND to ensure
 #   it gets re-run if the script chagees.
 #
+# cet_lib_alias(LIB_TARGET <alias>+)
+#
+#   Create a courtesy link to the library specified by LIB_TARGET for
+#   each specified <alias>, for e.g. backward compatibility
+#   reasons. LIB_TARGET must be a target defined (ultimately) by
+#   add_library.
+#
+#   e.g. cet_lib_alias(nutools_SimulationBase SimulationBase) would
+#   create a new link (e.g.) libSimulationBase.so to the generated
+#   library libnutools_SimulationBase.so (replace .so with .dylib for OS
+#   X systems).
+#
 ########################################################################
 cmake_policy(VERSION 3.0.1) # We've made this work for 3.0.1.
 
@@ -395,3 +407,15 @@ macro (cet_script)
     endif()
   endforeach()
 endmacro()
+
+function(cet_lib_alias LIB_TARGET)
+  foreach(alias ${ARGN})
+    add_custom_command(TARGET ${LIB_TARGET}
+      POST_BUILD
+      COMMAND ln -sf $<TARGET_LINKER_FILE_NAME:${LIB_TARGET}>
+      ${CMAKE_SHARED_LIBRARY_PREFIX}${alias}${CMAKE_SHARED_LIBRARY_SUFFIX}
+      COMMENT "Generate / refresh courtesy link ${CMAKE_SHARED_LIBRARY_PREFIX}${alias}${CMAKE_SHARED_LIBRARY_SUFFIX} -> $<TARGET_LINKER_FILE_NAME:${LIB_TARGET}>"
+      VERBATIM
+      WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH})
+  endforeach()
+endfunction()
