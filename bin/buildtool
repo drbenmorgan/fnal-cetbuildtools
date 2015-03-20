@@ -487,9 +487,15 @@ function check_curdir_in_build_tree() {
 
 function maybe_force_top_and_announce() {
   if [[ $(real_dir .) == $(real_dir "$CETPKG_BUILD")/* ]]; then
-    if (( ${force_top:-0} )); then
+    if (( ${force_top:-0} )) || \
+       { [[ "${stage}" == build ]] && [[ "${generator}" == ninja ]]; }; then
       cd "$(real_dir "$CETPKG_BUILD")"
-      announce_stage " in $(real_dir .) per --force-top"
+      if (( ${force_top:-0} )); then
+        local reason="--force-top"
+      else
+        local reason="generator requirements"
+      fi
+      announce_stage " in $(real_dir .) per ${reason}"
     else
       announce_stage " in $(real_dir .) (--force-top to override)"
     fi
