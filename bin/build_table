@@ -218,11 +218,8 @@ sub create_quals {
     print TBL "\n";
     if( $have_fq ) {
       print TBL "  Action = GetFQDir\n";
-      print TBL "       # faking out unsetup\n";
-      print TBL "       envSet( \${UPS_PROD_NAME_UC}_FS, \"\" )\n";
-      print TBL "       execute( \"get-directory-name subdir\", NO_UPS_ENV, \${UPS_PROD_NAME_UC}_FS )\n";
-      print TBL "       envSet( \${UPS_PROD_NAME_UC}_FQ, \${\${UPS_PROD_NAME_UC}_FS}.$qdot )\n";
-      print TBL "       fileTest( \${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ}, -d, \"\${UPS_PROD_DIR}/\${\${UPS_PROD_NAME_UC}_FQ} directory not found: SETUP ABORTED\")\n";
+      print TBL "       envSet( \${UPS_PROD_NAME_UC}_FQ_DIR, \${\${UPS_PROD_NAME_UC}_DIR}/\${CET_SUBDIR}.$qdot )\n";
+      print TBL "       fileTest( \${\${UPS_PROD_NAME_UC}_FQ_DIR}, -d, \"\${\${UPS_PROD_NAME_UC}_FQ_DIR} directory not found: SETUP ABORTED\")\n";
       print TBL "\n";
     }
     print TBL "  Action = GetProducts\n";
@@ -273,10 +270,10 @@ sub create_table_bottom {
   print TBL "    setupEnv()\n";
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_VERSION, $version)\n";
   print TBL "    # cetpkgsupport has get-directory-name and find-path\n";
+  print TBL "    # cetpkgsupport also defines the CET_SUBDIR variable\n";
   print TBL "    setupRequired(cetpkgsupport)\n";
   if( $have_fq ) {
   print TBL "    exeActionRequired(GetFQDir)\n";
-  print TBL "    prodDir( _FQ_DIR, \${\${UPS_PROD_NAME_UC}_FQ} )\n";
   }
   if( $include_directory eq "default" ) {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, \${UPS_PROD_DIR}/include) \n";
@@ -349,11 +346,6 @@ sub create_table_bottom {
     foreach $i ( 0 .. $#flist ) {
        print TBL "$flist[$i]\n";
     }
-  }
-  if( $have_fq ) {
-  print TBL "# hack - unsetup temp variables\n";
-  print TBL "envUnSet( \${UPS_PROD_NAME_UC}_FQ )\n";
-  print TBL "envUnSet( \${UPS_PROD_NAME_UC}_FS )\n";
   }
   print TBL "End:\n";
   print TBL "# End Group definition\n";
