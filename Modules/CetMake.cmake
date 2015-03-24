@@ -352,7 +352,7 @@ macro( cet_make_library )
   else()
     _cet_check_lib_directory()
     cet_add_to_library_list( ${CML_LIBRARY_NAME})
-    _cet_debug_message( "cet_make_library: ${CML_LIBRARY_NAME} will be installed in ${${product}_lib_dir}")
+    ##_cet_debug_message( "cet_make_library: ${CML_LIBRARY_NAME} will be installed in ${${product}_lib_dir}")
     install( TARGETS  ${CML_LIBRARY_NAME} 
 	     RUNTIME DESTINATION ${${product}_bin_dir}
 	     LIBRARY DESTINATION ${${product}_lib_dir}

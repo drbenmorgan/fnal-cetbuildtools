@@ -305,7 +305,7 @@ macro( install_source   )
      STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
   endif()
   set(source_install_dir ${product}/${version}/source/${CURRENT_SUBDIR} )
-  message( STATUS "install_source: source code will be installed in ${source_install_dir}" )
+  ##message( STATUS "install_source: source code will be installed in ${source_install_dir}" )
   if( ISRC_LIST )
     if( ISRC_SUBDIRS )
       message( FATAL_ERROR
