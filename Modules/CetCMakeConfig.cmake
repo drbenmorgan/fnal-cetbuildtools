@@ -42,16 +42,27 @@ macro( cet_cmake_config  )
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_UPS_COMMANDS}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_LIBRARY_LIST}")
- 
+
   # add to library list for package configure file
   foreach( my_library ${CONFIG_LIBRARY_LIST} )
     string(TOUPPER  ${my_library} ${my_library}_UC )
     string(TOUPPER  ${product} ${product}_UC )
     set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-    cet_find_library( ${${my_library}_UC} NAMES ${my_library} PATHS ENV ${${product}_UC}_LIB NO_DEFAULT_PATH )" )
+      set( ${${my_library}_UC}  \$ENV{${${product}_UC}_LIB}/lib${my_library}.so )" )
+    #cet_find_library( ${${my_library}_UC} NAMES ${my_library} PATHS ENV ${${product}_UC}_LIB NO_DEFAULT_PATH )" )
+    ##message(STATUS "cet_cmake_config: cet_find_library( ${${my_library}_UC} NAMES ${my_library} PATHS ENV ${${product}_UC}_LIB NO_DEFAULT_PATH )" )
+    ##message(STATUS "cet_cmake_config: set( ${${my_library}_UC}  \$ENV{${${product}_UC}_LIB}/lib${my_library}.so )" )
   endforeach(my_library)
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
- 
+  
+  # add include path to CONFIG_FIND_LIBRARY_COMMANDS
+  ##message(STATUS "cet_cmake_config: ${product}_inc_dir is ${${product}_inc_dir}")
+  if( NOT ${${product}_inc_dir} MATCHES "NONE" )
+    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+      include_directories ( \$ENV{${${product}_UC}_INC} )" )
+  endif()
+  ##message(STATUS "cet_cmake_config: CONFIG_INCLUDE_DIRECTORY is ${CONFIG_INCLUDE_DIRECTORY}")
+
   configure_package_config_file( 
              ${CMAKE_CURRENT_SOURCE_DIR}/product-config.cmake.in
              ${CMAKE_CURRENT_BINARY_DIR}/${product}Config.cmake 
