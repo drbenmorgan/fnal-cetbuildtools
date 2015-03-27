@@ -48,10 +48,10 @@ macro( cet_cmake_config  )
     string(TOUPPER  ${my_library} ${my_library}_UC )
     string(TOUPPER  ${product} ${product}_UC )
     set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
-      set( ${${my_library}_UC}  \$ENV{${${product}_UC}_LIB}/lib${my_library}.so )" )
+      set( ${${my_library}_UC}  \$ENV{${${product}_UC}_LIB}/lib${my_library}\${CMAKE_SHARED_LIBRARY_SUFFIX} )" )
     #cet_find_library( ${${my_library}_UC} NAMES ${my_library} PATHS ENV ${${product}_UC}_LIB NO_DEFAULT_PATH )" )
     ##message(STATUS "cet_cmake_config: cet_find_library( ${${my_library}_UC} NAMES ${my_library} PATHS ENV ${${product}_UC}_LIB NO_DEFAULT_PATH )" )
-    ##message(STATUS "cet_cmake_config: set( ${${my_library}_UC}  \$ENV{${${product}_UC}_LIB}/lib${my_library}.so )" )
+    ##message(STATUS "cet_cmake_config: set( ${${my_library}_UC}  \$ENV{${${product}_UC}_LIB}/lib${my_library}\${CMAKE_SHARED_LIBRARY_SUFFIX} )" )
   endforeach(my_library)
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
   
