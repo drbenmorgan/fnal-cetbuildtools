@@ -30,8 +30,9 @@
 
 # Utility function.
 function(filter_and_compare FILE REF)
+  set(filtered_file "${FILE}-filtered")
   execute_process(COMMAND ${OUTPUT_FILTER} ${OUTPUT_FILTER_ARGS} "${FILE}"
-    OUTPUT_FILE "${FILE}-filtered"
+    OUTPUT_FILE "${filtered_file}"
     RESULT_VARIABLE FILTER_FAILED
     )
 
@@ -39,13 +40,20 @@ function(filter_and_compare FILE REF)
     message(FATAL_ERROR "Production of filtered output from ${FILE} failed.")
   endif()
 
-  execute_process(COMMAND diff -u "${REF}" "${FILE}-filtered"
+  execute_process(COMMAND diff -u "${REF}" "${filtered_file}"
     OUTPUT_VARIABLE DIFF_OUTPUT
+    ERROR_VARIABLE DIFF_ERROR
     RESULT_VARIABLE COMPARE_FAILED
     )
 
   if (COMPARE_FAILED)
-    message(FATAL_ERROR "Comparison of filtered output ${FILE}-filtered with ${REF} failed:${DIFF_OUTPUT}")
+    if (DIFF_ERROR)
+      set(err_message ${DIFF_ERROR})
+    else()
+      set(err_message ${DIFF_OUTPUT})
+    endif()
+    message("Comparison of filtered output ${filtered_file} with ${REF} failed:\n${err_message}")
+    message(FATAL_ERROR "Error comparing ${filtered_file} and ${REF}.")
   endif()
 endfunction()
 
