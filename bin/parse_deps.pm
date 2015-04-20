@@ -11,6 +11,7 @@
 #   [bindir      fq_dir         bin]
 #   [fwdir       -              unspecified]
 #   [gdmldir     -              gdml]
+#   [perllib     -              perl5lib]
 #
 #   product		version
 #   dependent_product	dependent_product_version [distinguishing qualifier|-] [optional|only_for_build]
@@ -325,6 +326,40 @@ sub get_gdml_directory {
   return ($gdmldir);
 }
 
+sub get_perllib {
+  my @params = @_;
+  my $prldir = "none";
+  my $line;
+  my @words;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "prldir" ) {
+         if( ! $words[2] ) { $words[2] = "perllib"; }
+         if( $words[1] eq "product_dir" ) {
+	    $prldir = "\${UPS_PROD_DIR}/".$words[2];
+         } elsif( $words[1] eq "fq_dir" ) {
+	    $prldir = "\${\${UPS_PROD_NAME_UC}_FQ_DIR}/".$words[2];
+         } elsif( $words[1] eq "-" ) {
+	    $prldir = "none";
+	 } else {
+	    print "ERROR: $words[1] is an invalid directory path\n";
+	    print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
+	    print "ERROR: using the default perllib directory path\n";
+	    $prldir = "\${UPS_PROD_DIR}/".$words[2];
+	 }
+      }
+    }
+  }
+  close(PIN);
+  ##print "defining executable directory $prldir\n";
+  return ($prldir);
+}
+
 sub get_python_path {
   my @params = @_;
   my $pypath = "none";
@@ -380,6 +415,8 @@ sub get_product_list {
       } elsif( $words[0] eq "fcldir" ) {
          $get_phash="";
       } elsif( $words[0] eq "gdmldir" ) {
+         $get_phash="";
+      } elsif( $words[0] eq "perllib" ) {
          $get_phash="";
       } elsif( $words[0] eq "fwdir" ) {
          $get_phash="";
@@ -460,6 +497,8 @@ sub get_qualifier_list {
       } elsif( $words[0] eq "fcldir" ) {
          $get_quals="false";
       } elsif( $words[0] eq "gdmldir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "perllib" ) {
          $get_quals="false";
       } elsif( $words[0] eq "fwdir" ) {
          $get_quals="false";

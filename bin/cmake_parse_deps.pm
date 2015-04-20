@@ -9,6 +9,7 @@
 #   [bindir      fq_dir         bin]
 #   [fwdir       -              unspecified]
 #   [gdmldir     -              gdml]
+#   [perllib     -              perl5lib]
 #   [testdir     product_dir    test]
 #
 #   product		version
@@ -247,6 +248,40 @@ sub get_cmake_gdml_directory {
   }
   close(PIN);
   return ($gdmldir);
+}
+
+sub get_cmake_perllib {
+  my @params = @_;
+  my $prldir = "NONE";
+  my $line;
+  my $prlsubdir;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      my @words = split(/\s+/,$line);
+      if( $words[0] eq "prldir" ) {
+	 if( $#words < 2 ) {
+	   $prlsubdir = "perllib";
+	 } else {
+	   $prlsubdir = $words[2];
+	 }
+         if( $words[1] eq "product_dir" ) {
+	    $prldir = "product_dir/$prlsubdir";
+         } elsif( $words[1] eq "fq_dir" ) {
+	    $prldir = "flavorqual_dir/$prlsubdir";
+         } elsif( $words[1] eq "-" ) {
+	    $prldir = "NONE";
+	 } else {
+	    $prldir = "ERROR";
+	 }
+      }
+    }
+  }
+  close(PIN);
+  return ($prldir);
 }
 
 sub get_cmake_test_directory {

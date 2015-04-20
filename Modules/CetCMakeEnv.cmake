@@ -209,6 +209,7 @@ macro(cet_cmake_env)
   include(SetCompilerFlags)
   include(SetFlavorQual)
   include(InstallSource)
+  include(InstallPerllib)
   include(CetCMakeUtils)
   include(CetMake)
   include(CetCMakeConfig)
@@ -246,6 +247,7 @@ macro(cet_cmake_env)
   cet_set_fcl_directory()
   cet_set_fw_directory()
   cet_set_gdml_directory()
+  cet_set_perllib_directory()
   cet_set_test_directory()
 
   set(CETPKG_BUILD $ENV{CETPKG_BUILD})
@@ -461,6 +463,45 @@ macro( cet_set_gdml_directory )
   endif()
   #message( STATUS "cet_set_gdml_directory: ${product}_gdml_dir is ${${product}_gdml_dir}")
 endmacro( cet_set_gdml_directory )
+
+macro( cet_set_perllib_directory )
+  # find $CETBUILDTOOLS_DIR/bin/report_perllib
+  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
+  if( ${product} MATCHES "cetbuildtools" )
+      # building cetbuildtools - use our copy
+      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
+      FIND_PROGRAM( REPORT_PERLLIB report_perllib
+                    ${PROJECT_SOURCE_DIR}/bin  )
+  elseif( NOT CETBUILDTOOLS_DIR )
+      FIND_PROGRAM( REPORT_PERLLIB report_perllib )
+  else()
+      FIND_PROGRAM( REPORT_PERLLIB report_perllib
+                    ${CETBUILDTOOLS_DIR}/bin  )
+  endif ()
+  #message(STATUS "REPORT_PERLLIB: ${REPORT_PERLLIB}")
+  if( NOT REPORT_PERLLIB )
+      message(FATAL_ERROR "Can't find report_perllib")
+  endif()
+  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
+  execute_process(COMMAND ${REPORT_PERLLIB} 
+                          ${cet_ups_dir} 
+                  OUTPUT_VARIABLE REPORT_PERLLIB_MSG
+		  OUTPUT_STRIP_TRAILING_WHITESPACE
+		  )
+  #message( STATUS "${REPORT_PERLLIB} returned ${REPORT_PERLLIB_MSG}")
+  if( ${REPORT_PERLLIB_MSG} MATCHES "DEFAULT" )
+     set( ${product}_perllib "NONE" CACHE STRING "Package perllib directory" FORCE )
+  elseif( ${REPORT_PERLLIB_MSG} MATCHES "NONE" )
+     set( ${product}_perllib ${REPORT_PERLLIB_MSG} CACHE STRING "Package perllib directory" FORCE )
+  elseif( ${REPORT_PERLLIB_MSG} MATCHES "ERROR" )
+     set( ${product}_perllib ${REPORT_PERLLIB_MSG} CACHE STRING "Package perllib directory" FORCE )
+  else()
+    STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" fdir1 "${REPORT_PERLLIB_MSG}" )
+    STRING( REGEX REPLACE "product_dir" "${product}/${version}" fdir2 "${fdir1}" )
+    set( ${product}_perllib ${fdir2}  CACHE STRING "Package perllib directory" FORCE )
+  endif()
+  #message( STATUS "cet_set_perllib_directory: ${product}_perllib is ${${product}_perllib}")
+endmacro( cet_set_perllib_directory )
 
 macro( cet_set_inc_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_incdir

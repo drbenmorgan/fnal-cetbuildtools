@@ -264,7 +264,8 @@ sub create_table_bottom {
   my $def_python_path = get_python_path( $pfile );
   my $fw_directory = get_fw_directory( $pfile );
   my $gdml_directory = get_gdml_directory( $pfile );
-  
+  my $prl_directory = get_perllib( $pfile );
+ 
 
   my $pvername = $product."_VERSION";
   print TBL "\n";
@@ -344,6 +345,15 @@ sub create_table_bottom {
   } else {
   print TBL "    # add $gdml_directory directory to FW_SEARCH_PATH\n";
   print TBL "    pathPrepend(FW_SEARCH_PATH, $gdml_directory )\n";
+  }
+  if( $prl_directory eq "default" ) {
+  print TBL "    # add the perllib directory to PERL5LIB\n";
+  print TBL "    pathPrepend(PERL5LIB, \${UPS_PROD_DIR}/perllib )\n";
+  print TBL "\n";
+  } elsif ( "$prl_directory" eq "none" )   {
+  } else {
+  print TBL "    # add $prl_directory directory to PERL5LIB\n";
+  print TBL "    pathPrepend(PERL5LIB, $prl_directory )\n";
   }
   print TBL "\n";
   if( $have_fragment ) {

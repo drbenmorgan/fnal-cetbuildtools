@@ -12,6 +12,7 @@ install_scripts( LIST buildtool
   report_fcldir
   report_fwdir
   report_gdmldir
+  report_perllib
   report_testdir
   report_product_info
   migrate-package
