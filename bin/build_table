@@ -351,6 +351,7 @@ sub create_table_bottom {
   print TBL "    pathPrepend(PERL5LIB, \${UPS_PROD_DIR}/perllib )\n";
   print TBL "\n";
   } elsif ( "$prl_directory" eq "none" )   {
+  ##print TBL "    # no perllib directory\n";
   } else {
   print TBL "    # add $prl_directory directory to PERL5LIB\n";
   print TBL "    pathPrepend(PERL5LIB, $prl_directory )\n";

@@ -338,7 +338,7 @@ sub get_perllib {
     } elsif ( $line !~ /\w+/ ) {
     } else {
       @words = split(/\s+/,$line);
-      if( $words[0] eq "prldir" ) {
+      if( $words[0] eq "perllib" ) {
          if( ! $words[2] ) { $words[2] = "perllib"; }
          if( $words[1] eq "product_dir" ) {
 	    $prldir = "\${UPS_PROD_DIR}/".$words[2];
