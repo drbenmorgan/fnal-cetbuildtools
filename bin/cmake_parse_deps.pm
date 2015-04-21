@@ -262,7 +262,7 @@ sub get_cmake_perllib {
     } elsif ( $line !~ /\w+/ ) {
     } else {
       my @words = split(/\s+/,$line);
-      if( $words[0] eq "prldir" ) {
+      if( $words[0] eq "perllib" ) {
 	 if( $#words < 2 ) {
 	   $prlsubdir = "perllib";
 	 } else {
