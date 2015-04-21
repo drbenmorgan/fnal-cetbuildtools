@@ -26,6 +26,16 @@
 #
 #
 
+macro( _cet_perl_plugin_version )
+
+configure_file($ENV{CETLIB_DIR}/perllib/PluginVersionInfo.pm.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
+  @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
+  DESTINATION ${product}/${version}/perllib/CetSkel/${product}/)
+
+endmacro( _cet_perl_plugin_version )
+
 macro( _cet_copy_perllib )
   cmake_parse_arguments( CPPRL "" "SUBDIR;WORKING_DIRECTORY" "LIST" ${ARGN})
   set( mrb_build_dir $ENV{MRB_BUILDDIR} )
@@ -63,7 +73,7 @@ macro( _cet_install_perllib_without_list   )
   if( IPRL_SUBDIRS )
     foreach( sub ${IPRL_SUBDIRS} )
       FILE(GLOB subdir_prl_files
-                ${sub}/[^.]*.gdml  
+                ${sub}/[^.]*.pm  
 		${sub}/README
 		)
       #message( STATUS "found ${sub} files ${subdir_prl_files}")
@@ -84,6 +94,7 @@ macro( install_perllib   )
   set(perllib_install_dir ${${product}_perllib} )
   message( STATUS "install_perllib: perllib scripts will be installed in ${perllib_install_dir}" )
   #message( STATUS "install_perllib: IPRL_SUBDIRS is ${IPRL_SUBDIRS}")
+  _cet_perl_plugin_version()
 
   if( IPRL_LIST )
     if( IPRL_SUBDIRS )
