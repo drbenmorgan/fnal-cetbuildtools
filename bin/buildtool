@@ -909,6 +909,11 @@ elif [[ $(real_dir "$CETPKG_BUILD") == "${HOME}" ]] || \
   exit 1
 fi
 
+if [[ "$generator" == ninja ]] && ! type -t ninja 2>&1 >/dev/null; then
+  echo "ERROR: generator is specified as ninja, but ninja is not available. Product not set up?" 1>&2
+  exit 1
+fi
+
 set_vars_from_report_file
 
 if [[ -z "$CETPKG_SOURCE" ]] || \
