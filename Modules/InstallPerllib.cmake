@@ -20,8 +20,8 @@
 # Recommended use:
 #
 # install_perllib( [SUBDIRS subdirectory_list]
-#                [EXTRAS extra_files]
-#                [EXCLUDES exclusions] )
+#                  [EXTRAS extra_files]
+#                  [EXCLUDES exclusions] )
 # install_perllib( LIST file_list )
 #
 #
@@ -58,13 +58,13 @@ macro( _cet_copy_perllib )
 endmacro( _cet_copy_perllib )
 
 macro( _cet_install_perllib_without_list   )
-  #message( STATUS "perl lib scripts will be installed in ${perllib_install_dir}" )
+  #message( STATUS "_cet_install_perllib_without_list: perl lib scripts will be installed in ${perllib_install_dir}" )
   FILE(GLOB prl_files [^.]*.pm README )
   if( IPRL_EXCLUDES )
     LIST( REMOVE_ITEM prl_files ${IPRL_EXCLUDES} )
   endif()
   if( prl_files )
-    #message( STATUS "installing perl lib files ${prl_files} in ${perllib_install_dir}")
+    #message( STATUS "_cet_install_perllib_without_list: installing perl lib files ${prl_files} in ${perllib_install_dir}")
     _cet_copy_perllib( LIST ${prl_files} )
     INSTALL ( FILES ${prl_files}
               DESTINATION ${perllib_install_dir} )
@@ -91,7 +91,13 @@ endmacro( _cet_install_perllib_without_list )
 
 macro( install_perllib   )
   cmake_parse_arguments( IPRL "" "" "SUBDIRS;LIST;EXTRAS;EXCLUDES" ${ARGN})
-  set(perllib_install_dir ${${product}_perllib} )
+  if( PACKAGE_TOP_DIRECTORY )
+     STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}(.*)" "\\1" TEST_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  else()
+     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" TEST_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
+  endif()
+  STRING( REGEX REPLACE "^/${${product}_perllib_subdir}(.*)" "\\1" CURRENT_SUBDIR "${TEST_SUBDIR}" )
+  set(perllib_install_dir ${${product}_perllib}${CURRENT_SUBDIR})
   message( STATUS "install_perllib: perllib scripts will be installed in ${perllib_install_dir}" )
   #message( STATUS "install_perllib: IPRL_SUBDIRS is ${IPRL_SUBDIRS}")
   _cet_perl_plugin_version()
