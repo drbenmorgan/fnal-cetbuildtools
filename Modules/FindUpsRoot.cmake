@@ -5,6 +5,13 @@
 
 include(CheckUpsVersion)
 
+function(_set_root_lib_vars)
+  foreach (ROOTLIB ${ARGN})
+    string(TOUPPER ${ROOTLIB} ROOTLIB_UC)
+    set(ROOT_${ROOTLIB_UC} ${ROOTSYS}/lib/lib${ROOTLIB}.so PARENT_SCOPE)
+  endforeach()
+endfunction()
+
 # since variables are passed, this is implemented as a macro
 macro( find_ups_root minimum )
 
@@ -60,95 +67,29 @@ endif()
 include_directories ( $ENV{ROOT_INC} )
 
 # define ROOT libraries
-find_library(ROOT_ASIMAGE NAMES ASImage PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_ASIMAGEGUI NAMES ASImageGui PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_CINT NAMES Cint PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_CINTEX NAMES Cintex PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_CORE NAMES Core PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_EG NAMES EG PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_EGPYTHIA6 NAMES EGPythia6 PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_EVE NAMES Eve PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_FFTW NAMES FFTW PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_FITPANEL NAMES FitPanel PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_FOAM NAMES Foam PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_FTGL NAMES FTGL PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_FUMILI NAMES Fumili PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GDML NAMES Gdml PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GED NAMES Ged PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GENETIC NAMES Genetic PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GENVECTOR NAMES GenVector PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GEOM NAMES Geom PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GEOMBUILDER NAMES GeomBuilder PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GEOMPAINTER NAMES GeomPainter PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GLEW NAMES GLEW PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GPAD NAMES Gpad PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GRAF NAMES Graf PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GRAF3D NAMES Graf3d PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GUI NAMES Gui PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GUIBLD NAMES GuiBld PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GUIHTML NAMES GuiHtml PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GVIZ3D NAMES Gviz3d PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GX11 NAMES GX11 PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_GX11TTF NAMES GX11TTF PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_HBOOK NAMES Hbook PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_HIST NAMES Hist PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_HISTPAINTER NAMES HistPainter PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_HTML NAMES Html PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_KRB5AUTH NAMES Krb5Auth PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_MATHCORE NAMES MathCore PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_MATRIX NAMES Matrix PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_MEMSTAT NAMES MemStat PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_MINICERN NAMES minicern PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_MINUIT NAMES Minuit PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_MINUIT2 NAMES Minuit2 PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_MLP NAMES MLP PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_NET NAMES Net PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_NEW NAMES New PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_PHYSICS NAMES Physics PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_POSTSCRIPT NAMES Postscript PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_PROOF NAMES Proof PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_PROOFBENCH NAMES ProofBench PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_PROOFDRAW NAMES ProofDraw PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_PROOFPLAYER NAMES ProofPlayer PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_PYROOT NAMES PyROOT PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_QUADP NAMES Quadp PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_RECORDER NAMES Recorder PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_REFLEX NAMES Reflex PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_RGL NAMES RGL PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_RINT NAMES Rint PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_RIO NAMES RIO PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_ROOTAUTH NAMES RootAuth PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_SESSIONVIEWER NAMES SessionViewer PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_SMATRIX NAMES Smatrix PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_SPECTRUM NAMES Spectrum PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_SPECTRUMPAINTER NAMES SpectrumPainter PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_SPLOT NAMES SPlot PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_SQLIO NAMES SQLIO PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_SRVAUTH NAMES SrvAuth PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_THREAD NAMES Thread PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_TMVA NAMES TMVA PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_TREE NAMES Tree PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_TREEPLAYER NAMES TreePlayer PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_TREEVIEWER NAMES TreeViewer PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_VMC NAMES VMC PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_X3D NAMES X3d PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_XMLIO NAMES XMLIO PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
-find_library(ROOT_XMLPARSER NAMES XMLParser PATHS ${ROOTSYS}/lib NO_DEFAULT_PATH)
+_set_root_lib_vars(
+  ASImage ASImageGui Cint Cintex Core EG EGPythia6 Eve FFTW FitPanel
+  Foam FTGL Fumili Gdml Ged Genetic GenVector Geom GeomBuilder
+  GeomPainter GLEW Gpad Graf Graf3d Gui GuiBld GuiHtml Gviz3d GX11
+  GX11TTF Hbook Hist HistPainter Html Krb5Auth MathCore Matrix MemStat
+  minicern Minuit Minuit2 MLP Net New Physics Postscript Proof
+  ProofBench ProofDraw ProofPlayer PyROOT Quadp Recorder Reflex RGL Rint
+  RIO RootAuth SessionViewer Smatrix Spectrum SpectrumPainter SPlot
+  SQLIO SrvAuth Thread TMVA Tree TreePlayer TreeViewer VMC X3d XMLIO
+  XMLParser
+)
 
 include_directories ( ${ROOTSYS}/include )
+
 # define genreflex executable
-find_program( ROOT_GENREFLEX NAMES genreflex PATHS $ENV{ROOTSYS}/bin NO_DEFAULT_PATH)
+set(ROOT_GENREFLEX ${ROOTSYS}/bin/genreflex)
+
 # check for the need to cleanup after genreflex
-_check_if_version_greater( ROOT ${ROOT_VERSION} v5_28_00d )
-   if ( ${product_version_less} MATCHES "TRUE" )
-      set ( GENREFLEX_CLEANUP TRUE )
-   else()
-      set ( GENREFLEX_CLEANUP FALSE )
-   endif()
-   #message(STATUS "genreflex cleanup status: ${GENREFLEX_CLEANUP}")
+check_ups_version(root ${ROOT_VERSION} v5_28_00d PRODUCT_OLDER_VAR GENREFLEX_CLEANUP)
+#message(STATUS "genreflex cleanup status: ${GENREFLEX_CLEANUP}")
 
 # define rootcint executable
-find_program( ROOTCINT NAMES rootcint PATHS ${ROOTSYS}/bin )
+set(ROOTCINT ${ROOTSYS}/bin/rootcint)
 
 # define some useful library lists
 set(ROOT_BASIC_LIB_LIST ${ROOT_CORE}
