@@ -35,7 +35,6 @@ set( GENREFLEX_FLAGS
   --deep
   --iocomments
   --fail_on_warnings
-  --capabilities=classes_ids.cc
   --gccxmlopt=--gccxml-compiler
   --gccxmlopt=$ENV{GCC_FQ_DIR}/bin/g++
   -D_REENTRANT
@@ -45,6 +44,11 @@ set( GENREFLEX_FLAGS
   -DPROJECT_VERSION="${version}"
   -D__STRICT_ANSI__
 )
+
+check_ups_version(root ${ROOT_VERSION} v6_00_00
+  PRODUCT_MATCHES_VAR BD_WANT_ROOTMAP
+  PRODUCT_OLDER_VAR BD_WANT_CAP_FILE
+  )
 
 macro( _set_dictionary_name )
    if( PACKAGE_TOP_DIRECTORY )
@@ -74,42 +78,42 @@ function( _generate_dictionary dictname )
   endforeach(def)
   #message(STATUS "_GENERATE_DICTIONARY: using genreflex flags ${GENREFLEX_FLAGS} ")
   #message(STATUS "_GENERATE_DICTIONARY: using genreflex cleanup ${GENREFLEX_CLEANUP} ")
-  if( ${GENREFLEX_CLEANUP} MATCHES "TRUE" )
-  add_custom_command(
-     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
-            ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp
-     COMMAND ${ROOT_GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
-        	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
-		 -I ${CMAKE_SOURCE_DIR}
-		 -I ${CMAKE_CURRENT_SOURCE_DIR}
-		 ${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
-        	 -o ${dictname}_dict.cpp || { rm -f ${dictname}_dict.cpp\; /bin/false\; }
-     COMMAND ${CMAKE_COMMAND} -E copy classes_ids.cc ${dictname}_map.cpp
-     COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
-     IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
-     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
-     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  else()
-  add_custom_command(
-     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
-            ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp
-     COMMAND ${ROOT_GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
-        	 -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
-		 -I ${CMAKE_SOURCE_DIR}
-		 -I ${CMAKE_CURRENT_SOURCE_DIR}
-		 ${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
-        	 -o ${dictname}_dict.cpp 
-     COMMAND ${CMAKE_COMMAND} -E copy classes_ids.cc ${dictname}_map.cpp
-     COMMAND ${CMAKE_COMMAND} -E remove -f classes_ids.cc
-     IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
-     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
-     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
+  if (GENREFLEX_CLEANUP)
+    set(CLEANUP_COMMAND  || { rm -f ${dictname}_dict.cpp ${dictname}_map.cpp "\;" /bin/false "\;" })
   endif()
+
+  if (BD_WANT_ROOTMAP)
+    set(ROOTMAP_OUTPUT ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict.rootmap)
+    list(APPEND GENREFLEX_FLAGS
+      --rootmap-lib=${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict${CMAKE_SHARED_LIBRARY_SUFFIX}
+      --rootmap=${ROOTMAP_OUTPUT}
+      )
+  endif()
+  if (BD_WANT_CAP_FILE)
+    set(SOURCE_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp)
+    list(APPEND GENREFLEX_FLAGS
+      --capabilities=${SOURCE_OUTPUT}
+      )
+  endif()
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
+    ${SOURCE_OUTPUT} ${ROOTMAP_OUTPUT}
+    COMMAND ${ROOT_GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
+    -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
+		-I ${CMAKE_SOURCE_DIR}
+		-I ${CMAKE_CURRENT_SOURCE_DIR}
+		${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
+    -o ${dictname}_dict.cpp
+    ${CLEANUP_COMMAND}
+    IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
   # set variable for install_source
-  set(cet_generated_code ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp 
-                         ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp PARENT_SCOPE)
+  set(cet_generated_code
+    ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
+    ${SOURCE_OUTPUT}
+    PARENT_SCOPE)
 endfunction( _generate_dictionary )
 
 # dictionaries are built in art with this
@@ -166,25 +170,36 @@ function ( build_dictionary )
   #message(STATUS "BUILD_DICTIONARY: link dictionary ${dictname} with ${dictionary_liblist} ")
   _generate_dictionary( ${dictname} )
   add_library(${dictname}_dict SHARED ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp )
-  add_library(${dictname}_map  SHARED ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp )
   SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
-                              ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp
-                              PROPERTIES GENERATED 1)
+    ${SOURCE_OUTPUT}
+    PROPERTIES GENERATED 1)
   if (BD_COMPILE_FLAGS)
-    set_target_properties(${dictname}_dict ${dictname}_map
+    set_target_properties(${dictname}_dict
       PROPERTIES COMPILE_FLAGS ${BD_COMPILE_FLAGS})
+    if (BD_WANT_CAP_FILE)
+      set_target_properties(${dictname}_map
+        PROPERTIES COMPILE_FLAGS ${BD_COMPILE_FLAGS})
+    endif()
   endif()
   target_link_libraries( ${dictname}_dict ${dictionary_liblist} )
-  target_link_libraries( ${dictname}_map  ${dictionary_liblist} )
-  add_dependencies( ${dictname}_map  ${dictname}_dict )
+  if (BD_WANT_CAP_FILE)
+    add_library(${dictname}_map SHARED ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_map.cpp )
+    target_link_libraries( ${dictname}_map ${dictionary_liblist} )
+    add_dependencies(${dictname}_map ${dictname}_dict)
+  endif()
   if( NOT BD_NO_INSTALL )
     if (cet_generated_code) # Local scope, set by _generate_dictionary.
       set(cet_generated_code ${cet_generated_code} PARENT_SCOPE)
     endif()
-     #message( STATUS "BUILD_DICTIONARY: installing ${dictname}_dict and ${dictname}_map" )
+     #message( STATUS "BUILD_DICTIONARY: installing ${dictname}_dict" )
      install ( TARGETS ${dictname}_dict DESTINATION ${flavorqual_dir}/lib )
-     install ( TARGETS ${dictname}_map  DESTINATION ${flavorqual_dir}/lib )
      # add to library list for package configure file
      cet_add_to_library_list( ${dictname}_dict )
+     if (BD_WANT_CAP_FILE)
+       install ( TARGETS ${dictname}_map DESTINATION ${flavorqual_dir}/lib )
+     endif()
+     if (BD_WANT_ROOTMAP)
+       install ( FILES ${ROOTMAP_OUTPUT} DESTINATION ${flavorqual_dir}/lib )
+     endif()
   endif()
 endfunction ( build_dictionary )
