@@ -192,23 +192,29 @@ macro( cet_make )
   #message(STATUS "cet_make debug: listed files ${cet_file_list}")
   FILE( GLOB src_files *.c *.cc *.cpp *.C *.cxx )
   FILE( GLOB ignore_dot_files  .*.c .*.cc .*.cpp .*.C .*.cxx )
-  FILE( GLOB ignore_plugins  *_dict.cpp
-                             *_map.cpp
-			     *_generator.cc
-			     *_source.cc
-			     *_service.cc
-			     *_module.cc )
+  FILE( GLOB ignore_plugins
+		*_generator.cc
+		*_module.cc
+		*_plugin.cc
+		*_service.cc
+		*_source.cc
+    *_dict.cpp
+    *_map.cpp
+    )
   # check subdirectories and also CMAKE_CURRENT_BINARY_DIR for generated code
   LIST(APPEND CM_SUBDIRS ${CMAKE_CURRENT_BINARY_DIR})
   foreach( sub ${CM_SUBDIRS} )
      FILE( GLOB subdir_src_files ${sub}/*.c ${sub}/*.cc ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx )
      FILE( GLOB subdir_ignore_dot_files ${sub}/.*.c ${sub}/.*.cc ${sub}/.*.cpp ${sub}/.*.C ${sub}/.*.cxx )
-     FILE( GLOB subdir_ignore_plugins  ${sub}/*_dict.cpp
-                        	       ${sub}/*_map.cpp
-				       ${sub}/*_generator.cc
-                                       ${sub}/*_source.cc
-				       ${sub}/*_service.cc
-				       ${sub}/*_module.cc )
+     FILE( GLOB subdir_ignore_plugins
+		   *_generator.cc
+		   *_module.cc
+		   *_plugin.cc
+		   *_service.cc
+		   *_source.cc
+       *_dict.cpp
+       *_map.cpp
+       )
      if( subdir_src_files )
        list(APPEND  src_files ${subdir_src_files})
      endif( subdir_src_files )
