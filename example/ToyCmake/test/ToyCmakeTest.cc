@@ -14,6 +14,9 @@ int main()
   mth.setval(y);
   assert( mth.calculate(x) == 80. );
 
+  // using x explicitly
+  mth.setval(x);
+
   return 0;
 }
 
