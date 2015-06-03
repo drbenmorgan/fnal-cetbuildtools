@@ -4,12 +4,25 @@
 #  minimum - minimum version required
 
 include(CheckUpsVersion)
+include(CMakeParseArguments)
 
 function(_set_root_lib_vars)
+  cmake_parse_arguments(SRLV "OPTIONAL" "" "" ${ARGN})
   foreach (ROOTLIB ${ARGN})
     string(TOUPPER ${ROOTLIB} ROOTLIB_UC)
-    set(ROOT_${ROOTLIB_UC} ${ROOTSYS}/lib/lib${ROOTLIB}.so PARENT_SCOPE)
+    if (EXISTS ${ROOTSYS}/lib/lib${ROOTLIB}.so)
+      set(ROOT_${ROOTLIB_UC} ${ROOTSYS}/lib/lib${ROOTLIB}.so PARENT_SCOPE)
+    elseif (NOT SRLV_OPTIONAL)
+      message(SEND_ERROR "find_ups_root: expected ROOT library lib${ROOTLIB}.so missing.")
+    endif()
   endforeach()
+endfunction()
+
+function(_set_and_check_prog VAR PROG)
+  if (NOT EXISTS ${PROG})
+    message(SEND_ERROR "find_ups_root: expected ROOT program ${PROG} missing.")
+  endif()
+  set(${VAR} ${PROG} PARENT_SCOPE)
 endfunction()
 
 # since variables are passed, this is implemented as a macro
@@ -68,28 +81,39 @@ include_directories ( $ENV{ROOT_INC} )
 
 # define ROOT libraries
 _set_root_lib_vars(
-  ASImage ASImageGui Cint Cintex Core EG EGPythia6 Eve FFTW FitPanel
+  ASImage ASImageGui Core EG Eve FFTW FitPanel
   Foam FTGL Fumili Gdml Ged Genetic GenVector Geom GeomBuilder
   GeomPainter GLEW Gpad Graf Graf3d Gui GuiBld GuiHtml Gviz3d GX11
   GX11TTF Hbook Hist HistPainter Html Krb5Auth MathCore Matrix MemStat
   minicern Minuit Minuit2 MLP Net New Physics Postscript Proof
-  ProofBench ProofDraw ProofPlayer PyROOT Quadp Recorder Reflex RGL Rint
+  ProofBench ProofDraw ProofPlayer PyROOT Quadp Recorder RGL Rint
   RIO RootAuth SessionViewer Smatrix Spectrum SpectrumPainter SPlot
   SQLIO SrvAuth Thread TMVA Tree TreePlayer TreeViewer VMC X3d XMLIO
   XMLParser
 )
 
+_set_root_lib_vars(EGPythia6 OPTIONAL)
+
+check_ups_version(root ${ROOT_VERSION} v6_00_00
+  PRODUCT_OLDER_VAR HAVE_ROOT5
+  PRODUCT_MATCHES_VAR HAVE_ROOT6
+  )
+
+if (HAVE_ROOT5)
+  _set_root_lib_vars(Cint Cintex Reflex)
+endif()
+
 include_directories ( ${ROOTSYS}/include )
 
 # define genreflex executable
-set(ROOT_GENREFLEX ${ROOTSYS}/bin/genreflex)
+_set_and_check_prog(ROOT_GENREFLEX ${ROOTSYS}/bin/genreflex)
 
 # check for the need to cleanup after genreflex
 check_ups_version(root ${ROOT_VERSION} v5_28_00d PRODUCT_OLDER_VAR GENREFLEX_CLEANUP)
 #message(STATUS "genreflex cleanup status: ${GENREFLEX_CLEANUP}")
 
 # define rootcint executable
-set(ROOTCINT ${ROOTSYS}/bin/rootcint)
+_set_and_check_prog(ROOTCINT ${ROOTSYS}/bin/rootcint)
 
 # define some useful library lists
 set(ROOT_BASIC_LIB_LIST ${ROOT_CORE}

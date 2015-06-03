@@ -193,11 +193,11 @@ macro( cet_make )
   FILE( GLOB src_files *.c *.cc *.cpp *.C *.cxx )
   FILE( GLOB ignore_dot_files  .*.c .*.cc .*.cpp .*.C .*.cxx )
   FILE( GLOB ignore_plugins
-		*_generator.cc
-		*_module.cc
-		*_plugin.cc
-		*_service.cc
-		*_source.cc
+    *_generator.cc
+    *_module.cc
+    *_plugin.cc
+    *_service.cc
+    *_source.cc
     *_dict.cpp
     *_map.cpp
     )
@@ -207,13 +207,13 @@ macro( cet_make )
      FILE( GLOB subdir_src_files ${sub}/*.c ${sub}/*.cc ${sub}/*.cpp ${sub}/*.C ${sub}/*.cxx )
      FILE( GLOB subdir_ignore_dot_files ${sub}/.*.c ${sub}/.*.cc ${sub}/.*.cpp ${sub}/.*.C ${sub}/.*.cxx )
      FILE( GLOB subdir_ignore_plugins
-		   *_generator.cc
-		   *_module.cc
-		   *_plugin.cc
-		   *_service.cc
-		   *_source.cc
-       *_dict.cpp
-       *_map.cpp
+       ${sub}/*_generator.cc
+       ${sub}/*_module.cc
+       ${sub}/*_plugin.cc
+       ${sub}/*_service.cc
+       ${sub}/*_source.cc
+       ${sub}/*_dict.cpp
+       ${sub}/*_map.cpp
        )
      if( subdir_src_files )
        list(APPEND  src_files ${subdir_src_files})
