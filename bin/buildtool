@@ -680,8 +680,17 @@ function do_work() {
 }
 
 # Defaults.
-generator=make
-generator_arg="-G\"Unix Makefiles\""
+check_system_generator="$(cmake_sys_var CMAKE_GENERATOR)"
+if [[ "$check_system_generator" == "Ninja" ]]; then
+    generator_arg=-GNinja
+    generator=ninja
+else
+    generator_arg="G\"Unix Makefiles\""
+    generator=make
+fi
+##  echo "INFO: cmake system generator is $check_system_generator" 1>&2
+##  echo "INFO: cmake generator arg is $generator_arg" 1>&2
+##  echo "INFO: cmake generator is $generator"
 log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( tred = 1 ))
 
