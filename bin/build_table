@@ -217,14 +217,17 @@ sub create_quals {
     print TBL "Qualifiers = \"$qlist[$create_quals::i][0]\"\n";
     print TBL "\n";
     if( $have_fq ) {
-      print TBL "  Action = GetFQDir\n";
-      print TBL "    if ( test -z \${CET_SUBDIR} )\n";
-      print TBL "          envSet( \${UPS_PROD_NAME_UC}_FQ_DIR, \${\${UPS_PROD_NAME_UC}_DIR}/\`get-directory-name subdir\`.$qdot )\n";
-      print TBL "     else()\n";
-      print TBL "       envSet( \${UPS_PROD_NAME_UC}_FQ_DIR, \${\${UPS_PROD_NAME_UC}_DIR}/\${CET_SUBDIR}.$qdot )\n";
-      print TBL "     endif ( test -z \${CET_SUBDIR} )\n";
-      print TBL "     fileTest( \${\${UPS_PROD_NAME_UC}_FQ_DIR}, -d, \"\${\${UPS_PROD_NAME_UC}_FQ_DIR} directory not found: SETUP ABORTED\")\n";
-      print TBL "\n";
+      print TBL <<EOF;
+
+  Action = GetFQDir
+    if ( printenv CET_SUBDIR > /dev/null )
+      envSet( \${UPS_PROD_NAME_UC}_FQ_DIR, \${\${UPS_PROD_NAME_UC}_DIR}/\${CET_SUBDIR}.${qdot} )
+    else()
+      envSet( \${UPS_PROD_NAME_UC}_FQ_DIR, \${\${UPS_PROD_NAME_UC}_DIR}/\`get-directory-name subdir\`.${qdot} )
+    endif ( printenv CET_SUBDIR > /dev/null )
+    fileTest( \${\${UPS_PROD_NAME_UC}_FQ_DIR}, -d, \"\${\${UPS_PROD_NAME_UC}_FQ_DIR} directory not found: SETUP ABORTED\")
+
+EOF
     }
     print TBL "  Action = GetProducts\n";
     if ( $have_flagfile ) {
