@@ -336,6 +336,10 @@ EOF
 function cmake_var() {
   ( cd "$CETPKG_BUILD" && cmake -N -L | grep -e '^'"$1"':' | cut -d= -f2- ) 2>/dev/null
 }
+# Obtain a given CMake system variable.
+function cmake_sys_var() {
+  ( cd "$CETPKG_BUILD" && cmake -N --system-information | grep -e '^'"$1"':' | cut -d= -f2- ) 2>/dev/null
+} 
 
 function package_name() {
     echo "$(cmake_var product)"
