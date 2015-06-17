@@ -31,10 +31,9 @@ macro( _cet_perl_plugin_version )
 configure_file($ENV{CETLIB_DIR}/perllib/PluginVersionInfo.pm.in
   ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
   @ONLY)
-  cet_add_to_pm_list( CetSkelPlugins/${product}/PluginVersionInfo.pm )
+  cet_add_to_pm_list( /CetSkelPlugins/${product}/PluginVersionInfo.pm )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
-  DESTINATION ${perllib_install_dir}/CetSkelPlugins/${product}/)
-  ##DESTINATION ${product}/${version}/perllib/CetSkelPlugins/${product}/)
+  DESTINATION ${perllib_install_dir}/${product}/)
 
 endmacro( _cet_perl_plugin_version )
 
@@ -61,6 +60,8 @@ endmacro( _cet_copy_perllib )
 macro( _cet_perllib_config_setup  )
     foreach( pmfile ${ARGN} )
       get_filename_component( pmfilename "${pmfile}" NAME )
+      message( STATUS "_cet_perllib_config_setup: pmfilename ${pmfilename}" )
+      message( STATUS "_cet_perllib_config_setup: CURRENT_SUBDIR ${CURRENT_SUBDIR}" )
       cet_add_to_pm_list( ${CURRENT_SUBDIR}/${pmfilename} )
     endforeach( pmfile )
 endmacro( _cet_perllib_config_setup )
