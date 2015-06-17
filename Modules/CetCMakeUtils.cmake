@@ -29,6 +29,7 @@ macro(_cet_init_config_var)
       CACHE STRING "find_library directives for config" FORCE)
   set(CONFIG_LIBRARY_LIST "" CACHE INTERNAL "libraries created by this package" )
   set(CONFIG_PM_LIST "" CACHE INTERNAL "perl libraries created by this package" )
+  set(CONFIG_PM_VERSION "" CACHE INTERNAL "just for PluginVersionInfo.pm" )
   # we use cet_product_list to make sure there is only one find_ups_product call
   set(cet_product_list "" CACHE STRING "list of ups products" FORCE)
   set(cet_find_library_list "" CACHE STRING "list of calls to cet_find_library" FORCE)

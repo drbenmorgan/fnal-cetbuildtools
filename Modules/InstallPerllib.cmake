@@ -31,7 +31,11 @@ macro( _cet_perl_plugin_version )
 configure_file($ENV{CETLIB_DIR}/perllib/PluginVersionInfo.pm.in
   ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
   @ONLY)
-  cet_add_to_pm_list( /CetSkelPlugins/${product}/PluginVersionInfo.pm )
+
+  ##cet_add_to_pm_list( /CetSkelPlugins/${product}/PluginVersionInfo.pm )
+  set(CONFIG_PM_VERSION "PluginVersionInfo.pm"
+	 CACHE INTERNAL "just for PluginVersionInfo.pm" )
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
   DESTINATION ${perllib_install_dir}/${product}/)
 
