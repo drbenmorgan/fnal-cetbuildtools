@@ -14,7 +14,9 @@
 #
 # cet_add_to_pm_list()
 #    Used internally and by art cmake modules
-# 
+#
+# cet_find_cetskelgen()
+#
 
 macro(_cet_init_config_var)
   # initialize cmake config file fragments
@@ -61,3 +63,22 @@ macro(cet_find_library)
   # call find_library
   find_library( ${ARGN} )
 endmacro(cet_find_library)
+
+macro( cet_find_cetskelgen )
+   set( CETLIB_FQ_DIR $ENV{CETLIB_FQ_DIR} )
+   if( ${product} MATCHES "cetlib" )
+       # building cetlib - use our copy
+       message(STATUS "cet_find_cetskelgen: looking in ${PROJECT_SOURCE_DIR}/perllib")
+       FIND_PROGRAM( CETSKELGEN_EXE cetskelgen
+                     ${PROJECT_SOURCE_DIR}/perllib  )
+   elseif( NOT CETLIB_FQ_DIR )
+       FIND_PROGRAM( CETSKELGEN_EXE cetskelgen )
+   else()
+       FIND_PROGRAM( CETSKELGEN_EXE cetskelgen
+                     ${CETLIB_FQ_DIR}/bin  )
+   endif ()
+   if( NOT CETSKELGEN_EXE )
+       message(FATAL_ERROR "Can't find cetskelgen")
+   endif()
+   message(STATUS "cet_find_cetskelgen: CETSKELGEN_EXE: ${CETSKELGEN_EXE}")
+endmacro( cet_find_cetskelgen )
