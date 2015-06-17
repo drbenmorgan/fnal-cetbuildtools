@@ -68,7 +68,7 @@ macro( cet_find_cetskelgen )
    set( CETLIB_FQ_DIR $ENV{CETLIB_FQ_DIR} )
    if( ${product} MATCHES "cetlib" )
        # building cetlib - use our copy
-       message(STATUS "cet_find_cetskelgen: looking in ${PROJECT_SOURCE_DIR}/perllib")
+       #message(STATUS "cet_find_cetskelgen: looking in ${PROJECT_SOURCE_DIR}/perllib")
        FIND_PROGRAM( CETSKELGEN_EXE cetskelgen
                      ${PROJECT_SOURCE_DIR}/perllib  )
    elseif( NOT CETLIB_FQ_DIR )
