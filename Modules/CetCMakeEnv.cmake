@@ -165,6 +165,10 @@ macro(cet_cmake_env)
   endif()
 
   _get_cetpkg_info()
+  
+  # temporarily set this policy
+  # silently ignore non-existent dependencies
+  cmake_policy(SET CMP0046 OLD)
 
   if( ${product}_full_qualifier )
     # extract base qualifier
