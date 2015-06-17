@@ -31,8 +31,10 @@ macro( _cet_perl_plugin_version )
 configure_file($ENV{CETLIB_DIR}/perllib/PluginVersionInfo.pm.in
   ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
   @ONLY)
+  cet_add_to_pm_list( CetSkelPlugins/${product}/PluginVersionInfo.pm )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
-  DESTINATION ${product}/${version}/perllib/CetSkelPlugins/${product}/)
+  DESTINATION ${perllib_install_dir}/CetSkelPlugins/${product}/)
+  ##DESTINATION ${product}/${version}/perllib/CetSkelPlugins/${product}/)
 
 endmacro( _cet_perl_plugin_version )
 
@@ -56,32 +58,44 @@ macro( _cet_copy_perllib )
   #message(STATUS "_cet_copy_perllib: copying to ${perllibbuiildpath}")
 endmacro( _cet_copy_perllib )
 
+macro( _cet_perllib_config_setup  )
+    foreach( pmfile ${ARGN} )
+      get_filename_component( pmfilename "${pmfile}" NAME )
+      cet_add_to_pm_list( ${CURRENT_SUBDIR}/${pmfilename} )
+    endforeach( pmfile )
+endmacro( _cet_perllib_config_setup )
+
 macro( _cet_install_perllib_without_list   )
   #message( STATUS "_cet_install_perllib_without_list: perl lib scripts will be installed in ${perllib_install_dir}" )
-  FILE(GLOB prl_files [^.]*.pm README )
+  FILE(GLOB prl_files [^.]*.pm )
+  FILE(GLOB prl_files2 [^.]*.pm README )
   if( IPRL_EXCLUDES )
     LIST( REMOVE_ITEM prl_files ${IPRL_EXCLUDES} )
   endif()
   if( prl_files )
-    #message( STATUS "_cet_install_perllib_without_list: installing perl lib files ${prl_files} in ${perllib_install_dir}")
+    message( STATUS "_cet_install_perllib_without_list: installing perl lib files ${prl_files} in ${perllib_install_dir}")
     _cet_copy_perllib( LIST ${prl_files} )
-    INSTALL ( FILES ${prl_files}
+    _cet_perllib_config_setup( ${prl_files} )
+    INSTALL ( FILES ${prl_files2}
               DESTINATION ${perllib_install_dir} )
   endif( prl_files )
   # now check subdirectories
   if( IPRL_SUBDIRS )
     foreach( sub ${IPRL_SUBDIRS} )
-      FILE(GLOB subdir_prl_files
+      FILE(GLOB subdir_prl_files2
                 ${sub}/[^.]*.pm  
 		${sub}/README
 		)
+      FILE(GLOB subdir_prl_files ${sub}/[^.]*.pm )
       #message( STATUS "found ${sub} files ${subdir_prl_files}")
       if( IPRL_EXCLUDES )
         LIST( REMOVE_ITEM subdir_prl_files ${IPRL_EXCLUDES} )
+        LIST( REMOVE_ITEM subdir_prl_files2 ${IPRL_EXCLUDES} )
       endif()
       if( subdir_prl_files )
         _cet_copy_perllib( LIST ${subdir_prl_files} SUBDIR ${sub} )
-        INSTALL ( FILES ${subdir_prl_files}
+        _cet_perllib_config_setup( ${subdir_prl_files} )
+        INSTALL ( FILES ${subdir_prl_files2}
                   DESTINATION ${perllib_install_dir}/${sub} )
       endif( subdir_prl_files )
     endforeach(sub)
@@ -112,11 +126,13 @@ macro( install_perllib   )
                "ERROR: call install_perllib with EITHER LIST or SUBDIRS but not both")
     endif( IPRL_SUBDIRS )
     _cet_copy_perllib( LIST ${IPRL_LIST} WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    _cet_perllib_config_setup( ${IPRL_LIST} )
     INSTALL ( FILES  ${IPRL_LIST}
               DESTINATION ${perllib_install_dir} )
   else()
     if( IPRL_EXTRAS )
       _cet_copy_perllib( LIST ${IPRL_EXTRAS} )
+      _cet_perllib_config_setup( ${IPRL_EXTRAS} )
       INSTALL ( FILES  ${IPRL_EXTRAS}
                 DESTINATION ${perllib_install_dir} )
     endif( IPRL_EXTRAS )
