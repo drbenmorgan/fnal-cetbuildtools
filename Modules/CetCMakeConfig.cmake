@@ -43,6 +43,7 @@ macro( cet_cmake_config  )
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_LIBRARY_LIST}")
 
+  string(TOUPPER  ${product} ${product}_UC )
   # add to library list for package configure file
   foreach( my_library ${CONFIG_LIBRARY_LIST} )
     string(TOUPPER  ${my_library} ${my_library}_UC )
@@ -62,6 +63,27 @@ macro( cet_cmake_config  )
       include_directories ( \$ENV{${${product}_UC}_INC} )" )
   endif()
   ##message(STATUS "cet_cmake_config: CONFIG_INCLUDE_DIRECTORY is ${CONFIG_INCLUDE_DIRECTORY}")
+
+  # add to pm list for package configure file
+  foreach( my_pm ${CONFIG_PM_LIST} )
+    message( STATUS "config_pm: ${product}_perllib is ${${product}_perllib}")
+    message( STATUS "config_pm: ${product}_ups_perllib is ${${product}_ups_perllib}")
+    message( STATUS "config_pm: ${product}_perllib_subdir is ${${product}_perllib_subdir}")
+    STRING( REGEX REPLACE "flavorqual_dir" "\$ENV{${${product}_UC}_FQ_DIR}" mypmdir "${REPORT_PERLLIB_MSG}" )
+    message( STATUS "config_pm: mypmdir ${mypmdir}")
+    STRING( REGEX REPLACE "product_dir" "\$ENV{${${product}_UC}_DIR}" mypmdir "${REPORT_PERLLIB_MSG}" )
+    message( STATUS "config_pm: mypmdir ${mypmdir}")
+    message( STATUS "config_pm: my_pm ${my_pm}")
+    get_filename_component( my_pm_name ${my_pm} NAME )
+    string(REGEX REPLACE "\\." "_" my_pm_dash "${my_pm}" )
+    message( STATUS "config_pm: my_pm_dash ${my_pm_dash}")
+    string(REGEX REPLACE "/" "_" my_pm_slash "${my_pm_dash}" )
+    message( STATUS "config_pm: my_pm_slash ${my_pm_slash}")
+    string(TOUPPER  ${my_pm_slash} ${my_pm_name}_UC )
+    set(CONFIG_FIND_LIBRARY_COMMANDS "${CONFIG_FIND_LIBRARY_COMMANDS}
+      set( ${${product}_UC}${${my_pm_name}_UC} ${mypmdir}${my_pm} )" )
+    message(STATUS "${${product}_UC}${${my_pm_name}_UC}  ${mypmdir}${my_pm} " )
+  endforeach(my_pm)
 
   configure_package_config_file( 
              ${CMAKE_CURRENT_SOURCE_DIR}/product-config.cmake.in
