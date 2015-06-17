@@ -11,6 +11,9 @@
 #
 # cet_add_to_library_list()
 #    Used internally and by art cmake modules
+#
+# cet_add_to_pm_list()
+#    Used internally and by art cmake modules
 # 
 
 macro(_cet_init_config_var)
@@ -33,6 +36,12 @@ macro(cet_add_to_library_list libname)
      set(CONFIG_LIBRARY_LIST ${CONFIG_LIBRARY_LIST} ${libname}
 	 CACHE INTERNAL "libraries created by this package" )
 endmacro(cet_add_to_library_list)
+
+macro(cet_add_to_pm_list libname)
+     # add to perl library list for package configure file
+     set(CONFIG_PM_LIST ${CONFIG_PM_LIST} ${libname}
+	 CACHE INTERNAL "perl libraries installed by this package" )
+endmacro(cet_add_to_pm_list)
 
 macro(cet_find_library)
   STRING( REGEX REPLACE ";" " " find_library_commands "${ARGN}" )
