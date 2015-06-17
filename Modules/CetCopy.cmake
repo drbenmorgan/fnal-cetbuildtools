@@ -2,7 +2,7 @@
 # cet_copy
 #
 # Simple internal copy target to (hopefully) avoid triggering a CMake
-# whenfiles have changed.
+# when files have changed.
 #
 # Usage: cet_copy(<sources>... DESTINATION <dir> [options])
 #
@@ -17,6 +17,13 @@
 # NAME
 #
 #   New name for the file in its final destination.
+#
+# NAME_AS_TARGET
+#
+#   Use the basename of the file as the target for the copy operation,
+#   in order to facilitate dependency references. This non-default
+#   option has the caveat that it is left to the package author to
+#   ensure that there are no name collisions.
 #
 # PROGRAMS
 #
@@ -36,7 +43,7 @@
 ########################################################################
 include (CMakeParseArguments)
 function (cet_copy)
-  cmake_parse_arguments(CETC "PROGRAMS"
+  cmake_parse_arguments(CETC "PROGRAMS;NAME_AS_TARGET"
     "DESTINATION;NAME;WORKING_DIRECTORY"
     "DEPENDENCIES"
     ${ARGN})
@@ -53,7 +60,11 @@ function (cet_copy)
       get_filename_component(source_base "${source}" NAME)
       set(dest_path "${CETC_DESTINATION}/${source_base}")
     endif()
-    string(REPLACE "/" "+" target "${dest_path}")
+    if (CETC_NAME_AS_TARGET)
+      get_filename_component(target ${dest_path} NAME)
+    else()
+      string(REPLACE "/" "+" target "${dest_path}")
+    endif()
     add_custom_command(OUTPUT "${dest_path}"
       WORKING_DIRECTORY "${CETC_WORKING_DIRECTORY}"
       COMMAND ${CMAKE_COMMAND} -E copy "${source}" "${dest_path}"

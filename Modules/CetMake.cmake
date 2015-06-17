@@ -404,6 +404,7 @@ macro (cet_script)
     cet_copy(${CS_SOURCE_DIR}/${target_name}
       PROGRAMS
       NAME ${target}
+      NAME_AS_TARGET
       DESTINATION "${EXECUTABLE_OUTPUT_PATH}"
       )
     # Install in product if desired.
