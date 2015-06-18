@@ -466,7 +466,9 @@ macro( cet_set_compiler_flags )
      endif()
   endif()
 
-  message(STATUS "cmake build type set to ${CMAKE_BUILD_TYPE} in directory " ${CURRENT_SUBDIR} " and below")
+  if( NOT ${CURRENT_SUBDIR} MATCHES "<top>" )
+    message(STATUS "cmake build type set to ${CMAKE_BUILD_TYPE} in directory " ${CURRENT_SUBDIR} " and below")
+  endif()
 
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   remove_definitions(-DNDEBUG)

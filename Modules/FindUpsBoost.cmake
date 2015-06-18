@@ -84,13 +84,14 @@ if( ${found_product_match} LESS 0 )
   set(BOOST_INCLUDEDIR $ENV{BOOST_INC} )
   set(BOOST_LIBRARYDIR $ENV{BOOST_LIB} )
   set(Boost_USE_MULTITHREADED ON)
-  set(Boost_ADDITIONAL_VERSIONS "1.48" "1.48.0" "1.49" "1.49.0")
+  #set(Boost_ADDITIONAL_VERSIONS "1.48" "1.48.0" "1.49" "1.49.0")
   set(Boost_NO_SYSTEM_PATHS ON)
   # search for Boost ${MINVER} or better libraries
   find_package( Boost ${MINVER} COMPONENTS ${boost_liblist} )
 
   #message(STATUS "find_ups_boost debug: Boost include directory is ${Boost_INCLUDE_DIR}" )
   #message(STATUS "find_ups_boost debug: Boost library directory is ${BOOST_LIBRARYDIR}" )
+  #message(STATUS "find_ups_boost debug: Boost_FILESYSTEM_LIBRARY is ${Boost_FILESYSTEM_LIBRARY}" )
 endif()
 
 endmacro( find_ups_boost )

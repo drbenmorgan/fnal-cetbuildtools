@@ -24,7 +24,8 @@
 #                  [EXCLUDES exclusions] )
 # install_perllib( LIST file_list )
 #
-#
+
+include(CetCurrentSubdir)
 
 macro( _cet_perl_plugin_version )
 
@@ -107,11 +108,7 @@ endmacro( _cet_install_perllib_without_list )
 
 macro( install_perllib   )
   cmake_parse_arguments( IPRL "" "" "SUBDIRS;LIST;EXTRAS;EXCLUDES" ${ARGN})
-  if( PACKAGE_TOP_DIRECTORY )
-     STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}(.*)" "\\1" TEST_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-  else()
-     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}(.*)" "\\1" TEST_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-  endif()
+  _cet_current_subdir( TEST_SUBDIR )
   STRING( REGEX REPLACE "^/${${product}_perllib_subdir}(.*)" "\\1" CURRENT_SUBDIR "${TEST_SUBDIR}" )
   set(perllib_install_dir "${${product}_perllib}${CURRENT_SUBDIR}")
   set(prlpathname "${${product}_perllib_subdir}${CURRENT_SUBDIR}")

@@ -29,6 +29,7 @@
 #
 ########################################################################
 include(CMakeParseArguments)
+include(CetCurrentSubdir)
 
 check_ups_version(root ${ROOT_VERSION} v6_00_00
   PRODUCT_MATCHES_VAR HAVE_ROOT6
@@ -57,11 +58,11 @@ else()
 endif()
 
 macro( _set_dictionary_name )
-   if( PACKAGE_TOP_DIRECTORY )
-      STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-   else()
-      STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-   endif()
+   # base name on current subdirectory
+   _cet_current_subdir( CURRENT_SUBDIR2 )
+   # remove leading /
+   STRING( REGEX REPLACE "^/(.*)" "\\1" CURRENT_SUBDIR "${CURRENT_SUBDIR2}" )
+   # replace remaining slashes with underscores
    STRING( REGEX REPLACE "/" "_" dictname "${CURRENT_SUBDIR}" )
 endmacro( _set_dictionary_name )
 

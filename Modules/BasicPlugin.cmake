@@ -64,7 +64,9 @@
 #    exclusive with BASENAME_ONLY.
 #
 ########################################################################
+
 include(CMakeParseArguments)
+include(CetCurrentSubdir)
 
 macro (_bp_debug_message)
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
@@ -91,11 +93,9 @@ function(basic_plugin name type)
   else()
     #message( STATUS "basic_plugin: PACKAGE_TOP_DIRECTORY is ${PACKAGE_TOP_DIRECTORY}")
     # base name on current subdirectory
-    if( PACKAGE_TOP_DIRECTORY )
-      STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-    else()
-      STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-    endif()
+    _cet_current_subdir( CURRENT_SUBDIR2 )
+    # remove leading /
+    STRING( REGEX REPLACE "^/(.*)" "\\1" CURRENT_SUBDIR "${CURRENT_SUBDIR2}" )
     if(NOT BP_ALLOW_UNDERSCORES )
       string(REGEX MATCH [_] has_underscore "${CURRENT_SUBDIR}")
       if( has_underscore )
