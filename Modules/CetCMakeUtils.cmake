@@ -12,9 +12,6 @@
 # cet_add_to_library_list()
 #    Used internally and by art cmake modules
 #
-# cet_add_to_pm_list()
-#    Used internally and by art cmake modules
-#
 # cet_find_cetskelgen()
 #
 
@@ -29,6 +26,7 @@ macro(_cet_init_config_var)
       CACHE STRING "find_library directives for config" FORCE)
   set(CONFIG_LIBRARY_LIST "" CACHE INTERNAL "libraries created by this package" )
   set(CONFIG_PM_LIST "" CACHE INTERNAL "perl libraries created by this package" )
+  set(CONFIG_PERL_PLUGIN_LIST "" CACHE INTERNAL "perl plugin libraries created by this package" )
   set(CONFIG_PM_VERSION "" CACHE INTERNAL "just for PluginVersionInfo.pm" )
   # we use cet_product_list to make sure there is only one find_ups_product call
   set(cet_product_list "" CACHE STRING "list of ups products" FORCE)
@@ -40,12 +38,6 @@ macro(cet_add_to_library_list libname)
      set(CONFIG_LIBRARY_LIST ${CONFIG_LIBRARY_LIST} ${libname}
 	 CACHE INTERNAL "libraries created by this package" )
 endmacro(cet_add_to_library_list)
-
-macro(cet_add_to_pm_list libname)
-     # add to perl library list for package configure file
-     set(CONFIG_PM_LIST ${CONFIG_PM_LIST} ${libname}
-	 CACHE INTERNAL "perl libraries installed by this package" )
-endmacro(cet_add_to_pm_list)
 
 macro(cet_find_library)
   STRING( REGEX REPLACE ";" " " find_library_commands "${ARGN}" )

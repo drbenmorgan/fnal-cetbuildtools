@@ -28,18 +28,13 @@
 include(CetCurrentSubdir)
 
 macro( _cet_perl_plugin_version )
-
-configure_file($ENV{CETLIB_DIR}/perllib/PluginVersionInfo.pm.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
-  @ONLY)
-
-  ##cet_add_to_pm_list( /CetSkelPlugins/${product}/PluginVersionInfo.pm )
-  set(CONFIG_PM_VERSION "PluginVersionInfo.pm"
-	 CACHE INTERNAL "just for PluginVersionInfo.pm" )
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
-  DESTINATION ${perllib_install_dir}/${product}/)
-
+  configure_file($ENV{CETLIB_DIR}/perllib/PluginVersionInfo.pm.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
+    @ONLY)
+    set(CONFIG_PM_VERSION "PluginVersionInfo.pm"
+	   CACHE INTERNAL "just for PluginVersionInfo.pm" )
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${product}/PluginVersionInfo.pm
+    DESTINATION ${perllib_install_dir}/${product}/)
 endmacro( _cet_perl_plugin_version )
 
 macro( _cet_copy_perllib )
@@ -62,11 +57,30 @@ macro( _cet_copy_perllib )
   #message(STATUS "_cet_copy_perllib: copying to ${perllibbuiildpath}")
 endmacro( _cet_copy_perllib )
 
+macro(_cet_add_to_pm_list libname)
+     # add to perl library list for package configure file
+     set(CONFIG_PM_LIST ${CONFIG_PM_LIST} ${libname}
+	 CACHE INTERNAL "perl libraries installed by this package" )
+endmacro(_cet_add_to_pm_list)
+
+macro(_cet_add_to_perl_plugin_list libname)
+     # add to perl library list for package configure file
+     set(CONFIG_PERL_PLUGIN_LIST ${CONFIG_PERL_PLUGIN_LIST} ${libname}
+	 CACHE INTERNAL "perl plugin libraries installed by this package" )
+endmacro(_cet_add_to_perl_plugin_list)
+
 macro( _cet_perllib_config_setup  )
+  if( ${CURRENT_SUBDIR_NAME} MATCHES "CetSkelPlugins" )
     foreach( pmfile ${ARGN} )
       get_filename_component( pmfilename "${pmfile}" NAME )
-      cet_add_to_pm_list( ${CURRENT_SUBDIR}/${pmfilename} )
+      _cet_add_to_perl_plugin_list( ${CURRENT_SUBDIR}/${pmfilename} )
     endforeach( pmfile )
+  else()
+    foreach( pmfile ${ARGN} )
+      get_filename_component( pmfilename "${pmfile}" NAME )
+      _cet_add_to_pm_list( ${CURRENT_SUBDIR}/${pmfilename} )
+    endforeach( pmfile )
+  endif()
 endmacro( _cet_perllib_config_setup )
 
 macro( _cet_install_perllib_without_list   )
