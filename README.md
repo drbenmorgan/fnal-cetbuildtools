@@ -42,3 +42,52 @@ Despite CMake having full knowledge of both internal and found external programs
 at build time if the user has not configured their PATH to include certain directories under the
 build directory.
 
+
+Using Cetbuildtools
+===================
+In general, FNAL/CET projects using `cetbuildtools` include the following stanza
+at the top of their main CMake script:
+
+```cmake
+project(ThisProject)
+
+# cetbuildtools contains our cmake modules
+set (CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION})
+if(NOT CETBUILDTOOLS_VERSION)
+  message(FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
+endif()
+set(CMAKE_MODULE_PATH $ENV{CETBUILDTOOLS_DIR}/Modules ${CMAKE_MODULE_PATH})
+
+# ... later on ...
+find_ups_product(cetbuildtools v4_07_02)
+
+```
+
+This requires a client of `cetbuildtools` to have set at least two environment
+variables, `CETBUILDTOOLS_VERSION` *and* `CETBUILDTOOLS_DIR`. In addition, the
+call to `find_ups_product` *appears* redundant (though one can't use `find_ups_product`
+until `cetbuildtools` is found). TODO: check what `find_ups_product` actually does.
+
+Provided a core set of CMake functionality is a fairly common project task,
+for example in (KDE's `extra-cmake-modules`)[http://api.kde.org/ecm/manual/ecm.7.html].
+To this end, the above stanza should be replaced by:
+
+```cmake
+project(ThisProject)
+
+find_package(cetbuildtools 4.7.2 REQUIRED NO_MODULE)
+
+list(PREPEND CMAKE_MODULE_PATH "${CETBUILDTOOLS_MODULE_PATH}")
+```
+
+Location of `cetbuildtools` is guaranteed if its install prefix is present
+in the `CMAKE_PREFIX_PATH` variable. If UPS is used for SCM, then it should
+set this variable appropritely for the setup product.
+
+
+
+
+
+
+
+
