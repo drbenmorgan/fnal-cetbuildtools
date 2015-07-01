@@ -90,6 +90,27 @@ An initial go at installing `cetbuildtools` from scratch
       then simple replace this
     - Can then complete configuration, then make and install!
 
+Testing with ToyCMake reveals that further work is needed with regards to
+reliance on PATH etc to use cetbuildtools programs (e.g. Some *may*
+be intended for direct use from the command line, but otherwise we
+don't have to rely on the PATH).
+
+Customized "packageconfig" template used over the one in `ups` as this
+allows us to set additional features of the package - it's this that
+allows a binary dir variable that allows direct, non-PATH dependent calls
+to the programs in `bin`.
+
+Identified further work items:
+
+- Identify further calls to programs in `bin` reliant on PATH being set.
+  - Migrate to use of the binary directory variable pattern.
+- Identify any further UPS etc environment variables that reproduce/shadow
+  CMake functionality (`CETPKG_SOURCE == PROJECT_SOURCE_DIR`?).
+  - Work out exactly what the environment result of `setup_for_development`
+    is for any given package. Can any per-package variables be promoted to
+    CMake variables set in the projects 'FooConfig.cmake' file?
+- Promote Qualifiers to proper Build Modes?
+
 
 Environment Variables
 =====================

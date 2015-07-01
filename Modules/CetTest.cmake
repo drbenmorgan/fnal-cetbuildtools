@@ -144,6 +144,11 @@
 #   cet_test() or add_test() -- require at least one.
 #
 ########################################################################
+
+#-----------------------------------------------------------------------
+# Modifications Copyright 2015 Ben Morgan <Ben.Morgan@warwick.ac.uk
+# Modifications Copyright 2015 University of Warwick
+
 cmake_policy(VERSION 3.0.1) # We've made this work for 3.0.1.
 
 # Need argument parser.
@@ -160,7 +165,12 @@ include(CetRegexEscape)
 # If Boost has been specified but the library hasn't, load the library.
 IF((NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND BOOST_VERS)
   find_ups_boost(${BOOST_VERS} unit_test_framework)
-ENDIF() 
+ENDIF()
+
+# Wrap the cet_test_exec so we always use ours - It means that PATH
+# is not needed.
+set(CET_EXEC_TEST ${cetbuildtools_BINDIR}/cet_exec_test)
+
 
 SET(CET_TEST_GROUPS "NONE"
   CACHE STRING "List of optional test groups to be configured."
@@ -347,7 +357,7 @@ FUNCTION(cet_test CET_TARGET)
       ENDIF()
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-        COMMAND cet_exec_test --wd ${CET_TEST_WORKDIR} --datafiles "${CET_DATAFILES}"
+        COMMAND ${CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR} --datafiles "${CET_DATAFILES}"
         ${CMAKE_COMMAND}
         -DTEST_EXEC=${CET_TEST_EXEC}
         -DTEST_ARGS=${TEST_ARGS}
@@ -363,7 +373,7 @@ FUNCTION(cet_test CET_TARGET)
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
         COMMAND
-        cet_exec_test --wd ${CET_TEST_WORKDIR} --datafiles "${CET_DATAFILES}"
+        ${CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR} --datafiles "${CET_DATAFILES}"
         ${CET_TEST_EXEC} ${CET_TEST_ARGS})
     ENDIF(CET_REF)
     IF(${CMAKE_VERSION} VERSION_GREATER "2.8")

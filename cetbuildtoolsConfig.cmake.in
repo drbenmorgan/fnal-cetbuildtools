@@ -1,0 +1,15 @@
+set(@PROJECT_NAME@_VERSION @cet_dot_version@)
+
+@PACKAGE_INIT@
+
+set_and_check(cetbuildtools_CMAKE_MODULE_PATH @PACKAGE_CMAKE_INSTALL_MODULEDIR@)
+
+# This is the install time BINDIR, so we don't have to rely on PATH
+# being set
+set_and_check(cetbuildtools_BINDIR @PACKAGE_CMAKE_INSTALL_BINDIR@)
+
+# Auto setup the module path, the only purpose of the package is to
+# supply custom CMake modules so these should be made available to
+# the client immediately
+list(INSERT CMAKE_MODULE_PATH 0 "${cetbuildtools_CMAKE_MODULE_PATH}")
+
