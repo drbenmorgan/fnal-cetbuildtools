@@ -15,6 +15,30 @@ as needed.
 This README also acts as a basic documentation of the issues encountered and their
 resolutions.
 
+Installing CetBuildTools
+========================
+An initial go at installing `cetbuildtools` from scratch
+
+1. Clone the repo.
+2. No instructions in repository.
+3. As it provides a CMake script, assume standard cmake-style build
+  - Create separate build directory at base repo level.
+  - Change into this.
+  - Run `cmake ..`
+  - Results in the error:
+    ```
+    $ cmake ..
+    CMake Error at Modules/CetGetProductInfo.cmake:11 (message):
+    CetGetProductInfo.cmake: Can't find report_product_info
+    Call Stack (most recent call first):
+    Modules/CetCMakeEnv.cmake:13 (include)
+    CMakeLists.txt:18 (include)
+
+
+    -- Configuring incomplete, errors occurred!
+    ```
+
+
 Environment Variables
 =====================
 The fundamental issue limiting the portability of `cetbuildtools` is its use of UPS
