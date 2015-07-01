@@ -1,0 +1,1162 @@
+ART_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/art/v1_14_02"; export ART_DIR
+#
+SETUP_ART='art v1_14_02 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:nu:prof'; export SETUP_ART
+#
+ART_VERSION="v1_14_02"; export ART_VERSION
+#
+CETPKGSUPPORT_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cetpkgsupport/v1_08_06"; export CETPKGSUPPORT_DIR
+#
+SETUP_CETPKGSUPPORT='cetpkgsupport v1_08_06 -f NULL -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft'; export SETUP_CETPKGSUPPORT
+#
+CETPKGSUPPORT_VERSION="v1_08_06"; export CETPKGSUPPORT_VERSION
+#
+if [ "${PATH:-}" = "" ]; then
+  PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cetpkgsupport/v1_08_06/bin"
+else
+  PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cetpkgsupport/v1_08_06/bin:${PATH}"
+fi
+export PATH
+#
+printenv CET_PLATINFO > /dev/null; if [ $? = 0 ]
+then
+:
+else
+:
+CET_PLATINFO="`get-directory-name platinfo`"; export CET_PLATINFO
+#
+CET_SUBDIR="`get-directory-name subdir`"; export CET_SUBDIR
+#
+fi
+test -z ${CET_SUBDIR}; if [ $? = 0 ]
+then
+:
+ART_FQ_DIR="${ART_DIR}/`get-directory-name subdir`.e7.nu.prof"; export ART_FQ_DIR
+#
+else
+:
+ART_FQ_DIR="${ART_DIR}/${CET_SUBDIR}.e7.nu.prof"; export ART_FQ_DIR
+#
+fi
+if [ ! -d ${ART_FQ_DIR} ]; then
+echo "${ART_FQ_DIR} directory not found: SETUP ABORTED";
+return 1
+fi;
+#
+ART_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/art/v1_14_02/include"; export ART_INC
+#
+ART_CXXFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer -std=c++1y"; export ART_CXXFLAGS
+#
+ART_CFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer"; export ART_CFLAGS
+#
+MESSAGEFACILITY_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/messagefacility/v1_14_05"; export MESSAGEFACILITY_DIR
+#
+SETUP_MESSAGEFACILITY='messagefacility v1_14_05 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_MESSAGEFACILITY
+#
+MESSAGEFACILITY_VERSION="v1_14_05"; export MESSAGEFACILITY_VERSION
+#
+test -z ${CET_SUBDIR}; if [ $? = 0 ]
+then
+:
+MESSAGEFACILITY_FQ_DIR="${MESSAGEFACILITY_DIR}/`get-directory-name subdir`.e7.prof"; export MESSAGEFACILITY_FQ_DIR
+#
+else
+:
+MESSAGEFACILITY_FQ_DIR="${MESSAGEFACILITY_DIR}/${CET_SUBDIR}.e7.prof"; export MESSAGEFACILITY_FQ_DIR
+#
+fi
+if [ ! -d ${MESSAGEFACILITY_FQ_DIR} ]; then
+echo "${MESSAGEFACILITY_FQ_DIR} directory not found: SETUP ABORTED";
+return 1
+fi;
+#
+MESSAGEFACILITY_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/messagefacility/v1_14_05/include"; export MESSAGEFACILITY_INC
+#
+MESSAGEFACILITY_CXXFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer -std=c++1y"; export MESSAGEFACILITY_CXXFLAGS
+#
+MESSAGEFACILITY_CFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer"; export MESSAGEFACILITY_CFLAGS
+#
+FHICLCPP_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/fhiclcpp/v3_05_02"; export FHICLCPP_DIR
+#
+SETUP_FHICLCPP='fhiclcpp v3_05_02 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_FHICLCPP
+#
+FHICLCPP_VERSION="v3_05_02"; export FHICLCPP_VERSION
+#
+test -z ${CET_SUBDIR}; if [ $? = 0 ]
+then
+:
+FHICLCPP_FQ_DIR="${FHICLCPP_DIR}/`get-directory-name subdir`.e7.prof"; export FHICLCPP_FQ_DIR
+#
+else
+:
+FHICLCPP_FQ_DIR="${FHICLCPP_DIR}/${CET_SUBDIR}.e7.prof"; export FHICLCPP_FQ_DIR
+#
+fi
+if [ ! -d ${FHICLCPP_FQ_DIR} ]; then
+echo "${FHICLCPP_FQ_DIR} directory not found: SETUP ABORTED";
+return 1
+fi;
+#
+FHICLCPP_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/fhiclcpp/v3_05_02/include"; export FHICLCPP_INC
+#
+FHICLCPP_CXXFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer -std=c++1y"; export FHICLCPP_CXXFLAGS
+#
+FHICLCPP_CFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer"; export FHICLCPP_CFLAGS
+#
+CETLIB_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cetlib/v1_12_01"; export CETLIB_DIR
+#
+SETUP_CETLIB='cetlib v1_12_01 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_CETLIB
+#
+CETLIB_VERSION="v1_12_01"; export CETLIB_VERSION
+#
+test -z ${CET_SUBDIR}; if [ $? = 0 ]
+then
+:
+CETLIB_FQ_DIR="${CETLIB_DIR}/`get-directory-name subdir`.e7.prof"; export CETLIB_FQ_DIR
+#
+else
+:
+CETLIB_FQ_DIR="${CETLIB_DIR}/${CET_SUBDIR}.e7.prof"; export CETLIB_FQ_DIR
+#
+fi
+if [ ! -d ${CETLIB_FQ_DIR} ]; then
+echo "${CETLIB_FQ_DIR} directory not found: SETUP ABORTED";
+return 1
+fi;
+#
+CETLIB_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cetlib/v1_12_01/include"; export CETLIB_INC
+#
+CETLIB_CXXFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer -std=c++1y"; export CETLIB_CXXFLAGS
+#
+CETLIB_CFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer"; export CETLIB_CFLAGS
+#
+CPP0X_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cpp0x/v1_04_10"; export CPP0X_DIR
+#
+SETUP_CPP0X='cpp0x v1_04_10 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_CPP0X
+#
+CPP0X_VERSION="v1_04_10"; export CPP0X_VERSION
+#
+test -z ${CET_SUBDIR}; if [ $? = 0 ]
+then
+:
+CPP0X_FQ_DIR="${CPP0X_DIR}/`get-directory-name subdir`.e7.prof"; export CPP0X_FQ_DIR
+#
+else
+:
+CPP0X_FQ_DIR="${CPP0X_DIR}/${CET_SUBDIR}.e7.prof"; export CPP0X_FQ_DIR
+#
+fi
+if [ ! -d ${CPP0X_FQ_DIR} ]; then
+echo "${CPP0X_FQ_DIR} directory not found: SETUP ABORTED";
+return 1
+fi;
+#
+CPP0X_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cpp0x/v1_04_10/include"; export CPP0X_INC
+#
+CPP0X_CXXFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer -std=c++1y"; export CPP0X_CXXFLAGS
+#
+CPP0X_CFLAGS="-O3 -g -gdwarf-2 -fno-omit-frame-pointer"; export CPP0X_CFLAGS
+#
+SETUP_BOOST='boost v1_57_0 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_BOOST
+#
+BOOST_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/boost/v1_57_0"; export BOOST_DIR
+#
+BOOST_VERSION="v1_57_0"; export BOOST_VERSION
+#
+BOOST_FQ="Linux64bit+2.6-2.12-e7-prof"; export BOOST_FQ
+#
+BOOST_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/boost/v1_57_0/${BOOST_FQ}"; export BOOST_FQ_DIR
+#
+sh -c 'for dd in include;do [ -d ${BOOST_FQ_DIR}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+BOOST_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/boost/v1_57_0/${BOOST_FQ}/include"; export BOOST_INC
+#
+else
+:
+true
+#
+  UPS_PROD_NAME_UC='BOOST'; export UPS_PROD_NAME_UC
+  UPS_PROD_NAME='boost'; export UPS_PROD_NAME
+  UPS_PROD_VERSION='v1_57_0'; export UPS_PROD_VERSION
+  UPS_PROD_DIR='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/boost/v1_57_0'; export UPS_PROD_DIR
+  UPS_UPS_DIR='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/boost/v1_57_0/ups'; export UPS_UPS_DIR
+  unset UPS_VERBOSE
+  unset UPS_EXTENDED
+  UPS_THIS_DB='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft'; export UPS_THIS_DB
+  UPS_OS_FLAVOR='Linux+2.6-2.12'; export UPS_OS_FLAVOR
+  UPS_PROD_FLAVOR='Linux64bit+2.6-2.12'; export UPS_PROD_FLAVOR
+  UPS_REQ_QUALIFIERS='+e7:+prof'; export UPS_REQ_QUALIFIERS
+  UPS_PROD_QUALIFIERS='e7:prof'; export UPS_PROD_QUALIFIERS
+  UPS_OPTIONS=''; export UPS_OPTIONS
+  UPS_REQ_CHAIN=''; export UPS_REQ_CHAIN
+echo "ERROR: boost is not available for flavor qualifier Linux64bit+2.6-2.12 e7:prof"
+#
+fi
+BOOST_LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/boost/v1_57_0/${BOOST_FQ}/lib"; export BOOST_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${BOOST_FQ_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${BOOST_FQ_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${BOOST_FQ_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${BOOST_FQ_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+GCC_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2"; export GCC_DIR
+#
+SETUP_GCC='gcc v4_9_2 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft'; export SETUP_GCC
+#
+GCC_VERSION="v4_9_2"; export GCC_VERSION
+#
+GCC_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12"; export GCC_FQ_DIR
+#
+if [ "${PATH:-}" = "" ]; then
+  PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/bin"
+else
+  PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/bin:${PATH}"
+fi
+export PATH
+#
+if [ "${COMPILER_PATH:-}" = "" ]; then
+  COMPILER_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/bin"
+else
+  COMPILER_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/bin:${COMPILER_PATH}"
+fi
+export COMPILER_PATH
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/lib"
+else
+  DYLD_LIBRARY_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/lib64"
+else
+  DYLD_LIBRARY_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/lib64:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/lib"
+else
+  LD_LIBRARY_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/lib64"
+else
+  LD_LIBRARY_PATH="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gcc/v4_9_2/Linux64bit+2.6-2.12/lib64:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+CPP0X_LIB="${CPP0X_FQ_DIR}/lib"; export CPP0X_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${CPP0X_LIB}"
+else
+  DYLD_LIBRARY_PATH="${CPP0X_LIB}:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${CPP0X_LIB}"
+else
+  LD_LIBRARY_PATH="${CPP0X_LIB}:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${CPP0X_FQ_DIR}/bin"
+else
+  PATH="${CPP0X_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+CETLIB_LIB="${CETLIB_FQ_DIR}/lib"; export CETLIB_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${CETLIB_LIB}"
+else
+  DYLD_LIBRARY_PATH="${CETLIB_LIB}:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${CETLIB_LIB}"
+else
+  LD_LIBRARY_PATH="${CETLIB_LIB}:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${CETLIB_FQ_DIR}/bin"
+else
+  PATH="${CETLIB_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+PATH=`dropit -E`; export PATH
+#
+if [ "${PERL5LIB:-}" = "" ]; then
+  PERL5LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cetlib/v1_12_01/perllib"
+else
+  PERL5LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cetlib/v1_12_01/perllib:${PERL5LIB}"
+fi
+export PERL5LIB
+#
+SQLITE_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/sqlite/v3_08_08_02"; export SQLITE_DIR
+#
+SETUP_SQLITE='sqlite v3_08_08_02 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft'; export SETUP_SQLITE
+#
+SQLITE_VERSION="v3_08_08_02"; export SQLITE_VERSION
+#
+SQLITE_FQ="Linux64bit+2.6-2.12"; export SQLITE_FQ
+#
+SQLITE_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/sqlite/v3_08_08_02/${SQLITE_FQ}"; export SQLITE_FQ_DIR
+#
+SQLITE_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/sqlite/v3_08_08_02/${SQLITE_FQ}/include"; export SQLITE_INC
+#
+SQLITE_LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/sqlite/v3_08_08_02/${SQLITE_FQ}/lib"; export SQLITE_LIB
+#
+if [ "${PATH:-}" = "" ]; then
+  PATH="${SQLITE_FQ_DIR}/bin"
+else
+  PATH="${SQLITE_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+if [ "${PKG_CONFIG_PATH:-}" = "" ]; then
+  PKG_CONFIG_PATH="${SQLITE_LIB}/pkgconfig"
+else
+  PKG_CONFIG_PATH="${SQLITE_LIB}/pkgconfig:${PKG_CONFIG_PATH}"
+fi
+export PKG_CONFIG_PATH
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${SQLITE_FQ_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${SQLITE_FQ_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${SQLITE_FQ_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${SQLITE_FQ_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+FHICLCPP_LIB="${FHICLCPP_FQ_DIR}/lib"; export FHICLCPP_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${FHICLCPP_LIB}"
+else
+  DYLD_LIBRARY_PATH="${FHICLCPP_LIB}:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${FHICLCPP_LIB}"
+else
+  LD_LIBRARY_PATH="${FHICLCPP_LIB}:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${FHICLCPP_FQ_DIR}/bin"
+else
+  PATH="${FHICLCPP_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+PATH=`dropit -E`; export PATH
+#
+MESSAGEFACILITY_LIB="${MESSAGEFACILITY_FQ_DIR}/lib"; export MESSAGEFACILITY_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${MESSAGEFACILITY_LIB}"
+else
+  DYLD_LIBRARY_PATH="${MESSAGEFACILITY_LIB}:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${MESSAGEFACILITY_LIB}"
+else
+  LD_LIBRARY_PATH="${MESSAGEFACILITY_LIB}:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${MESSAGEFACILITY_FQ_DIR}/bin"
+else
+  PATH="${MESSAGEFACILITY_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+PATH=`dropit -E`; export PATH
+#
+if [ "${PERL5LIB:-}" = "" ]; then
+  PERL5LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/messagefacility/v1_14_05/perllib"
+else
+  PERL5LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/messagefacility/v1_14_05/perllib:${PERL5LIB}"
+fi
+export PERL5LIB
+#
+SETUP_ROOT='root v5_34_30 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:nu:prof'; export SETUP_ROOT
+#
+ROOT_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/root/v5_34_30"; export ROOT_DIR
+#
+ROOT_VERSION="v5_34_30"; export ROOT_VERSION
+#
+ROOTSYS="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/root/v5_34_30/Linux64bit+2.6-2.12-e7-nu-prof"; export ROOTSYS
+#
+ROOT_FQ="Linux64bit+2.6-2.12-e7-nu-prof"; export ROOT_FQ
+#
+ROOT_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/root/v5_34_30/${ROOT_FQ}/include"; export ROOT_INC
+#
+if [ "${PYTHONPATH:-}" = "" ]; then
+  PYTHONPATH="${ROOTSYS}/lib"
+else
+  PYTHONPATH="${ROOTSYS}/lib:${PYTHONPATH}"
+fi
+export PYTHONPATH
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${ROOTSYS}/lib"
+else
+  DYLD_LIBRARY_PATH="${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${ROOTSYS}/lib"
+else
+  LD_LIBRARY_PATH="${ROOTSYS}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+sh -c 'for dd in ${ROOT_FQ}/bin;do [ -d /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/root/v5_34_30/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+if [ "${PATH:-}" = "" ]; then
+  PATH="${ROOTSYS}/bin"
+else
+  PATH="${ROOTSYS}/bin:${PATH}"
+fi
+export PATH
+#
+else
+:
+true
+#
+fi
+CLHEP_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/clhep/v2_2_0_5"; export CLHEP_DIR
+#
+SETUP_CLHEP='clhep v2_2_0_5 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_CLHEP
+#
+CLHEP_FQ="Linux64bit+2.6-2.12-e7-prof"; export CLHEP_FQ
+#
+CLHEP_VERSION="v2_2_0_5"; export CLHEP_VERSION
+#
+CLHEP_LIB="CLHEP-2.2.0.5"; export CLHEP_LIB
+#
+CLHEP_BASE_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/clhep/v2_2_0_5/${CLHEP_FQ}"; export CLHEP_BASE_DIR
+#
+CLHEP_BASE="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/clhep/v2_2_0_5/${CLHEP_FQ}"; export CLHEP_BASE
+#
+sh -c 'for dd in include;do [ -d ${CLHEP_BASE}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+CLHEP_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/clhep/v2_2_0_5/${CLHEP_FQ}/include"; export CLHEP_INC
+#
+CLHEP_INCLUDE_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/clhep/v2_2_0_5/${CLHEP_FQ}/include"; export CLHEP_INCLUDE_DIR
+#
+else
+:
+true
+#
+fi
+CLHEP_LIB_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/clhep/v2_2_0_5/${CLHEP_FQ}/lib"; export CLHEP_LIB_DIR
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${CLHEP_BASE}/lib"
+else
+  DYLD_LIBRARY_PATH="${CLHEP_BASE}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${CLHEP_BASE}/lib"
+else
+  LD_LIBRARY_PATH="${CLHEP_BASE}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+sh -c 'for dd in bin;do [ -d ${CLHEP_BASE}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+if [ "${PATH:-}" = "" ]; then
+  PATH="${CLHEP_BASE}/bin"
+else
+  PATH="${CLHEP_BASE}/bin:${PATH}"
+fi
+export PATH
+#
+else
+:
+true
+#
+fi
+FFTW_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/fftw/v3_3_4"; export FFTW_DIR
+#
+SETUP_FFTW='fftw v3_3_4 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q prof'; export SETUP_FFTW
+#
+FFTW_FQ="Linux64bit+2.6-2.12-prof"; export FFTW_FQ
+#
+FFTW_VERSION="v3_3_4"; export FFTW_VERSION
+#
+FFTW_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/fftw/v3_3_4/${FFTW_FQ}"; export FFTW_FQ_DIR
+#
+FFTW_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/fftw/v3_3_4/${FFTW_FQ}/include"; export FFTW_INC
+#
+FFTW_INCLUDE_DIR="${FFTW_FQ_DIR}/include"; export FFTW_INCLUDE_DIR
+#
+FFTW_LIBRARY="${FFTW_FQ_DIR}/lib"; export FFTW_LIBRARY
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${FFTW_FQ_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${FFTW_FQ_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${FFTW_FQ_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${FFTW_FQ_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${FFTW_FQ_DIR}/bin"
+else
+  PATH="${FFTW_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+GSL_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gsl/v1_16"; export GSL_DIR
+#
+SETUP_GSL='gsl v1_16 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q prof'; export SETUP_GSL
+#
+GSL="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gsl/v1_16"; export GSL
+#
+GSL_VERSION="v1_16"; export GSL_VERSION
+#
+GSL_FQ="Linux64bit+2.6-2.12-prof"; export GSL_FQ
+#
+GSL_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gsl/v1_16/${GSL_FQ}"; export GSL_FQ_DIR
+#
+GSL_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gsl/v1_16/${GSL_FQ}/include"; export GSL_INC
+#
+GSL_LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gsl/v1_16/${GSL_FQ}/lib"; export GSL_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${GSL_FQ_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${GSL_FQ_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${GSL_FQ_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${GSL_FQ_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${GSL_FQ_DIR}/bin"
+else
+  PATH="${GSL_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+PYTHIA_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/pythia/v6_4_28c"; export PYTHIA_DIR
+#
+SETUP_PYTHIA='pythia v6_4_28c -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q gcc492:prof'; export SETUP_PYTHIA
+#
+PYTHIA_FQ="Linux64bit+2.6-2.12-gcc492-prof"; export PYTHIA_FQ
+#
+PYTHIA_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/pythia/v6_4_28c/${PYTHIA_FQ}"; export PYTHIA_FQ_DIR
+#
+PYTHIA_VERSION="v6_4_28c"; export PYTHIA_VERSION
+#
+sh -c 'for dd in include;do [ -d ${PYTHIA_FQ_DIR}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+PYTHIA_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/pythia/v6_4_28c/${PYTHIA_FQ}/include"; export PYTHIA_INC
+#
+else
+:
+true
+#
+fi
+PYLIB="${PYTHIA_FQ_DIR}/lib"; export PYLIB
+#
+PYTHIA6_LIBRARY="${PYTHIA_FQ_DIR}/lib"; export PYTHIA6_LIBRARY
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${PYLIB}"
+else
+  DYLD_LIBRARY_PATH="${PYLIB}:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${PYLIB}"
+else
+  LD_LIBRARY_PATH="${PYLIB}:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+POSTGRESQL_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/postgresql/v9_3_6"; export POSTGRESQL_DIR
+#
+SETUP_POSTGRESQL='postgresql v9_3_6 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q p279'; export SETUP_POSTGRESQL
+#
+POSTGRESQL_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/postgresql/v9_3_6/Linux64bit+2.6-2.12-p279"; export POSTGRESQL_FQ_DIR
+#
+PGSQL_DIR="${POSTGRESQL_FQ_DIR}"; export PGSQL_DIR
+#
+POSTGRESQL_VERSION="v9_3_6"; export POSTGRESQL_VERSION
+#
+POSTGRESQL_INC="${POSTGRESQL_FQ_DIR}/include"; export POSTGRESQL_INC
+#
+POSTGRESQL_INCLUDE_DIR="${POSTGRESQL_FQ_DIR}/include"; export POSTGRESQL_INCLUDE_DIR
+#
+POSTGRESQL_LIBRARIES="${POSTGRESQL_FQ_DIR}/lib"; export POSTGRESQL_LIBRARIES
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${PGSQL_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${PGSQL_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${PGSQL_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${PGSQL_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${PGSQL_DIR}/bin"
+else
+  PATH="${PGSQL_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+PYTHON_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/python/v2_7_9"; export PYTHON_DIR
+#
+SETUP_PYTHON='python v2_7_9 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft'; export SETUP_PYTHON
+#
+PYTHON_VERSION="v2_7_9"; export PYTHON_VERSION
+#
+PYTHON_ROOT="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/python/v2_7_9/Linux64bit+2.6-2.12"; export PYTHON_ROOT
+#
+PYTHONHOME="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/python/v2_7_9/Linux64bit+2.6-2.12"; export PYTHONHOME
+#
+PYTHON_INCLUDE="${PYTHONHOME}/include/python2.7"; export PYTHON_INCLUDE
+#
+PYTHON_LIB="${PYTHONHOME}/lib"; export PYTHON_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${PYTHONHOME}/lib"
+else
+  DYLD_LIBRARY_PATH="${PYTHONHOME}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${PYTHONHOME}/lib"
+else
+  LD_LIBRARY_PATH="${PYTHONHOME}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${PYTHONHOME}/bin"
+else
+  PATH="${PYTHONHOME}/bin:${PATH}"
+fi
+export PATH
+#
+if [ "${PYTHONPATH:-}" = "" ]; then
+  PYTHONPATH="${POSTGRESQL_LIBRARIES}/python2.7/site-packages"
+else
+  PYTHONPATH="${POSTGRESQL_LIBRARIES}/python2.7/site-packages:${PYTHONPATH}"
+fi
+export PYTHONPATH
+#
+MYSQL_CLIENT_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/mysql_client/v5_5_42"; export MYSQL_CLIENT_DIR
+#
+SETUP_MYSQL_CLIENT='mysql_client v5_5_42 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7'; export SETUP_MYSQL_CLIENT
+#
+MYSQL_CLIENT_FQ="Linux64bit+2.6-2.12-e7"; export MYSQL_CLIENT_FQ
+#
+MYSQL_CLIENT_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/mysql_client/v5_5_42/${MYSQL_CLIENT_FQ}"; export MYSQL_CLIENT_FQ_DIR
+#
+MYSQL_CLIENT_VERSION="v5_5_42"; export MYSQL_CLIENT_VERSION
+#
+sh -c 'for dd in include;do [ -d ${MYSQL_CLIENT_FQ_DIR}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+MYSQL_CLIENT_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/mysql_client/v5_5_42/Linux64bit+2.6-2.12/include"; export MYSQL_CLIENT_INC
+#
+else
+:
+true
+#
+fi
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${MYSQL_CLIENT_FQ_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${MYSQL_CLIENT_FQ_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${MYSQL_CLIENT_FQ_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${MYSQL_CLIENT_FQ_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+sh -c 'for dd in bin;do [ -d ${MYSQL_CLIENT_FQ_DIR}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+if [ "${PATH:-}" = "" ]; then
+  PATH="${MYSQL_CLIENT_FQ_DIR}/bin"
+else
+  PATH="${MYSQL_CLIENT_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+else
+:
+true
+#
+fi
+LIBXML2_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/libxml2/v2_9_2"; export LIBXML2_DIR
+#
+SETUP_LIBXML2='libxml2 v2_9_2 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q prof'; export SETUP_LIBXML2
+#
+LIBXML2_FQ="Linux64bit+2.6-2.12-prof"; export LIBXML2_FQ
+#
+LIBXML2_VERSION="v2_9_2"; export LIBXML2_VERSION
+#
+LIBXML2_SOURCE="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/libxml2/v2_9_2/source/libxml2-2.9.1"; export LIBXML2_SOURCE
+#
+LIBXML2_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/libxml2/v2_9_2/${LIBXML2_FQ}"; export LIBXML2_FQ_DIR
+#
+LIBXML2_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/libxml2/v2_9_2/${LIBXML2_FQ}/include/libxml2"; export LIBXML2_INC
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${LIBXML2_FQ_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${LIBXML2_FQ_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${LIBXML2_FQ_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${LIBXML2_FQ_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${LIBXML2_FQ_DIR}/bin"
+else
+  PATH="${LIBXML2_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+SETUP_XROOTD='xrootd v3_3_4c -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_XROOTD
+#
+XROOTD_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/xrootd/v3_3_4c"; export XROOTD_DIR
+#
+XROOTD_FQ="Linux64bit+2.6-2.12-e7-prof"; export XROOTD_FQ
+#
+XROOTD_VERSION="v3_3_4c"; export XROOTD_VERSION
+#
+XROOTDROOT="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/xrootd/v3_3_4c/${XROOTD_FQ}"; export XROOTDROOT
+#
+XROOTD_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/xrootd/v3_3_4c/${XROOTD_FQ}/include"; export XROOTD_INC
+#
+sh -c 'for dd in lib;do [ -d ${XROOTDROOT}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+XROOTD_LIB="${XROOTDROOT}/lib"; export XROOTD_LIB
+#
+fi
+sh -c 'for dd in lib64;do [ -d ${XROOTDROOT}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+XROOTD_LIB="${XROOTDROOT}/lib64"; export XROOTD_LIB
+#
+fi
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${XROOTD_LIB}"
+else
+  DYLD_LIBRARY_PATH="${XROOTD_LIB}:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${XROOTD_LIB}"
+else
+  LD_LIBRARY_PATH="${XROOTD_LIB}:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+sh -c 'for dd in bin;do [ -d ${XROOTDROOT}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+if [ "${PATH:-}" = "" ]; then
+  PATH="${XROOTDROOT}/bin"
+else
+  PATH="${XROOTDROOT}/bin:${PATH}"
+fi
+export PATH
+#
+else
+:
+true
+#
+fi
+CPPUNIT_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cppunit/v1_12_1b"; export CPPUNIT_DIR
+#
+SETUP_CPPUNIT='cppunit v1_12_1b -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_CPPUNIT
+#
+CPPUNIT_FQ="Linux64bit+2.6-2.12-e7-prof"; export CPPUNIT_FQ
+#
+CPPUNIT_VERSION="v1_12_1b"; export CPPUNIT_VERSION
+#
+CPPUNIT_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cppunit/v1_12_1b/${CPPUNIT_FQ}"; export CPPUNIT_FQ_DIR
+#
+sh -c 'for dd in include;do [ -d ${CPPUNIT_FQ_DIR}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+CPPUNIT_INC="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cppunit/v1_12_1b/${CPPUNIT_FQ}/include"; export CPPUNIT_INC
+#
+else
+:
+true
+#
+fi
+CPPUNIT_LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cppunit/v1_12_1b/${CPPUNIT_FQ}/lib"; export CPPUNIT_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${CPPUNIT_FQ_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${CPPUNIT_FQ_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${CPPUNIT_FQ_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${CPPUNIT_FQ_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+sh -c 'for dd in bin;do [ -d ${CPPUNIT_FQ_DIR}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+if [ "${PATH:-}" = "" ]; then
+  PATH="${CPPUNIT_FQ_DIR}/bin"
+else
+  PATH="${CPPUNIT_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+else
+:
+true
+#
+  UPS_PROD_NAME_UC='CPPUNIT'; export UPS_PROD_NAME_UC
+  UPS_PROD_NAME='cppunit'; export UPS_PROD_NAME
+  UPS_PROD_VERSION='v1_12_1b'; export UPS_PROD_VERSION
+  UPS_PROD_DIR='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cppunit/v1_12_1b'; export UPS_PROD_DIR
+  UPS_UPS_DIR='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/cppunit/v1_12_1b/ups'; export UPS_UPS_DIR
+  unset UPS_VERBOSE
+  unset UPS_EXTENDED
+  UPS_THIS_DB='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft'; export UPS_THIS_DB
+  UPS_OS_FLAVOR='Linux+2.6-2.12'; export UPS_OS_FLAVOR
+  UPS_PROD_FLAVOR='Linux64bit+2.6-2.12'; export UPS_PROD_FLAVOR
+  UPS_REQ_QUALIFIERS='+e7:+prof'; export UPS_REQ_QUALIFIERS
+  UPS_PROD_QUALIFIERS='e7:prof'; export UPS_PROD_QUALIFIERS
+  UPS_OPTIONS=''; export UPS_OPTIONS
+  UPS_REQ_CHAIN=''; export UPS_REQ_CHAIN
+echo "ERROR: cppunit is not available for flavor qualifier Linux64bit+2.6-2.12 e7:prof"
+#
+fi
+GCCXML_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gccxml/v0_9_20140718a"; export GCCXML_DIR
+#
+SETUP_GCCXML='gccxml v0_9_20140718a -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft'; export SETUP_GCCXML
+#
+GCCXML_FQ="Linux64bit+2.6-2.12"; export GCCXML_FQ
+#
+GCCXML_VERSION="v0_9_20140718a"; export GCCXML_VERSION
+#
+GCCXML_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gccxml/v0_9_20140718a/${GCCXML_FQ}"; export GCCXML_FQ_DIR
+#
+sh -c 'for dd in bin;do [ -d ${GCCXML_FQ_DIR}/$dd ] && exit;done;exit 1'; if [ $? = 0 ]
+then
+:
+if [ "${PATH:-}" = "" ]; then
+  PATH="${GCCXML_FQ_DIR}/bin"
+else
+  PATH="${GCCXML_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+else
+:
+true
+#
+  UPS_PROD_NAME_UC='GCCXML'; export UPS_PROD_NAME_UC
+  UPS_PROD_NAME='gccxml'; export UPS_PROD_NAME
+  UPS_PROD_VERSION='v0_9_20140718a'; export UPS_PROD_VERSION
+  UPS_PROD_DIR='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gccxml/v0_9_20140718a'; export UPS_PROD_DIR
+  UPS_UPS_DIR='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/gccxml/v0_9_20140718a/ups'; export UPS_UPS_DIR
+  unset UPS_VERBOSE
+  unset UPS_EXTENDED
+  UPS_THIS_DB='/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft'; export UPS_THIS_DB
+  UPS_OS_FLAVOR='Linux+2.6-2.12'; export UPS_OS_FLAVOR
+  UPS_PROD_FLAVOR='Linux64bit+2.6-2.12'; export UPS_PROD_FLAVOR
+  UPS_REQ_QUALIFIERS=''; export UPS_REQ_QUALIFIERS
+  UPS_PROD_QUALIFIERS=''; export UPS_PROD_QUALIFIERS
+  UPS_OPTIONS=''; export UPS_OPTIONS
+  UPS_REQ_CHAIN=''; export UPS_REQ_CHAIN
+echo "ERROR: gccxml is not available for flavor qualifier Linux64bit+2.6-2.12 "
+#
+fi
+TBB_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/tbb/v4_3_5"; export TBB_DIR
+#
+SETUP_TBB='tbb v4_3_5 -f Linux64bit+2.6-2.12 -z /cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft -q e7:prof'; export SETUP_TBB
+#
+TBB_UPS_VERSION="v4_3_5"; export TBB_UPS_VERSION
+#
+TBB_FQ="Linux64bit+2.6-2.12-e7-prof"; export TBB_FQ
+#
+TBB_FQ_DIR="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/tbb/v4_3_5/${TBB_FQ}"; export TBB_FQ_DIR
+#
+TBB_INC="${TBB_FQ_DIR}/include"; export TBB_INC
+#
+TBB_LIB="${TBB_FQ_DIR}/lib"; export TBB_LIB
+#
+TBBROOT="${TBB_FQ_DIR}"; export TBBROOT
+#
+if [ "${CPATH:-}" = "" ]; then
+  CPATH="${TBBROOT}/include"
+else
+  CPATH="${TBBROOT}/include:${CPATH}"
+fi
+export CPATH
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${TBB_FQ_DIR}/lib"
+else
+  DYLD_LIBRARY_PATH="${TBB_FQ_DIR}/lib:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${TBB_FQ_DIR}/lib"
+else
+  LD_LIBRARY_PATH="${TBB_FQ_DIR}/lib:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+ART_LIB="${ART_FQ_DIR}/lib"; export ART_LIB
+#
+test `uname` = "Darwin"; if [ $? = 0 ]
+then
+:
+if [ "${DYLD_LIBRARY_PATH:-}" = "" ]; then
+  DYLD_LIBRARY_PATH="${ART_LIB}"
+else
+  DYLD_LIBRARY_PATH="${ART_LIB}:${DYLD_LIBRARY_PATH}"
+fi
+export DYLD_LIBRARY_PATH
+#
+else
+:
+if [ "${LD_LIBRARY_PATH:-}" = "" ]; then
+  LD_LIBRARY_PATH="${ART_LIB}"
+else
+  LD_LIBRARY_PATH="${ART_LIB}:${LD_LIBRARY_PATH}"
+fi
+export LD_LIBRARY_PATH
+#
+fi
+if [ "${PATH:-}" = "" ]; then
+  PATH="${ART_FQ_DIR}/bin"
+else
+  PATH="${ART_FQ_DIR}/bin:${PATH}"
+fi
+export PATH
+#
+PATH=`dropit -E`; export PATH
+#
+if [ "${PERL5LIB:-}" = "" ]; then
+  PERL5LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/art/v1_14_02/perllib"
+else
+  PERL5LIB="/cvmfs/oasis.opensciencegrid.org/fermilab/products/larsoft/art/v1_14_02/perllib:${PERL5LIB}"
+fi
+export PERL5LIB
+#
+unset UPS_PROD_NAME_UC
+unset UPS_PROD_NAME
+unset UPS_PROD_VERSION
+unset UPS_PROD_DIR
+unset UPS_UPS_DIR
+unset UPS_VERBOSE
+unset UPS_EXTENDED
+unset UPS_THIS_DB
+unset UPS_OS_FLAVOR
+unset UPS_PROD_FLAVOR
+unset UPS_REQ_QUALIFIERS
+unset UPS_PROD_QUALIFIERS
+unset UPS_OPTIONS
+unset UPS_REQ_CHAIN
+
+rc=$?
+/bin/rm -f /tmp/upsE1bvj0
+test $rc = 0
