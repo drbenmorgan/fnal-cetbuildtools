@@ -37,6 +37,29 @@ An initial go at installing `cetbuildtools` from scratch
 
     -- Configuring incomplete, errors occurred!
     ```
+  - Error is due to use of `find_program` to locate `report_product_info`
+    (supplied in this project under the `bin/` directory)
+    via either `CETBUILDTOOLS_DIR` or `PATH` environment variables
+    - In context of build/install of `cetbuildtools` itself, use of
+      `find_program` is superfluous as we know where the program is.
+    - In context of using an install of `cetbuildtools`, we'll *also*
+      know where the program is as we know the install hierarchy.
+    - TEMPFIX: For build only, set known bin path in top level CMakescript
+      modify CetGetProductInfo to use this. Later, can set this variable
+      appropriately in the `cetbuildtools-config.cmake` file
+  - Next Error:
+    ```
+    $ cmake ..
+    CMake Error at Modules/CetCMakeEnv.cmake:135 (message):
+    Unable to obtain product information: need to re-source
+    setup_for_development?
+    Call Stack (most recent call first):
+    Modules/CetCMakeEnv.cmake:167 (_get_cetpkg_info)
+    CMakeLists.txt:25 (cet_cmake_env)
+
+
+    -- Configuring incomplete, errors occurred!
+    ```
 
 
 Environment Variables

@@ -6,7 +6,7 @@
 #
 #  install steps:
 #  cd /path/to/build/directory
-#  source /path/to/cetbuildtools/ups/setup_for_development 
+#  source /path/to/cetbuildtools/ups/setup_for_development
 #  cmake [-DCMAKE_INSTALL_PREFIX=/install/path] $CETBUILDTOOLS_SOURCE
 #  make install
 #  make package (tar file for ups)
@@ -14,6 +14,7 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Modules)
+set(CETBUILDTOOLS_BINDIR ${PROJECT_SOURCE_DIR}/bin)
 
 include(CetCMakeEnv)
 
