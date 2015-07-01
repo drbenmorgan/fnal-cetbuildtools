@@ -15,8 +15,85 @@ as needed.
 This README also acts as a basic documentation of the issues encountered and their
 resolutions.
 
-Installing CetBuildTools
+Installing Cetbuildtools
 ========================
+Create a build directory somewhere outside the directory tree where this
+README is rooted. To illustrate the proceedure, we will use the layout:
+
+```
++- /some/prefix
+   +- cetbuildtools/
+   |  +- README.md      # This file
+   |  +- CMakeLists.txt
+   +- build/            # Where we will build cetbuildtools
+   +- install/          # Where cetbuildtools will be installed
+```
+
+To build and install, assuming you start in a working directory equal to
+`/some/prefix` as above
+
+```
+$ cd build
+$ cmake -DCMAKE_INSTALL_PREFIX=/some/prefix/install ../cetbuildtools
+$ make install
+```
+
+If all is successful, then the `install/` directory will be populated with
+a "UPS Product" style install of cetbuildtools:
+
+```
+├── cetbuildtools
+│   ├── v4_12_05
+│   │   ├── Modules
+│   │   ├── bin
+│   │   ├── cmake
+│   │   ├── example
+│   │   │   └── ToyCmake
+│   │   │       ├── ToyCmake
+│   │   │       │   ├── Hello
+│   │   │       │   ├── Math
+│   │   │       │   ├── MathIO
+│   │   │       │   └── Square
+│   │   │       ├── test
+│   │   │       └── ups
+│   │   ├── templates
+│   │   └── ups
+│   └── v4_12_05.version
+```
+
+The `ToyCmake` subdirectory contains an example C++ project demonstrating
+a minimal use of `cetbuildtools`. It can be copied out of the install tree
+and tested out as follows:
+
+```
+$ cp -R install/cetbuildtools/v4_12_05/example/ToyCmake .
+$ mkdir ToyCmake-build
+$ cd ToyCmake-build
+$ cmake -DCMAKE_PREFIX_PATH=/some/prefix/install/cetbuildtools/v4_12_05 \
+../ToyCmake
+$ make
+$ make test
+... this currently fails on Mac...
+```
+
+Note the use of CMake's `CMAKE_PREFIX_PATH` variable to point the build of
+ToyCmake to the correct cetbuildtools instance. This variable acts like
+a UNIX PATH, but for package lookup, so can also be set in the environment
+as
+
+```
+$ export CMAKE_PREFIX_PATH="/some/prefix/install/cetbuildtools/v4_12_05:${CMAKE_PREFIX_PATH}"
+$ cd ToyCmake-build
+$ cmake ../ToyCmake
+... should pick up the correct cetbuildtools instance ...
+```
+
+Environment setting of `CMAKE_PREFIX_PATH` can be done by hand or any SCM
+system of choice (e.g. UPS or Environment Modules).
+
+
+Installing CetBuildTools (Full Record)
+======================================
 An initial go at installing `cetbuildtools` from scratch
 
 1. Clone the repo.
