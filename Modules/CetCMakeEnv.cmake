@@ -4,7 +4,11 @@
 # cet_cmake_env( [arch] )
 # allow optional architecture declaration
 # noarch is recognized, others are used at your own discretion
-# 
+#
+
+#-----------------------------------------------------------------------
+# Modifications Copyright 2015 Ben Morgan <Ben.Morgan@warwick.ac.uk
+# Modifications Copyright 2015 University of Warwick
 
 # Dummy use of CET_TEST_GROUPS to quell warning.
 if (CET_TEST_GROUPS)
@@ -165,7 +169,7 @@ macro(cet_cmake_env)
   endif()
 
   _get_cetpkg_info()
-  
+
   # temporarily set this policy
   # silently ignore non-existent dependencies
   cmake_policy(SET CMP0046 OLD)
@@ -194,7 +198,7 @@ macro(cet_cmake_env)
 
   set_install_root()
   enable_testing()
-  
+
   include(CetParseArgs)
   cet_parse_args( EOSB "" "ALLOW_IN_SOURCE_BUILD" ${ARGN})
   if( EOSB_DEFAULT_ARGS)
@@ -257,7 +261,7 @@ macro(cet_cmake_env)
   cet_set_perllib_directory()
   cet_set_test_directory()
 
-  set(CETPKG_BUILD $ENV{CETPKG_BUILD})
+  set(CETPKG_BUILD ${PROJECT_BINARY_DIR})
   if(NOT CETPKG_BUILD)
     message(FATAL_ERROR "Can't locate CETPKG_BUILD, required to build this package.")
   endif()
@@ -269,7 +273,7 @@ macro(cet_cmake_env)
   set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/lib)
   # make sure all executables are in one directory
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-  
+
 endmacro(cet_cmake_env)
 
 macro(cet_check_gcc)
@@ -295,8 +299,8 @@ macro( cet_set_lib_directory )
       message(FATAL_ERROR "Can't find report_libdir")
   endif()
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_LIB_DIR} 
-                          ${cet_ups_dir} 
+  execute_process(COMMAND ${REPORT_LIB_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -334,8 +338,8 @@ macro( cet_set_bin_directory )
       message(FATAL_ERROR "Can't find report_bindir")
   endif()
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_BIN_DIR} 
-                          ${cet_ups_dir} 
+  execute_process(COMMAND ${REPORT_BIN_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -373,8 +377,8 @@ macro( cet_set_fcl_directory )
       message(FATAL_ERROR "Can't find report_fcldir")
   endif()
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_FCL_DIR} 
-                          ${cet_ups_dir} 
+  execute_process(COMMAND ${REPORT_FCL_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_FCL_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -412,8 +416,8 @@ macro( cet_set_fw_directory )
       message(FATAL_ERROR "Can't find report_fwdir")
   endif()
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_FW_DIR} 
-                          ${cet_ups_dir} 
+  execute_process(COMMAND ${REPORT_FW_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_FW_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -451,8 +455,8 @@ macro( cet_set_gdml_directory )
       message(FATAL_ERROR "Can't find report_gdmldir")
   endif()
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_GDML_DIR} 
-                          ${cet_ups_dir} 
+  execute_process(COMMAND ${REPORT_GDML_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_GDML_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -490,8 +494,8 @@ macro( cet_set_perllib_directory )
       message(FATAL_ERROR "Can't find report_perllib")
   endif()
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_PERLLIB} 
-                          ${cet_ups_dir} 
+  execute_process(COMMAND ${REPORT_PERLLIB}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_PERLLIB_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -532,8 +536,8 @@ macro( cet_set_inc_directory )
       message(FATAL_ERROR "Can't find report_incdir")
   endif()
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_INC_DIR} 
-                          ${cet_ups_dir} 
+  execute_process(COMMAND ${REPORT_INC_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_INC_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -572,8 +576,8 @@ macro( cet_set_test_directory )
       message(FATAL_ERROR "Can't find report_testdir")
   endif()
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_TEST_DIR} 
-                          ${cet_ups_dir} 
+  execute_process(COMMAND ${REPORT_TEST_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_TEST_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )

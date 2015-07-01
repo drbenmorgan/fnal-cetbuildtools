@@ -1,0 +1,15 @@
+FNAL's cetbuildtools is publically released without license and
+pristine sources may be obtained from:
+
+https://cdcvs.fnal.gov/redmine/projects/cetbuildtools
+
+All original copyright belongs to the original developers
+
+Where this work has made modifications, the files are marked as such,
+with copyright on the modifications asserted as
+
+#-----------------------------------------------------------------------
+# Modifications Copyright 2015 Ben Morgan <Ben.Morgan@warwick.ac.uk
+# Modifications Copyright 2015 University of Warwick
+
+This work is licensed under whatever terms FNAL decide
