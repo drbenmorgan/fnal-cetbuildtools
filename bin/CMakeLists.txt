@@ -10,6 +10,7 @@ install_scripts( LIST buildtool
   report_incdir
   report_libdir
   report_fcldir
+  report_fcldir_base
   report_fwdir
   report_gdmldir
   report_perllib
