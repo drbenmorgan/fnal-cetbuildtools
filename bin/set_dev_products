@@ -9,13 +9,13 @@
 # cetbuildtools must already be setup by setup_for_development
 # create a temporary file and return the temporary file name for use by setup_for_development
 
-use strict;
-use warnings;
-
 use File::Basename;
 use lib dirname($0);
 
-require parse_deps;
+use parse_deps;
+
+use strict;
+use warnings;
 
 my $default_fc = ( $^O eq "darwin" ) ? "-" : "gfortran";
 
@@ -25,9 +25,9 @@ my $compiler_table =
    gcc => { CC => "gcc", CXX => "g++", FC => "gfortran" },
    icc => { CC => "icc", CXX => "icpc", FC => "ifort" },
   };
-
+  
 if( $#ARGV < 2 ) {
-    my $errfl1 = "problem_report";
+    my $errfl1 = "problem_report1";
     open(ERR1, "> $errfl1") or die "Couldn't open $errfl1";
     print ERR1 "\n";
     print ERR1 "unsetenv_ CETPKG_NAME\n";
@@ -96,7 +96,7 @@ my $srcbase = basename($sourcedir);
 if ( $srcbase eq "ups" ) {
     $inputdir = $sourcedir;
     ##print DIAG "set_dev_products debug info: have the old setup_for_development\n";
-    my $errfl2 = "problem_report";
+    my $errfl2 = "problem_report2";
     open(ERR2, "> $errfl2") or die "Couldn't open $errfl2";
     print ERR2 "\n";
     print ERR2 "unsetenv_ CETPKG_NAME\n";
@@ -127,6 +127,54 @@ if ( check_for_old_product_deps( $pfile ) ) {
     print DIAG "WARNING: you appear to be using an old product_deps with cetbuildtools v4 or later\n";
     print DIAG "WARNING: please issue the following command\n";
     print DIAG "WARNING: migrate-package '$ENV{CETPKG_SOURCE}'\n";
+}
+
+# as of cetbuildtools v4_13_00, UPS_OVERRIDE is only set by set_dev_products
+my $sfile=$inputdir."/setup_for_development";
+if ( check_for_old_setup_files( $sfile ) ) {
+    my $errfl3 = "problem_report3";
+    open(ERR3, "> $errfl3") or die "Couldn't open $errfl3";
+    print ERR3 "\n";
+    print ERR3 "unsetenv_ CETPKG_NAME\n";
+    print ERR3 "unsetenv_ CETPKG_VERSION\n";
+    print ERR3 "unsetenv_ CETPKG_QUAL\n";
+    print ERR3 "unsetenv_ CETPKG_TYPE\n";
+    print ERR3 "unsetenv_ CETPKG_CC\n";
+    print ERR3 "unsetenv_ CETPKG_CXX\n";
+    print ERR3 "unsetenv_ CETPKG_FC\n";
+    print ERR3 "echo \"ERROR: \"\n";
+    print ERR3 "echo \"ERROR: you have an old copy of setup_for_development\"\n";
+    print ERR3 "echo \"ERROR: please issue the following command\"\n";
+    print ERR3 "echo \"ERROR: cp \\\$CETBUILDTOOLS_DIR/templates/setup_for_development.template $inputdir/setup_for_development\"\n";
+    print ERR3 "echo \"ERROR: \"\n";
+    print ERR3 "return 1\n";
+    close(ERR3);
+    print "$errfl3\n";
+    exit 0;
+}
+$sfile=$inputdir."/setup_deps";
+if ( -e $sfile ) {
+if ( check_for_old_setup_files( $sfile ) ) {
+    my $errfl4 = "problem_report4";
+    open(ERR4, "> $errfl4") or die "Couldn't open $errfl4";
+    print ERR4 "\n";
+    print ERR4 "unsetenv_ CETPKG_NAME\n";
+    print ERR4 "unsetenv_ CETPKG_VERSION\n";
+    print ERR4 "unsetenv_ CETPKG_QUAL\n";
+    print ERR4 "unsetenv_ CETPKG_TYPE\n";
+    print ERR4 "unsetenv_ CETPKG_CC\n";
+    print ERR4 "unsetenv_ CETPKG_CXX\n";
+    print ERR4 "unsetenv_ CETPKG_FC\n";
+    print ERR4 "echo \"ERROR: \"\n";
+    print ERR4 "echo \"ERROR: you have an old copy of setup_deps\"\n";
+    print ERR4 "echo \"ERROR: please issue the following command\"\n";
+    print ERR4 "echo \"ERROR: cp \\\$CETBUILDTOOLS_DIR/templates/setup_deps.template $inputdir/setup_deps\"\n";
+    print ERR4 "echo \"ERROR: \"\n";
+    print ERR4 "return 1\n";
+    close(ERR4);
+    print "$errfl4\n";
+    exit 0;
+}
 }
 
 my ($product, $version, $default_ver, $default_qual, $have_fq) = get_parent_info( $pfile );

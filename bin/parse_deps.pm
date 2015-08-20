@@ -40,10 +40,40 @@
 # -nq-	this dependent product has no qualifier
 # -b-	this dependent product is only used for the build - it will not be in the table
 
-use List::Util qw(min max); # Numeric min / max funcions.
-
 use strict;
 use warnings;
+
+package parse_deps;
+
+use List::Util qw(min max); # Numeric min / max funcions.
+
+use Exporter 'import';
+our (@EXPORT, @setup_list);
+@EXPORT = qw(  get_parent_info 
+	       check_for_fragment 
+               compare_versions 
+	       get_include_directory 
+	       get_bin_directory 
+	       get_lib_directory 
+	       get_fcl_directory 
+	       get_fw_directory 
+	       get_gdml_directory 
+	       get_perllib 
+	       get_python_path 
+	       get_product_list 
+	       get_qualifier_list 
+	       compare_qual 
+	       match_qual 
+	       sort_qual 
+	       check_flags 
+	       find_default_qual 
+	       cetpkg_info_file 
+	       print_setup_noqual 
+	       print_setup_qual 
+	       check_cetbuildtools_version 
+	       check_for_old_product_deps
+	       check_for_old_setup_files
+               @setup_list);
 
 sub get_parent_info {
   my @params = @_;
@@ -744,6 +774,21 @@ sub check_for_old_product_deps {
       } elsif( $words[0] eq "end_qualifier_list" ) {
             $retval = 0;
       }
+    }
+  }
+  close(PIN);
+  return $retval;
+}
+
+sub check_for_old_setup_files {
+  my @params = @_;
+  my $retval = 0;
+  my $line;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( $line =~ /UPS_OVERRIDE/ ) {
+            $retval = 1;
     }
   }
   close(PIN);
