@@ -2,13 +2,15 @@
 #
 # use product_deps
 
+package build_table;
+
 use File::Basename;
 use lib dirname($0);
 
+use parse_deps;
+
 use strict;
 use warnings;
-
-package build_table;
 
 my $inputdir;
 my $outputdir;
@@ -30,8 +32,6 @@ if( $#ARGV >= 0 ) {
 }
 
 $build_table::debug = "false";
-
-require parse_deps;
 
 my $pfile=$inputdir."/product_deps";
 my $flagfile=$outputdir."/cet_base_flags";
