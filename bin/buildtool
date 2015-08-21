@@ -1050,7 +1050,7 @@ fi
 if [[ -z "$generator" ]]; then
   check_system_generator="$(cmake_sys_var CMAKE_GENERATOR)"
   if [[ -n "$check_system_generator" ]]; then
-    generator_arg=-G${check_system_generator}
+    generator_arg=-G\"${check_system_generator}\"
   fi
   case ${check_system_generator} in
       Ninja)
