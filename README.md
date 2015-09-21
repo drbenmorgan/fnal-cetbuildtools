@@ -286,6 +286,63 @@ in the `CMAKE_PREFIX_PATH` variable. If UPS is used for SCM, then it should
 set this variable appropritely for the setup product.
 
 
+Rejigging example `ToyCmake` to use Modern `cetbuildtools`
+==========================================================
+Bit circular - need to try build of `ToyCmake` to identify runtime
+issues in `cetbuildtools`
+
+As above, we've modified the top level `ToyCmake` `CMakeLists.txt` to:
+
+```cmake
+# use cmake 2.8 or later
+cmake_minimum_required (VERSION 2.8)
+
+project(ToyCmake)
+
+# cetbuildtools contains our cmake modules
+find_package(cetbuildtools 1.0.0 REQUIRED)
+
+# Still, for some reason, need to run this...
+# Run the known things needed to set stuff up
+# This means a developer *does not* need to source setup_for_development
+# However, setup_for_development may do more complicated stuff, yet
+# absolutely will not run without ups present. set_dev_products only
+# needs files in the project - need to learn what 'simple' vs other args
+# do
+execute_process(COMMAND ${cetbuildtools_BINDIR}/set_dev_products ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} simple)
+
+
+include(CetCMakeEnv)
+cet_cmake_env()
+
+...
+```
+
+So first thing of note is requirement to run `set_dev_products` by hand
+otherwise `cet_cmake_env` barfs.
+
+Getting past that, the next error is immediate:
+
+```
+CMake Error at /Users/guest/tmp/cbt/share/cetbuildtools/cmake/Modules/CetCMakeEnv.cmake:58 (message):
+  CMAKE_C_COMPILER set to /Users/guest/Software/Homebrew.git/bin/gcc-4.9:
+  expected match to "/Users/guest/tmp/ToyCmake/^/usr/bin/cc$".
+
+  Use buildtool or preface cmake invocation with "env CC=." Use buildtool -c
+  if changing qualifier.
+Call Stack (most recent call first):
+  /Users/guest/tmp/cbt/share/cetbuildtools/cmake/Modules/CetCMakeEnv.cmake:129 (_verify_cc)
+  /Users/guest/tmp/cbt/share/cetbuildtools/cmake/Modules/CetCMakeEnv.cmake:140 (_study_compiler)
+  /Users/guest/tmp/cbt/share/cetbuildtools/cmake/Modules/CetCMakeEnv.cmake:245 (_verify_compiler_quals)
+  CMakeLists.txt:32 (cet_cmake_env)
+```
+
+Trace that to the lockdown in the `_verify_cc` function to use the 
+UPS-specific `GCC_FQ_DIR` and similar to check UPS-setup compiler
+against what CMake found (? possibly?). Provided UPS has set CC/CXX etc
+correctly, this shouldn't be needed.
+
+
 
 
 
