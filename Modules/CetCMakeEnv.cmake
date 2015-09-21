@@ -18,6 +18,16 @@ include(CetGetProductInfo)
 include(CetRegexEscape)
 include(CetHaveQual)
 
+# Ensure out of source build *did* supply '_cet_real_path' so here's
+# the better implementation
+# What this does is to resolve all symlinks
+function(_cet_real_dir INPUT_DIR RESOLVED_DIR)
+  get_filename_component(__tmp "${INPUT_DIR}" REALPATH)
+  set(${RESOLVED_DIR} "${__tmp}" PARENT_SCOPE)
+endfunction()
+
+
+
 # Verify that the compiler is set as desired, and is consistent with our
 # current known use of qualifiers.
 
