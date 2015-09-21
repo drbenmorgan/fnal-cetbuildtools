@@ -364,7 +364,7 @@ endmacro()
 macro( cet_set_compiler_flags )
   CET_PARSE_ARGS(CSCF
     "DIAGS;DWARF_VER;EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
-    "DWARF_STRICT;ENABLE_ASSERTS;NO_UNDEFINED;WERROR"
+    "ALLOW_DEPRECATIONS;DWARF_STRICT;ENABLE_ASSERTS;NO_UNDEFINED;WERROR"
     ${ARGN}
     )
 
@@ -408,8 +408,14 @@ macro( cet_set_compiler_flags )
 
   if (CSCF_WERROR)
     set(CSCF_WERROR "-Werror")
+    if (CSCF_ALLOW_DEPRECATIONS)
+      set(CSCF_WERROR "${CSCF_ERROR} -Wno-error=deprecated-declarations")
+    endif()
   else()
     set(CSCF_WERROR "")
+    if (CSCF_ALLOW_DEPRECATIONS)
+      message(WARNING "ALLOW_DEPRECATIONS ignored when WERROR not specified")
+    endif()
   endif()
 
   string(TOUPPER "${CSCF_DIAGS}" CSCF_DIAGS)

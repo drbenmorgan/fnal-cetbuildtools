@@ -31,6 +31,10 @@
 include(CMakeParseArguments)
 include(CetCurrentSubdir)
 
+# make sure ROOT_VERSION has been defined
+if( NOT ROOT_VERSION )
+  message(FATAL_ERROR "build_dictionary: ROOT_VERSION is undefined")
+endif()
 check_ups_version(root ${ROOT_VERSION} v6_00_00
   PRODUCT_MATCHES_VAR HAVE_ROOT6
   )

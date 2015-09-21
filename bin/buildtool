@@ -680,17 +680,6 @@ function do_work() {
 }
 
 # Defaults.
-check_system_generator="$(cmake_sys_var CMAKE_GENERATOR)"
-if [[ "$check_system_generator" == "Ninja" ]]; then
-    generator_arg=-GNinja
-    generator=ninja
-else
-    generator_arg="G\"Unix Makefiles\""
-    generator=make
-fi
-##  echo "INFO: cmake system generator is $check_system_generator" 1>&2
-##  echo "INFO: cmake generator arg is $generator_arg" 1>&2
-##  echo "INFO: cmake generator is $generator"
 log_default="build_`date \"+%Y-%m-%d\"`.log"
 (( tred = 1 ))
 
@@ -796,7 +785,7 @@ while true; do
       shift
       case $1 in
         make)
-            generator_arg="G\"Unix Makefiles\""
+            generator_arg="-G\"Unix Makefiles\""
             generator=make
             ;;
         ninja)
@@ -804,12 +793,12 @@ while true; do
             generator=ninja
             ;;
         *)
-          error "ERROR: Unrecognized generator $1."
+          error "ERROR: Unrecognized generator ${1}."
           exit 1
       esac
       shift
       ;;
-     -h|--help)
+    -h|--help)
       usage long
       shift
       ;;
@@ -919,11 +908,6 @@ elif [[ "$CETPKG_BUILD" != /* ]]; then
 elif [[ $(real_dir "$CETPKG_BUILD") == "${HOME}" ]] || \
      [[ $(real_dir "$CETPKG_BUILD") == ~ ]]; then
   echo "ERROR: CETPKG_BUILD has been set to your home directory." 1>&2
-  exit 1
-fi
-
-if [[ "$generator" == ninja ]] && ! type -t ninja 2>&1 >/dev/null; then
-  echo "ERROR: generator is specified as ninja, but ninja is not available. Product not set up?" 1>&2
   exit 1
 fi
 
@@ -1060,6 +1044,33 @@ report "INFO: CETPKG_TYPE = $CETPKG_TYPE"
 # Suppress messages if desired.
 if (( ${quiet:-0} )); then
   exec >/dev/null
+fi
+
+# Check and set generator if not already set.
+if [[ -z "$generator" ]]; then
+  check_system_generator="$(cmake_sys_var CMAKE_GENERATOR)"
+  if [[ -n "$check_system_generator" ]]; then
+    generator_arg=-G\"${check_system_generator}\"
+  fi
+  case ${check_system_generator} in
+      Ninja)
+        generator=ninja
+        ;;
+      "Unix Makefiles"|"")
+        generator=make
+        ;;
+      *)
+        cat 1>&2 <<EOF
+WARNING: CMake's configured generator "${check_system_generator}" is not
+         recognized and is therefore not supported: buildtool cannot continue.
+EOF
+        exit 1
+  esac
+fi
+
+if [[ "$generator" == ninja ]] && ! type -t ninja 2>&1 >/dev/null; then
+  echo "ERROR: generator is specified as ninja, but ninja is not available. Product not set up?" 1>&2
+  exit 1
 fi
 
 if [[ -n "$@" ]]; then
