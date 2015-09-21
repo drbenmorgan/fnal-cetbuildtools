@@ -8,6 +8,10 @@ set_and_check(cetbuildtools_CMAKE_MODULE_PATH @PACKAGE_CMAKE_INSTALL_MODULEDIR@)
 # being set
 set_and_check(cetbuildtools_BINDIR @PACKAGE_CMAKE_INSTALL_BINDIR@)
 
+# If clients should be able to run CBT programs directly, then
+# create imported targets for them here - that's cleaner and more
+# transparent than '${cetbuildtools_BINDIR}/name'.
+
 # Auto setup the module path, the only purpose of the package is to
 # supply custom CMake modules so these should be made available to
 # the client immediately
