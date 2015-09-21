@@ -5,7 +5,7 @@ function(cet_ensure_out_of_source_build)
   get_filename_component(ACTUAL_CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}" REALPATH)
   string(REPLACE "${CMAKE_SOURCE_DIR}" "isasubdir" IS_INSOURCE "${ACTUAL_CMAKE_BINARY_DIR}")
 
-  if (IS_INSOURCE)
+  if ("${IS_INSOURCE}" MATCHES "^isasubdir.*")
   message(FATAL_ERROR "
 ERROR: In source builds of this project are not allowed.
 A separate build directory is required.
