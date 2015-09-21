@@ -16,9 +16,17 @@
 # Modifications Copyright 2015 University of Warwick
 
 # Basic CMake project setup (NONE project as we're not compiling anything)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project(cetbuildtools NONE)
 
+# - Include CMake core functionality
+# Standard install dirs, plus locations for cmake files
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_CMAKEDIR ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
+set(CMAKE_INSTALL_MODULEDIR ${CMAKE_INSTALL_CMAKEDIR}/Modules)
+
+# Local configure/build time paths so that programs are picked up
+# *without* requiring PATH to be set.
 set(cetbuildtools_BINDIR ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Modules)
 
@@ -43,13 +51,7 @@ add_subdirectory(example)
 # For now ignore UPS dir because we want to override the generation of
 # the project config file - this allows us to use a custom template
 # that allows the binary path to be set, and hence does not require
-# PATH etc to be set. Install paths etc are still hardcoded using
-# product/version etc until standard GNUInstall can be implemented.
-#add_subdirectory(ups)
-set(CMAKE_INSTALL_BINDIR ${product}/${version}/bin)
-set(CMAKE_INSTALL_CMAKEDIR ${product}/${version}/cmake)
-set(CMAKE_INSTALL_MODULEDIR ${product}/${version}/Modules)
-
+# PATH etc to be set.
 configure_package_config_file(cetbuildtoolsConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/cetbuildtoolsConfig.cmake
   INSTALL_DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
@@ -60,7 +62,6 @@ write_basic_package_version_file(
   VERSION ${cet_dot_version}
   COMPATIBILITY AnyNewerVersion
   )
-
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/cetbuildtoolsConfig.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/cetbuildtoolsConfigVersion.cmake

@@ -4,7 +4,7 @@
 # Users may opt to just include cet_make() in their CMakeLists.txt
 # This implementation is intended to be called NO MORE THAN ONCE per subdirectory.
 #
-# NOTE: cet_make_exec and cet_make_test_exec are no longer part of 
+# NOTE: cet_make_exec and cet_make_test_exec are no longer part of
 # cet_make or art_make and must be called explicitly.
 #
 # cet_make( [LIBRARY_NAME <library name>]
@@ -14,22 +14,22 @@
 #           [EXCLUDE <ignore these files>] )
 #
 #   If USE_PRODUCT_NAME is specified, the product name will be prepended
-#   to the calculated library name 
+#   to the calculated library name
 #   USE_PRODUCT_NAME and LIBRARY_NAME are mutually exclusive
 #
 #   NOTE: if your code includes art plugins, you MUST use art_make
 #   instead of cet_make: cet_make will ignore all known plugin code.
 #
-# cet_make_library( LIBRARY_NAME <library name> 
-#                   SOURCE <source code list> 
-#                   [LIBRARIES <library list>] 
+# cet_make_library( LIBRARY_NAME <library name>
+#                   SOURCE <source code list>
+#                   [LIBRARIES <library list>]
 #                   [WITH_STATIC_LIBRARY]
 #                   [NO_INSTALL] )
 #
 #   Make the named library.
 #
-# cet_make_exec( <executable name>  
-#                [SOURCE <source code list>] 
+# cet_make_exec( <executable name>
+#                [SOURCE <source code list>]
 #                [LIBRARIES <library link list>]
 #                [USE_BOOST_UNIT]
 #                [NO_INSTALL] )
@@ -37,8 +37,8 @@
 #   Build a regular executable.
 #
 # cet_script( <script-names> ...
-#             [DEPENDENCIES <deps>] 
-#             [NO_INSTALL] 
+#             [DEPENDENCIES <deps>]
+#             [NO_INSTALL]
 #             [GENERATED]
 #             [REMOVE_EXTENSIONS] )
 #
@@ -49,7 +49,7 @@
 #   command, for example); otherwise it will be copied from
 #   ${CMAKE_CURRENT_SOURCE_DIR}.
 #
-#   If REMOVE_EXTENSIONS is specified, extensions will be removed from script names 
+#   If REMOVE_EXTENSIONS is specified, extensions will be removed from script names
 #   when they are installed.
 #
 #   NOTE: If you wish to use one of these scripts in a CUSTOM_COMMAND,
@@ -277,14 +277,14 @@ macro( cet_make )
       set(cet_make_library_name ${cet_make_name})
     endif()
     _cet_debug_message("cet_make: building library ${cet_make_library_name} for ${CMAKE_CURRENT_SOURCE_DIR}")
-    if(CM_LIBRARIES) 
+    if(CM_LIBRARIES)
        cet_make_library( LIBRARY_NAME ${cet_make_library_name}
                 	 SOURCE ${cet_make_library_src}
 			 LIBRARIES  ${cet_liblist} )
-    else() 
+    else()
        cet_make_library( LIBRARY_NAME ${cet_make_library_name}
                 	 SOURCE ${cet_make_library_src} )
-    endif() 
+    endif()
     #message( STATUS "cet_make debug: library ${cet_make_library_name} will be installed in ${${product}_lib_dir}")
   else( )
     _cet_debug_message("cet_make: no library for ${CMAKE_CURRENT_SOURCE_DIR}")
@@ -296,7 +296,7 @@ macro( cet_make )
   if( dictionary_header AND dictionary_xml )
      _cet_debug_message("cet_make: found dictionary in ${CMAKE_CURRENT_SOURCE_DIR}")
      set(cet_file_list ${cet_file_list} ${dictionary_xml} ${dictionary_header} )
-     if(CM_LIBRARIES) 
+     if(CM_LIBRARIES)
         build_dictionary( DICTIONARY_LIBRARIES ${cet_liblist} )
      else()
         build_dictionary(  )
@@ -359,7 +359,7 @@ macro( cet_make_library )
     _cet_check_lib_directory()
     cet_add_to_library_list( ${CML_LIBRARY_NAME})
     ##_cet_debug_message( "cet_make_library: ${CML_LIBRARY_NAME} will be installed in ${${product}_lib_dir}")
-    install( TARGETS  ${CML_LIBRARY_NAME} 
+    install( TARGETS  ${CML_LIBRARY_NAME}
 	     RUNTIME DESTINATION ${${product}_bin_dir}
 	     LIBRARY DESTINATION ${${product}_lib_dir}
 	     ARCHIVE DESTINATION ${${product}_lib_dir}
@@ -377,7 +377,7 @@ macro( cet_make_library )
     if( CML_NO_INSTALL )
       #message(STATUS "cet_make_library debug: ${CML_LIBRARY_NAME}S will not be installed")
     else()
-      install( TARGETS  ${CML_LIBRARY_NAME}S 
+      install( TARGETS  ${CML_LIBRARY_NAME}S
 	       RUNTIME DESTINATION ${${product}_bin_dir}
 	       LIBRARY DESTINATION ${${product}_lib_dir}
 	       ARCHIVE DESTINATION ${${product}_lib_dir}

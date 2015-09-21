@@ -38,16 +38,16 @@
 ####################################
 # Recommended use:
 #
-# install_source( [SUBDIRS subdirectory_list] 
-#                 [EXTRAS extra_files] 
+# install_source( [SUBDIRS subdirectory_list]
+#                 [EXTRAS extra_files]
 #                 [EXCLUDES exclusions] )
 # install_source( LIST file_list )
 #
-# install_headers( [SUBDIRS subdirectory_list] 
+# install_headers( [SUBDIRS subdirectory_list]
 #                  [EXTRAS extra_files]
-#                  [EXCLUDES exclusions] 
+#                  [EXCLUDES exclusions]
 #                  [USE_PRODUCT_NAME] )
-# install_headers( LIST file_list 
+# install_headers( LIST file_list
 #                  [USE_PRODUCT_NAME] )
 #   If USE_PRODUCT_NAME is specified, the product name will be prepended
 #   to the install path
@@ -57,7 +57,7 @@
 #                [EXCLUDES exclusions] )
 # install_fhicl( LIST file_list )
 #
-# install_fw( LIST file_list 
+# install_fw( LIST file_list
 #             [SUBDIRNAME subdirectory_under_fwdir] )
 # THERE ARE NO DEFAULTS FOR install_fw
 #
@@ -429,10 +429,10 @@ macro( _cet_install_gdml_without_list   )
   if( IGDML_SUBDIRS )
     foreach( sub ${IGDML_SUBDIRS} )
       FILE(GLOB subdir_gdml_files
-                ${sub}/[^.]*.gdml  
-		${sub}/[^.]*.C 
-		${sub}/[^.]*.xml 
-		${sub}/[^.]*.xsd 
+                ${sub}/[^.]*.gdml
+		${sub}/[^.]*.C
+		${sub}/[^.]*.xml
+		${sub}/[^.]*.xsd
 		${sub}/README
 		)
       #message( STATUS "found ${sub} files ${subdir_gdml_files}")

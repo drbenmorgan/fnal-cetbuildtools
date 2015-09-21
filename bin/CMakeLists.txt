@@ -1,5 +1,6 @@
 
-install_scripts( LIST buildtool
+install(PROGRAMS
+  buildtool
   build_table
   build_version_file
   cmake-graphviz-filt
@@ -17,11 +18,17 @@ install_scripts( LIST buildtool
   report_testdir
   report_product_info
   migrate-package
+
+  filter-output
+  cet_exec_test
+  DESTINATION "${CMAKE_INSTALL_BINDIR}"
   )
 
-cet_script(filter-output cet_exec_test)
+# Not clear why these are in cet_script, put them in PROGRAMS for now
+#cet_script(filter-output cet_exec_test)
 
-INSTALL ( FILES cet_test_functions.sh
+install(FILES
+  cet_test_functions.sh
   cmake_parse_deps.pm
   parse_deps.pm
   set_dep_check_report
@@ -31,5 +38,5 @@ INSTALL ( FILES cet_test_functions.sh
   set_dev_fhicl
   set_dev_lib
   set_dev_report
-  DESTINATION ${product}/${version}/bin
+  DESTINATION "${CMAKE_INSTALL_BINDIR}"
   )

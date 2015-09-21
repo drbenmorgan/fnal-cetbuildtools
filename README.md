@@ -177,6 +177,33 @@ allows us to set additional features of the package - it's this that
 allows a binary dir variable that allows direct, non-PATH dependent calls
 to the programs in `bin`.
 
+Installation hard codes the UPS style layout, but this should be
+configurable following standard install hierarchies (the UPS style
+is then simply one configure time choice amongst others). Replace
+hardcoded paths with standard 'GNUInstallDirs' CMake (core) module.
+Use layout:
+
+```
+├── cetbuildtools
+    ├── bin
+    └── share
+        └── cetbuildtools
+            ├── cmake
+            │   └── Modules
+            ├── example
+            │   └── ToyCmake
+            └── templates
+```
+
+This means the client installing `cetbuildtools` will get a POSIX
+style install by default. To use a UPS-style install, only 
+`CMAKE_INSTALL_PREFIX` would need to be set when configuring.
+This doesn't account for installing UPS "deps/table" files, but this
+is assumed to be the responsibility of the packager (as it would be
+for any other packaging/SCM system).
+
+
+
 Identified further work items:
 
 - Identify further calls to programs in `bin` reliant on PATH being set.

@@ -35,5 +35,5 @@ INSTALL(FILES
   SetCompilerFlags.cmake
   SetFlavorQual.cmake
   UseCPack.cmake
-  DESTINATION ${product}/${version}/Modules
+  DESTINATION "${CMAKE_INSTALL_MODULEDIR}"
   )
