@@ -6,11 +6,12 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/ToyCmake/ups/product_deps.in
   ${CMAKE_CURRENT_BINARY_DIR}/ToyCmake/ups/product_deps @ONLY
   )
 
+# Even so, have to install everything.
 install(DIRECTORY ToyCmake
   DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/example"
-  PATTERN "*.in" EXCLUDE
   )
 
+# Then the generated file as well...
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/ToyCmake/ups/product_deps
   DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/example/ToyCmake/ups"
