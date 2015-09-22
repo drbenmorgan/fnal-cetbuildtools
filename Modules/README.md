@@ -1,6 +1,6 @@
 # Comments on Specific Modules
 Many modules in `cetbuildtools` appear to contain redundant/superfluous/overcompilated functionality. The sections
-below comment on these aspects and suggest improvements
+below comment on these aspects and suggest improvements using pure CMake. Note that pure CMake may involve "more lines", but aims to be cleaner, more explicit and with many fewer side effects that `cetbuildtools` equivalents.
 
 ## General Issues
 ### Globs in CMake vs Make
@@ -163,6 +163,49 @@ add_executable(mytarget ${SOURCES})
 `cetbuildtools` makes extensive use of globbing, and the concrete cases below list particular areas where problems
 of reliability and clarity occur.
 
+### Unit Testing with Boost.Unit
+Boost's Unit test framework is used as the core testing system for FNAL products (up to Art/LArSoft at least).
+Building test enabled programs/libraries usually requires applying certain compile definitions to source files
+together with linking to the relevant library. Modules in `cetbuildtools` do handle this for the user, but the 
+functionality is reproduced in several modules. The interface for enabling testing is also tightly coupled to the interface for declaring programs/libraries.
+
+A possible improvement here would be to factor the setting of preprocessor defintions and linking into
+dedicated declarative interfaces, e.g.:
+
+```cmake
+boost_unit_test_enable(mytarget)
+```
+
+which would apply the correct compile definitions and linking to `mytarget` as appropriate. If more flexibility was required, this could be renamed to:
+
+```cmake
+cet_unit_test_enable(mytarget)
+```
+
+which would potentially allow the actual unit test framework to be swapped out in a transparent way in the build system (though developers would still need to write tests using the appropriate C++ code).
+
+
+## [BasicPlugin.cmake] (BasicPlugin.cmake)
+Not completely clear if this is truly global functionality or part of `cetlib` because it is essentially a heavy wrapper around `add_library` enforcing a naming convention only used by `cetlib`'s Plugin functionality (ergo,
+it's strictly speaking part of the `cetlib` interface).
+
+It can, barring the naming convention, be reduced to a pure CMake declarative interface:
+
+```cmake
+add_library(PluginName_PluginType SHARED ${SOURCES})
+target_link_libraries(PluginName_PluginType ${USED_LIBRARIES})
+
+# If And Only If this is a plugin for unit testing
+boost_unit_test_enable(PluginName_PluginType)
+
+# If And Only If install is needed (e.g. a pure testing plugin wouldn't be!)
+install(TARGETS PluginName_PluginType DESTINATION ${CMAKE_INSTALL_LIBDIR})
+```
+
+This is simple and flexible, plus it is also forward compatible with modern CMake target property declarations.
+
+As other plugin systems (e.g. Qt, Poco, ROOT) do not require a naming convention, it's likely `cetlib` can be
+refactored to use a better plugin location/loading mechanism.
 
 ## [BuildSubdirectories.cmake](BuildSubdirectories.cmake)
 Uses a glob to locate directories under the current source dir which hold `CMakeLists.txt` and then use `add_subdirectory` to recurse CMake into them. This means it suffers from the globbing issue discussed above, and can be replaced by trivial direct calls to `add_subdirectory`. For example, it might be used in a layout like:
