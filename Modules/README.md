@@ -237,6 +237,11 @@ add_subdirectory(baz)
 
 which is cleaner and has fewer side effects.
 
+##[CetCMakeEnv.cmake](CetCMakeEnv.cmake)
+Some variables of note:
+
+- `PACKAGE_TOP_DIRECTORY` : What is the purpose of this variable and how does it differ from CMake's inbuilt [`PROJECT_SOURCE_DIR`](http://www.cmake.org/cmake/help/v3.3/variable/PROJECT_SOURCE_DIR.html)?
+
 ##[CetCopy.cmake](CetCopy.cmake)
 I have no idea what the purpose of this is over and above CMake's builtin `configure_file` command. Retriggering a run of CMake is not generally a bad thing.
 
