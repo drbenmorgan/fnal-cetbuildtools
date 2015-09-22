@@ -194,5 +194,6 @@ add_subdirectory(baz)
 
 which is cleaner and has fewer side effects.
 
-
+##[InstallPerllib.cmake](InstallPerllib.cmake)
+Contains hard dependence on higher level `cetlib` package in `_cet_perl_plugin_version` function. In turn, this will hard fail unless the environment variable `CETLIB_DIR` is set. If the functionality in the module is dependent on `cetlib` then the module should be promoted to `cetlib` itself to avoid a circular dependency.
 
