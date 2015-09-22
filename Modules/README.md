@@ -164,7 +164,7 @@ add_executable(mytarget ${SOURCES})
 of reliability and clarity occur.
 
 
-## BuildSubdirectories.cmake
+## [BuildSubdirectories.cmake](BuildSubdirectories.cmake)
 Uses a glob to locate directories under the current source dir which hold `CMakeLists.txt` and then use `add_subdirectory` to recurse CMake into them. This means it suffers from the globbing issue discussed above, and can be replaced by trivial direct calls to `add_subdirectory`. For example, it might be used in a layout like:
 
 ```
