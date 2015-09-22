@@ -237,6 +237,10 @@ add_subdirectory(baz)
 
 which is cleaner and has fewer side effects.
 
+##[CetCopy.cmake](CetCopy.cmake)
+I have no idea what the purpose of this is over and above CMake's builtin `configure_file` command. Retriggering a run of CMake is not generally a bad thing.
+
+
 ##[InstallPerllib.cmake](InstallPerllib.cmake)
 Contains hard dependence on higher level `cetlib` package in `_cet_perl_plugin_version` function. In turn, this will hard fail unless the environment variable `CETLIB_DIR` is set. `cetbuildtools` does not declare any dependence on `cetlib` in its UPS files.
 
