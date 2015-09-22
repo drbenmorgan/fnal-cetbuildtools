@@ -195,5 +195,12 @@ add_subdirectory(baz)
 which is cleaner and has fewer side effects.
 
 ##[InstallPerllib.cmake](InstallPerllib.cmake)
-Contains hard dependence on higher level `cetlib` package in `_cet_perl_plugin_version` function. In turn, this will hard fail unless the environment variable `CETLIB_DIR` is set. If the functionality in the module is dependent on `cetlib` then the module should be promoted to `cetlib` itself to avoid a circular dependency.
+Contains hard dependence on higher level `cetlib` package in `_cet_perl_plugin_version` function. In turn, this will hard fail unless the environment variable `CETLIB_DIR` is set. `cetbuildtools` does not declare any dependence on `cetlib` in its UPS files.
 
+If the functionality in the module is dependent on `cetlib` then the module should be promoted to `cetlib` itself to avoid a circular dependency and to properly associate functionality.
+
+##[ProcessSmc.cmake](ProcessSmc.cmake)
+Relies on UPS to find SMC package, and *assumes* suitable `java` program in the `PATH`. 
+
+Instead, a proper `FindSMC` CMake module should be provided. This can provide the `process_smc` function as part of its interface like other CMake Find modules (e.g. moc generation in Qt4).
+Instead, provide proper `FindSMC.cmake` package
