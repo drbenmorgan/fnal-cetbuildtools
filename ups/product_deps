@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent cetbuildtools v4_13_00
+parent cetbuildtools v4_14_00
 # Notice that this product has no default qualifier
 # The no_fq_dir keyword indicates that this product is NULL flavored
 no_fq_dir
@@ -25,7 +25,7 @@ libdir      -
 bindir      product_dir        bin
 
 product		version
-cmake		v3_2_1
+cmake		v3_3_2
 end_product_list
 
 # note that cetbuildtools depends only on products which have no qualifiers
