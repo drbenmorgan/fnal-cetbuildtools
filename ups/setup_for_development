@@ -16,10 +16,10 @@ test $?shell = 1 && set ss=csh || ss=sh
 # Note: perhaps the trickiest thing in this file is the sh set_ function tries to return the same status
 #       as at the start of the function (which most likely is the result of a back-tick expression
 test "$ss" = csh && alias set_ set && alias vecho_ 'if ($?vv == 1) echo \!*' || eval 'vecho_() { test -n "${vv-}" && echo "$@"; return 0; }'
-test "$ss" =  sh && eval 'set_() { sts=$?;for xx in "$@";do var=`expr "$xx" : "\([^=]*\)"`;val=`expr "$xx" : "[^=]*=\(.*\)"`;eval "$var=\"$val\"";done;return $sts; }'
-test "$ss" =  sh && eval 'setenv() { export $1;eval "$1=\"\${2-}\""; }; source() { file=$1; shift; . $file "$@"; }; unsetenv_() { unset "$@"; }'
-test "$ss" =  sh && eval 'tnotnull() { eval "test -n \"\${$1-}\""; }'                             && eval 'nullout() { "$@" >/dev/null 2>&1; }'
-test "$ss" = csh && alias tnotnull "eval '"'test $?'"\!* -eq 1' && eval '"'test -n "$'"\!*"'"'"'" && alias nullout "\!* >& /dev/null" && alias unsetenv_ unsetenv
+test "$ss" =  sh && eval 'set_() { sts=$?;for xx in "$@";do var=`expr "$xx" : "\([^=]*\)"`;val=`/bin/echo "$xx" | sed -e "1s/^[^=]*=//;s/'"'/'"'\"'"'"'\"'"'/g"'"`;eval "$var='"'"'$val'"'"'";done;return $sts; }'
+test "$ss" =  sh && eval 'setenv() { export $1;eval "$1=\"\${2-}\""; }; source() { file__=$1; shift; . $file__; sts=$?; unset file__;return $sts; }; unsetenv_() { unset "$@"; }'
+test "$ss" =  sh && eval 'tnotnull() { eval "test -n \"\${$1-}\""; }'                                   && eval 'nullout() { "$@" >/dev/null 2>&1; }'
+test "$ss" = csh && alias tnotnull "eval '"'test $?'"\!* -eq 1'       && eval '"'test -n "$'"\!*"'"'"'" && alias nullout "\!* >& /dev/null" && alias unsetenv_ unsetenv
 test "$ss" = csh && alias return exit
 
 set_ msg1='ERROR: You MUST setup ups'
