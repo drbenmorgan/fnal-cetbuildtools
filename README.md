@@ -282,12 +282,15 @@ project(ThisProject)
 
 find_package(cetbuildtools 4.7.2 REQUIRED NO_MODULE)
 
+# NB, this update to CMAKE_MODULE_PATH could also (and probably should) be
+# handled internally in the cetbuildtoolsConfig.cmake file that
+# find_package uses above.
 list(PREPEND CMAKE_MODULE_PATH "${CETBUILDTOOLS_MODULE_PATH}")
 ```
 
 Location of `cetbuildtools` is guaranteed if its install prefix is present
 in the `CMAKE_PREFIX_PATH` variable. If UPS is used for SCM, then it should
-set this variable appropritely for the setup product.
+set this variable appropriately for the setup product.
 
 
 Rejigging example `ToyCmake` to use Modern `cetbuildtools`
