@@ -196,7 +196,7 @@ Use layout:
 ```
 
 This means the client installing `cetbuildtools` will get a POSIX
-style install by default. To use a UPS-style install, only 
+style install by default. To use a UPS-style install, only
 `CMAKE_INSTALL_PREFIX` would need to be set when configuring.
 This doesn't account for installing UPS "deps/table" files, but this
 is assumed to be the responsibility of the packager (as it would be
@@ -222,25 +222,29 @@ The fundamental issue limiting the portability of `cetbuildtools` is its use of 
 specific environment variables rather than standard variables used by buildtools like
 CMake, autotools and others.
 
-- General:
+- General/System:
   - Compilers: `CC`, `CXX`
   - Compiler/linker flags: `CFLAGS`, `CXXFLAGS`
   - Runtime: `PATH`, dynamic loader path
 - CMake:
-  - Package/file search paths
+  - Package/file search paths, several covering both native and cross-compile
+    cases. All covered in the [documentation for the various `find_XXX` commands](https://cmake.org/cmake/help/v3.3/manual/cmake-commands.7.html).
 - pkg-config:
   - `PKG_CONFIG_PATH`
 
-Use of non-standard variables compounded by `cetbuildtools` exported its functionality to
-the config scripts used by client packages, creating vendor lock in on not only `cetbuildtools`
-but also UPS.
+Use of non-standard variables is compounded by `cetbuildtools` exported its
+functionality to the config scripts used by client packages, creating vendor
+lock in on not only `cetbuildtools` but also UPS. In other words, if your
+package is built with `cetbuildtools`, it *cannot* exist outside a UPS
+installation tree.
 
 
 Imported/Exported Targets
 =========================
-Despite CMake having full knowledge of both internal and found external programs, `cetbuildtools`
-(and other CMake usage at FNAL) do not make real use of this functionality. This can cause issues
-at build time if the user has not configured their PATH to include certain directories under the
+Despite CMake having full knowledge of both internal and found external
+programs, `cetbuildtools` (and other CMake usage at FNAL) do not make real
+use of this functionality. This can cause issues at build time if the user
+has not configured their PATH to include certain directories under the
 build directory.
 
 
@@ -337,7 +341,7 @@ Call Stack (most recent call first):
   CMakeLists.txt:32 (cet_cmake_env)
 ```
 
-Trace that to the lockdown in the `_verify_cc` function to use the 
+Trace that to the lockdown in the `_verify_cc` function to use the
 UPS-specific `GCC_FQ_DIR` and similar to check UPS-setup compiler
 against what CMake found (? possibly?). Provided UPS has set CC/CXX etc
 correctly, this shouldn't be needed.
