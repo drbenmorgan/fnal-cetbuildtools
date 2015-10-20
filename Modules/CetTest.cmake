@@ -2,7 +2,7 @@
 # cet_test: specify tests in a concise and transparent way (see also
 #           cet_test_env() and cet_test_assertion(), below).
 #
-# Usage: cet_test(target [<options>] [<args>] [<data-files>])
+# Usage: cet_test(target [<options>] [<args>])
 #
 ####################################
 # Options:
@@ -41,8 +41,7 @@
 #
 # DATAFILES
 #   Input and/or references files to be copied to the test area in the
-#    build tree for use by the test. The DATAFILES keyword is optional provided
-#    the placement of the files in the argument list is unambiguous.
+#    build tree for use by the test.
 #
 # DEPENDENCIES
 #   List of top-level dependencies to consider for a PREBUILT
@@ -249,9 +248,8 @@ FUNCTION(cet_test CET_TARGET)
   ELSE()
     SET(CET_TEST_EXEC ${EXECUTABLE_OUTPUT_PATH}/${CET_TARGET})
   ENDIF()
-  # Assume any remaining arguments are data files.
   IF(CET_UNPARSED_ARGUMENTS)
-    SET(CET_DATAFILES ${CET_DATAFILES} ${CET_UNPARSED_ARGUMENTS})
+    message(FATAL_ERROR "cet_test: DATAFILES option is now mandatory: non-option arguments are no longer permitted.")
   ENDIF()
   if (DEFINED CET_DATAFILES)
     list(REMOVE_DUPLICATES CET_DATAFILES)
