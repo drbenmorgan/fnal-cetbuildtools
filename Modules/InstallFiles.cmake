@@ -1,5 +1,5 @@
 ########################################################################
-# install_files()
+# cet_install_files()
 #   Install files
 #   
 #  General utility to install read-only files.  Not suitable for scripts.
@@ -7,7 +7,7 @@
 ####################################
 # Recommended use:
 #
-# install_files( LIST file_list 
+# cet_install_files( LIST file_list 
 #                DIRNAME directory name
 #                [FQ_DIR]
 #               )
@@ -20,23 +20,23 @@ include(CMakeParseArguments)
 include(CetCurrentSubdir)
 include (CetCopy)
 
-macro( install_files )
+function( cet_install_files )
   cmake_parse_arguments( IFG "FQ_DIR" "DIRNAME" "LIST" ${ARGN})
-  set( install_files_usage "USAGE: install_files( DIRNAME <directory name> LIST <file list> [FQ_DIR] )")
+  set( cet_install_files_usage "USAGE: cet_install_files( DIRNAME <directory name> LIST <file list> [FQ_DIR] )")
 
   if ( NOT IFG_DIRNAME )
-    message( FATAL_ERROR "DIRNAME is required \n ${install_files_usage}")
+    message( FATAL_ERROR "DIRNAME is required \n ${cet_install_files_usage}")
   endif( NOT IFG_DIRNAME )
   if ( NOT IFG_LIST )
-    message( FATAL_ERROR "LIST is required \n ${install_files_usage}")
+    message( FATAL_ERROR "LIST is required \n ${cet_install_files_usage}")
   endif( NOT IFG_LIST )
 
   if ( IFG_FQ_DIR )
-    set(this_install_dir ${flavorqual_dir}/${IFG_DIRNAME} )
+    set(this_install_dir "${flavorqual_dir}/${IFG_DIRNAME}" )
   else()
-    set(this_install_dir ${product}/${version}/${IFG_DIRNAME} )
+    set(this_install_dir "${product}/${version}/${IFG_DIRNAME}" )
   endif()
-  message( STATUS "install_files: files will be installed in ${this_install_dir}" )
+  message( STATUS "cet_install_files: files will be installed in ${this_install_dir}" )
 
   # copy to build directory
   set( mrb_build_dir $ENV{MRB_BUILDDIR} )
@@ -46,9 +46,9 @@ macro( install_files )
     set( this_build_path ${CETPKG_BUILD}/${IFG_DIRNAME} )
   endif()
 
-  cet_copy( ${IFG_LIST} DESTINATION ${} )
+  cet_copy( ${IFG_LIST} DESTINATION "${this_build_path}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" )
   INSTALL ( FILES  ${IFG_LIST}
-            DESTINATION ${this_install_dir} )
+            DESTINATION "${this_install_dir}" )
 
-endmacro( install_files )
+endfunction( cet_install_files )
 
