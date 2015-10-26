@@ -78,6 +78,11 @@
 #   also be specified. OUTPUT_FILTER must be a program which expects an
 #   input filename as argument and puts the filtered output on STDOUT.
 #
+# REQUIRED_FILES
+#   These files are required to be present before the test will be
+#   executed. If any are missing, ctest will record NOT RUN for this
+#   test.
+#
 # SOURCES
 #   Sources to use to build the target (default is ${target}.cc).
 #
@@ -120,6 +125,10 @@
 #   FAIL_REGULAR_EXPRESSION are incompatible with the REF option, but we
 #   cannot check for them if you use CMake's add_tests_properties()
 #   rather than cet_test(CET_TEST_PROPERTIES ...).
+#
+# * If you intend to set the property SKIP_RETURN_CODE, you should use
+#   CET_TEST_PROPERTIES to set it rather than add_tests_properties(), as
+#   cet_test() needs to take account of your preference.
 ########################################################################
 # cet_test_env: set environment for all tests here specified.
 #
@@ -251,7 +260,7 @@ FUNCTION(cet_test CET_TARGET)
   CMAKE_PARSE_ARGUMENTS (CET
     "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE"
     "OUTPUT_FILTER;TEST_EXEC"
-    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTER_ARGS;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
+    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
     )
   # Set up to handle a per-test work directory for parallel testing.
@@ -344,6 +353,14 @@ FUNCTION(cet_test CET_TARGET)
   _update_defined_test_groups(${CET_OPTIONAL_GROUPS})
   _check_want_test("${CET_OPTIONAL_GROUPS}" WANT_TEST)
   IF(NOT CET_NO_AUTO AND WANT_TEST)
+    LIST(FIND CET_TEST_PROPERTIES SKIP_RETURN_CODE skip_return_code)
+    IF (skip_return_code GREATER -1)
+      MATH(EXPR skip_return_code "${skip_return_code} + 1")
+      LIST(GET CET_TEST_PROPERTIES ${skip_return_code} skip_return_code)
+    ELSE()
+      SET(skip_return_code 247)
+      LIST(APPEND CET_TEST_PROPERTIES SKIP_RETURN_CODE ${skip_return_code})
+    ENDIF()
     IF(CET_REF)
       LIST(FIND CET_TEST_PROPERTIES PASS_REGULAR_EXPRESSION has_pass_exp)
       LIST(FIND CET_TEST_PROPERTIES FAIL_REGULAR_EXPRESSION has_fail_exp)
@@ -374,7 +391,10 @@ FUNCTION(cet_test CET_TARGET)
       ENDIF()
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-        COMMAND cet_exec_test --wd ${CET_TEST_WORKDIR} --datafiles "${CET_DATAFILES}"
+        COMMAND cet_exec_test --wd ${CET_TEST_WORKDIR}
+        --required-files "${CET_REQUIRED_FILES}"
+        --datafiles "${CET_DATAFILES}"
+        --skip-return-code ${skip_return_code}
         ${CMAKE_COMMAND}
         -DTEST_EXEC=${CET_TEST_EXEC}
         -DTEST_ARGS=${TEST_ARGS}
@@ -390,7 +410,10 @@ FUNCTION(cet_test CET_TARGET)
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
         COMMAND
-        cet_exec_test --wd ${CET_TEST_WORKDIR} --datafiles "${CET_DATAFILES}"
+        cet_exec_test --wd ${CET_TEST_WORKDIR}
+        --required-files "${CET_REQUIRED_FILES}"
+        --datafiles "${CET_DATAFILES}"
+        --skip-return-code ${skip_return_code}
         ${CET_TEST_EXEC} ${CET_TEST_ARGS})
     ENDIF(CET_REF)
     IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
