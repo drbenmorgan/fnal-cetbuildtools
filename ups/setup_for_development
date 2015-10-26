@@ -55,7 +55,7 @@ echo ----------- check this block for errors -----------------------
 set_ setup_fail="false"
 set_ exit_now="false"
 # now get the rest of the products
-set_ cmd="$CETPKG_SOURCE/bin/set_dev_products $CETPKG_SOURCE $CETPKG_BUILD simple"
+set_ cmd="$CETPKG_SOURCE/bin/set_dev_products $CETPKG_SOURCE $CETPKG_BUILD noarch"
 #echo Ready to run $cmd
 source `$cmd`
 test "$?" = 0 || set_ setup_fail="true"
@@ -80,7 +80,7 @@ echo
 echo $CETPKG_SOURCE/bin has been added to PATH
 
 # final sanity check and report
-source $CETPKG_SOURCE/bin/set_dev_check_report simple
+source $CETPKG_SOURCE/bin/set_dev_check_report noarch
 
 # cleanup before exiting
 test "$ss" = csh && unalias tnotnull nullout set_ vecho_ return

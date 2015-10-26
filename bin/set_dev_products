@@ -51,7 +51,7 @@ my $k;
 
 my $sourcedir = $ARGV[0];
 my $builddir = $ARGV[1];
-my $simple = "";
+my $noarch = "";
 my $qual = "";
 my $dop = "";
 my $type = "";
@@ -70,8 +70,9 @@ for $i ( 2 .. $#ARGV ) {
     } elsif( $ARGV[$i] eq "-p" ) {
       $dop = "prof";
       $type = "Prof";
-    } elsif( $ARGV[$i] eq "simple" ) {
-      $simple = "true";
+    } elsif( $ARGV[$i] eq "noarch" ) {
+      $noarch = "true";
+      $type = "none"
     } else {
       #$qual = $qual.$ARGV[$i].":";
       #$qdir = $qdir.$ARGV[$i]."-";
@@ -195,7 +196,7 @@ if ( $qual ) {
   if ( $dq ) {
     $qual = $dq.":".$dop;
     $qdir = $dq."-".$dop;
-  } elsif ( $simple ) {
+  } elsif ( $noarch ) {
     $qual = "-nq-";
   } else {
     my $errfl2 = $builddir."/error-".$product."-".$version;
@@ -327,7 +328,7 @@ print $set_dev_products::TSET "tnotnull UPS_OVERRIDE || setenv UPS_OVERRIDE ''\n
 print $set_dev_products::TSET "expr \"x \$UPS_OVERRIDE\" : '.* -[^- 	]*B' >/dev/null || setenv UPS_OVERRIDE \"\$UPS_OVERRIDE -B\"\n";
 print $set_dev_products::TSET "setenv CETPKG_NAME $product\n";
 print $set_dev_products::TSET "setenv CETPKG_VERSION $version\n";
-if ( $simple ) {
+if ( $noarch ) {
   print $set_dev_products::TSET "unsetenv_ CETPKG_QUAL\n";
   print $set_dev_products::TSET "unsetenv_ CETPKG_TYPE\n";
   print $set_dev_products::TSET "unsetenv_ CETPKG_CC\n";
