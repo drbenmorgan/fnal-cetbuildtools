@@ -73,6 +73,7 @@ our (@EXPORT, @setup_list);
 	       check_cetbuildtools_version 
 	       check_for_old_product_deps
 	       check_for_old_setup_files
+	       check_for_old_noarch_setup_file
                @setup_list);
 
 sub get_parent_info {
@@ -788,6 +789,21 @@ sub check_for_old_setup_files {
   while ( $line=<PIN> ) {
     chop $line;
     if ( $line =~ /UPS_OVERRIDE/ ) {
+            $retval = 1;
+    }
+  }
+  close(PIN);
+  return $retval;
+}
+
+sub check_for_old_noarch_setup_file {
+  my @params = @_;
+  my $retval = 0;
+  my $line;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( $line =~ /simple/ ) {
             $retval = 1;
     }
   }
