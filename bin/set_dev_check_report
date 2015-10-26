@@ -38,7 +38,7 @@ test $have_noarch = "false" && echo CETPKG_CXX=$CETPKG_CXX
 test $have_noarch = "false" && echo CETPKG_FC=$CETPKG_FC
 echo
 test $have_noarch = "false" && echo Please use \"buildtool\" for preference \(see \"buildtool -h\"\), or this cmake command:
-test -n "${CETPKG_INSTALL}" && set_ iprefix="\\\${CETPKG_INSTALL}" || set_ iprefix=/install/path
+test -n "${CETPKG_INSTALL}" && set_ iprefix="\${CETPKG_INSTALL}" || set_ iprefix=/install/path
 test $have_noarch = "false" && echo env CC=${CETPKG_CC} CXX=${CETPKG_CXX} FC=${CETPKG_FC} cmake -DCMAKE_INSTALL_PREFIX=\"${iprefix}\" -DCMAKE_BUILD_TYPE=\${CETPKG_TYPE} \"\${CETPKG_SOURCE}\"
 test $have_noarch = "true" && echo Use the following cmake command:
 test $have_noarch = "true" && echo cmake -DCMAKE_INSTALL_PREFIX=\"${iprefix}\" \"\${CETPKG_SOURCE}\"
