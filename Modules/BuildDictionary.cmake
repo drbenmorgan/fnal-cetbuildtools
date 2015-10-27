@@ -34,10 +34,9 @@ include(CetCurrentSubdir)
 # make sure ROOT_VERSION has been defined
 if( NOT ROOT_VERSION )
   message(FATAL_ERROR "build_dictionary: ROOT_VERSION is undefined")
+elseif(NOT (HAVE_ROOT6 OR HAVE_ROOT5))
+  message(FATAL_ERROR "build_dictionary: missing ROOT classification variables.")
 endif()
-check_ups_version(root ${ROOT_VERSION} v6_00_00
-  PRODUCT_MATCHES_VAR HAVE_ROOT6
-  )
 
 if (HAVE_ROOT6)
   set(BD_WANT_ROOTMAP TRUE)
@@ -45,7 +44,7 @@ if (HAVE_ROOT6)
   set( GENREFLEX_FLAGS
     --fail_on_warnings
     )
-else()
+else() # ROOT5
   set(BD_WANT_CAP_FILE TRUE)
   set( GENREFLEX_FLAGS
     --fail_on_warnings
@@ -221,4 +220,8 @@ function ( build_dictionary )
       install ( FILES ${PCM_OUTPUT} DESTINATION ${flavorqual_dir}/lib )
     endif()
   endif()
+  if (NOT TARGET BuildDictionary_AllDicts)
+    add_custom_target(BuildDictionary_AllDicts)
+  endif()
+  add_dependencies(BuildDictionary_AllDicts ${dictname}_dict)
 endfunction ( build_dictionary )
