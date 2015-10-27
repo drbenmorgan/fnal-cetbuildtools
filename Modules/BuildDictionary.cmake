@@ -70,7 +70,7 @@ macro( _set_dictionary_name )
 endmacro( _set_dictionary_name )
 
 function( _generate_dictionary dictname )
-  cmake_parse_arguments(GD "DICT_FUNCTIONS" "" "" ${ARGN})
+  cmake_parse_arguments(GD "DICT_FUNCTIONS" "ROOTMAP_OUTPUT" "" ${ARGN})
   set(generate_dictionary_usage "_generate_dictionary( [DICT_FUNCTIONS] [dictionary_name] )")
   #message(STATUS "calling generate_dictionary with ${ARGC} arguments: ${ARGV}")
   if (NOT HAVE_ROOT6 AND NOT GD_DICT_FUNCTIONS AND NOT CET_DICT_FUNCTIONS)
@@ -97,11 +97,10 @@ function( _generate_dictionary dictname )
       -l ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict${CMAKE_SHARED_LIBRARY_SUFFIX}
       )
   endif()
-  if (BD_WANT_ROOTMAP)
-    set(ROOTMAP_OUTPUT ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict.rootmap)
+  if (GD_ROOTMAP_OUTPUT)
     list(APPEND GENREFLEX_FLAGS
       --rootmap-lib=${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict${CMAKE_SHARED_LIBRARY_SUFFIX}
-      --rootmap=${ROOTMAP_OUTPUT}
+      --rootmap=${GD_ROOTMAP_OUTPUT}
       )
   endif()
   if (BD_WANT_CAP_FILE)
@@ -115,7 +114,7 @@ function( _generate_dictionary dictname )
   endif()
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
-    ${SOURCE_OUTPUT} ${ROOTMAP_OUTPUT} ${PCM_OUTPUT}
+    ${SOURCE_OUTPUT} ${GD_ROOTMAP_OUTPUT} ${PCM_OUTPUT}
     COMMAND ${ROOT_GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
     -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		-I ${CMAKE_SOURCE_DIR}
@@ -186,8 +185,21 @@ function ( build_dictionary )
   list(APPEND dictionary_liblist ${ROOT_CORE} ${ROOT_REFLEX})
   #message(STATUS "BUILD_DICTIONARY: building dictionary ${dictname}")
   #message(STATUS "BUILD_DICTIONARY: link dictionary ${dictname} with ${dictionary_liblist} ")
-  _generate_dictionary( ${dictname} )
+  if (BD_WANT_ROOTMAP)
+    set(ROOTMAP_OUTPUT ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict.rootmap)
+    _generate_dictionary( ${dictname} ROOTMAP_OUTPUT ${ROOTMAP_OUTPUT})
+  else()
+    _generate_dictionary( ${dictname} )
+  endif()    
   add_library(${dictname}_dict SHARED ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp )
+  if (BD_WANT_ROOTMAP)
+    add_custom_command(TARGET ${dictname}_dict POST_BUILD
+      COMMAND perl -wapi.bak -e s&\\.dylib\\.so&.dylib&g ${ROOTMAP_OUTPUT}
+      BYPRODUCTS ${ROOTMAP_OUTPUT}.bak
+      COMMENT Fixing shared library reference in ${ROOTMAP_OUTPUT}
+      VERBATIM
+      )
+  endif()
   if (BD_COMPILE_FLAGS)
     set_target_properties(${dictname}_dict
       PROPERTIES COMPILE_FLAGS ${BD_COMPILE_FLAGS})
