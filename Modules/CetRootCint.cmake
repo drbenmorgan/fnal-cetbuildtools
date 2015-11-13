@@ -71,6 +71,6 @@ endif()
                 	     ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.h )
     endif()
   endif( NOT RC_NO_INSTALL )
-  message( STATUS "cet_rootcint debug: generated code list ${cet_generated_code}")
+  #message( STATUS "cet_rootcint debug: generated code list ${cet_generated_code}")
 
 endmacro( cet_rootcint )
