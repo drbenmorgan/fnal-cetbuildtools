@@ -1,7 +1,7 @@
 # ROOT is a special case
 #
-# find_ups_root(  minimum )
-#  minimum - minimum version required
+# find_ups_root(  [minimum] )
+#  minimum - optional minimum version 
 
 include(CheckUpsVersion)
 include(CMakeParseArguments)
@@ -28,13 +28,16 @@ function(_set_and_check_prog VAR PROG)
 endfunction()
 
 # since variables are passed, this is implemented as a macro
-macro( find_ups_root minimum )
+macro( find_ups_root )
 
 # require ROOTSYS
 set( ROOTSYS $ENV{ROOTSYS} )
 if ( NOT ROOTSYS )
   message(FATAL_ERROR "root has not been setup")
 endif ()
+
+cmake_parse_arguments( FUR "" "" "" ${ARGN} )
+set( minimum )
 
 # only execute if this macro has not already been called
 if( NOT ROOT_VERSION )
@@ -47,9 +50,13 @@ if ( NOT ROOT_VERSION )
    STRING( REGEX REPLACE "^[r][o][o][t][ ]+([^ ]+).*" "\\1" ROOT_VERSION "${ROOT_STRING}" )
 endif ()
 
-#message( STATUS "find_ups_root: checking root ${ROOT_VERSION} against ${minimum}" )
-_check_version( ROOT ${ROOT_VERSION} ${minimum} )
-set( ROOT_DOT_VERSION ${dotver} )
+if( FUR_UNPARSED_ARGUMENTS )
+  list( GET FUR_UNPARSED_ARGUMENTS 0 minimum )
+  #message( STATUS "find_ups_root: checking root ${ROOT_VERSION} against ${minimum}" )
+  _check_version( ROOT ${ROOT_VERSION} ${minimum} )
+endif()
+ _get_dotver( ${ROOT_VERSION} )
+ set( ROOT_DOT_VERSION ${dotver} )
 # compare for recursion
 list(FIND cet_product_list root found_product_match)
 if( ${found_product_match} LESS 0 )

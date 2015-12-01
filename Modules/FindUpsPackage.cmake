@@ -1,8 +1,8 @@
 # define the environment for a ups product
 #
-# find_ups_product( PRODUCTNAME version )
+# find_ups_product( PRODUCTNAME [version] )
 #  PRODUCTNAME - product name
-#  version - minimum version required
+#  version - optional minimum version
 #
 # cet_cmake_config() will put ${PRODUCTNAME}Config.cmake in 
 #  $ENV{${PRODUCTNAME_UC}_FQ_DIR}/lib/${PRODUCTNAME}/cmake or $ENV{${PRODUCTNAME_UC}_DIR}/cmake
@@ -13,12 +13,19 @@
 
 include(CheckUpsVersion)
 
-macro( _use_find_package PNAME PNAME_UC PVER )
+macro( _use_find_package PNAME PNAME_UC )
+
+cmake_parse_arguments( UFP "" "" "" ${ARGN} )
+#message ( STATUS "_use_find_package debug: unparsed arguments ${UFP_UNPARSED_ARGUMENTS}" )
+set( dotver "" )
+if( UFP_UNPARSED_ARGUMENTS )
+  list( GET UFP_UNPARSED_ARGUMENTS 0 PVER )
+  _get_dotver( ${PVER} )
+endif()
+#message ( STATUS "_use_find_package debug: called with ${PNAME_UC} ${PVER}" )
+#message(STATUS "_use_find_package: dotver is ${dotver}")
 
 # we use find package to check the version
-
-_get_dotver( ${PVER} )
-#message(STATUS "_use_find_package: dotver is ${dotver}")
 
 # define the cmake search path
 set( ${PNAME_UC}_SEARCH_PATH $ENV{${PNAME_UC}_FQ_DIR} )
@@ -68,12 +75,20 @@ endif()
 endmacro( _use_find_package_noversion )
 
 # since variables are passed, this is implemented as a macro
-macro( find_ups_product PRODUCTNAME fup_version )
+macro( find_ups_product PRODUCTNAME )
 
+# if ${PRODUCTNAME}_UPS_VERSION is already defined, there is nothing to do
 if( ${PRODUCTNAME}_UPS_VERSION )
   ##message( STATUS "find_ups_product debug: ${PRODUCTNAME}_UPS_VERSION ${${PRODUCTNAME}_UPS_VERSION} is defined" )
 else()
   ##message( STATUS "find_ups_product debug: ${PRODUCTNAME}_UPS_VERSION ${${PRODUCTNAME}_UPS_VERSION} is NOT defined" )
+  cmake_parse_arguments( FUP "" "" "" ${ARGN} )
+  #message ( STATUS "find_ups_product debug: unparsed arguments ${FUP_UNPARSED_ARGUMENTS}" )
+  set( fup_version "" )
+  if( FUP_UNPARSED_ARGUMENTS )
+    list( GET FUP_UNPARSED_ARGUMENTS 0 fup_version )
+  endif()
+  #message ( STATUS "find_ups_product debug: called with ${PRODUCTNAME} ${fup_version}" )
 
   # get upper and lower case versions of the name
   string(TOUPPER  ${PRODUCTNAME} ${PRODUCTNAME}_UC )
