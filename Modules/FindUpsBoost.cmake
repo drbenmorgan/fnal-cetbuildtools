@@ -8,7 +8,7 @@
 include(CheckUpsVersion)
 
 # since variables are passed, this is implemented as a macro
-macro( find_ups_boost version  )
+macro( find_ups_boost )
 
 # Check if the boost library has been set
 # boost is a special case
@@ -54,7 +54,7 @@ if( ${found_product_match} LESS 0 )
   STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2.\\3" THISVER "${BOOST_VERS}" )
   # find_package chokes on our trailing characters such as 1.57.0a, so these must be stripped
   STRING( REGEX REPLACE "v(.*)_(.*)_([0-9]+).*" "\\1.\\2.\\3" MATCHVER "${BOOST_VERS}" )
-  message(STATUS "find_ups_boost debug: have ${THISVER} and ${MATCHVER}" )
+  #message(STATUS "find_ups_boost debug: have ${THISVER} and ${MATCHVER}" )
   if( version )
     STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2" MINVER "${version}" )
     #message(STATUS "find_ups_boost debug: Boost minimum version is ${MINVER} from ${version} " )
