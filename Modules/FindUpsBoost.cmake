@@ -1,7 +1,7 @@
 # Boost is a very special case
 #
-# find_ups_boost(  [version] )
-#  version - optional minimum version
+# find_ups_boost(  [minimum] )
+#  minimum - optional minimum version
 #  we look for nearly all of the boost libraries
 #      except math, prg_exec_monitor, test_exec_monitor
 
@@ -18,9 +18,9 @@ IF (NOT BOOST_VERS)
 ENDIF()
 
 cmake_parse_arguments( FUB "" "" "" ${ARGN} )
-set( version )
+set( minimum )
 if( FUB_UNPARSED_ARGUMENTS )
-  list( GET FUB_UNPARSED_ARGUMENTS 0 version )
+  list( GET FUB_UNPARSED_ARGUMENTS 0 minimum )
 endif()
 
 set(boost_liblist chrono 
@@ -47,7 +47,7 @@ list(FIND cet_product_list boost found_product_match)
 if( ${found_product_match} LESS 0 )
   # add to product list
   set(CONFIG_FIND_UPS_COMMANDS "${CONFIG_FIND_UPS_COMMANDS}
-    find_ups_boost( ${version} )")
+    find_ups_boost( ${minimum} )")
   set(cet_product_list boost ${cet_product_list} )
 
   # convert vx_y_z to x.y.z
@@ -55,9 +55,9 @@ if( ${found_product_match} LESS 0 )
   # find_package chokes on our trailing characters such as 1.57.0a, so these must be stripped
   STRING( REGEX REPLACE "v(.*)_(.*)_([0-9]+).*" "\\1.\\2.\\3" MATCHVER "${BOOST_VERS}" )
   #message(STATUS "find_ups_boost debug: have ${THISVER} and ${MATCHVER}" )
-  if( version )
-    STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2" MINVER "${version}" )
-    #message(STATUS "find_ups_boost debug: Boost minimum version is ${MINVER} from ${version} " )
+  if( minimum )
+    STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1.\\2" MINVER "${minimum}" )
+    #message(STATUS "find_ups_boost debug: Boost minimum version is ${MINVER} from ${minimum} " )
     #upmessage(STATUS "find_ups_boost debug: Boost  version is ${THISVER} from ${BOOST_VERS} " )
     if(  ${THISVER} STRGREATER ${MINVER} )
       #message( STATUS "find_ups_boost debug: Boost ${THISVER} meets minimum required version ${MINVER}")

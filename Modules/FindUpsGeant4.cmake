@@ -9,11 +9,11 @@ include(CheckUpsVersion)
 macro( find_ups_geant4  )
 
 cmake_parse_arguments( FUG "" "" "" ${ARGN} )
-set( version )
+set( minimum )
 if( FUG_UNPARSED_ARGUMENTS )
-  list( GET FUG_UNPARSED_ARGUMENTS 0 version )
+  list( GET FUG_UNPARSED_ARGUMENTS 0 minimum )
 endif()
-find_ups_product( geant4 ${version} )
+find_ups_product( geant4 ${minimum} )
 find_ups_product( xerces_c v3_0_0 )
 
 # add include directory to include path if it exists
