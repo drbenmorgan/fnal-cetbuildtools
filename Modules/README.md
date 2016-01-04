@@ -4,8 +4,8 @@ below comment on these aspects and suggest improvements using pure CMake. Note t
 
 ## General Issues
 ### Globs in CMake vs Make
-CMake provides functionality to "glob" a list of files matching a regex pattern, however, these *do not* work in 
-the same way wildcards in Make do. For example, to avoid explicit listing all the files that go into a program a 
+CMake provides functionality to "glob" a list of files matching a regex pattern, however, these *do not* work in
+the same way wildcards in Make do. For example, to avoid explicit listing all the files that go into a program a
 classic Makefile might use:
 
 ```make
@@ -30,7 +30,7 @@ If we now run CMake to generate Makefiles, everything is fine on the first pass:
 
 ```
 $ ls
-CMakeLists.txt  a.cc  b.cc 
+CMakeLists.txt  a.cc  b.cc
 $ cmake .
 $ make
 Scanning dependencies of target mytarget
@@ -53,7 +53,7 @@ $ make
 $
 ```
 
-we see that `c.cc` has *not* been added to the build and compiled. This is because the `file(GLOB ...)` command *is only called when CMake runs*. CMake writes rules into the Makefiles (in this case) to trigger a re-run of 
+we see that `c.cc` has *not* been added to the build and compiled. This is because the `file(GLOB ...)` command *is only called when CMake runs*. CMake writes rules into the Makefiles (in this case) to trigger a re-run of
 CMake, *but only if any input to CMake changes*. In the above case, adding `c.cc` did not change `CMakeLists.txt`,
 so the Makefile does not trigger a rerun of CMake. We therefore need to remember to rerun CMake manually between
 every build invocation:
@@ -87,7 +87,7 @@ On the first pass of CMake/build, this produces exactly the same behaviour as gl
 
 ```
 $ ls
-CMakeLists.txt  a.cc  b.cc 
+CMakeLists.txt  a.cc  b.cc
 $ cmake .
 $ make
 Scanning dependencies of target mytarget
@@ -166,7 +166,7 @@ of reliability and clarity occur.
 ### Unit Testing with Boost.Unit
 Boost's Unit test framework is used as the core testing system for FNAL products (up to Art/LArSoft at least).
 Building test enabled programs/libraries usually requires applying certain compile definitions to source files
-together with linking to the relevant library. Modules in `cetbuildtools` do handle this for the user, but the 
+together with linking to the relevant library. Modules in `cetbuildtools` do handle this for the user, but the
 functionality is reproduced in several modules. The interface for enabling testing is also tightly coupled to the interface for declaring programs/libraries.
 
 A possible improvement here would be to factor the setting of preprocessor defintions and linking into
@@ -252,7 +252,7 @@ Contains hard dependence on higher level `cetlib` package in `_cet_perl_plugin_v
 If the functionality in the module is dependent on `cetlib` then the module should be promoted to `cetlib` itself to avoid a circular dependency and to properly associate functionality.
 
 ##[ProcessSmc.cmake](ProcessSmc.cmake)
-Relies on UPS to find SMC package, and *assumes* suitable `java` program in the `PATH`. 
+Relies on UPS to find SMC package, and *assumes* suitable `java` program in the `PATH`.
 
 Instead, a proper `FindSMC` CMake module should be provided. This can provide the `process_smc` function as part of its interface like other CMake Find modules (e.g. moc generation in Qt4).
 Instead, provide proper `FindSMC.cmake` package
