@@ -24,11 +24,14 @@ if( UFP_UNPARSED_ARGUMENTS )
 endif()
 #message ( STATUS "_use_find_package debug: called with ${PNAME_UC} ${PVER}" )
 #message(STATUS "_use_find_package: dotver is ${dotver}")
+set( ${PNAME}_SAVE_VERSION ${${PNAME_UC}_VERSION})
 
 # we use find package to check the version
 
 # define the cmake search path
 set( ${PNAME_UC}_SEARCH_PATH $ENV{${PNAME_UC}_FQ_DIR} )
+#message(STATUS "_use_find_package: looking for ${PNAME} ${dotver} in ${${PNAME_UC}_SEARCH_PATH}")
+
 if( NOT ${PNAME_UC}_SEARCH_PATH )
   find_package( ${PNAME} ${dotver} PATHS $ENV{${PNAME_UC}_DIR} )
 else()
@@ -37,6 +40,11 @@ endif()
 # make sure we found the product
 if( NOT ${${PNAME}_FOUND} )
   message(FATAL_ERROR "ERROR: ${PNAME} was NOT found ")
+endif()
+set( ${PNAME}_DOT_VERSION ${${PNAME}_VERSION})
+if(  ${PNAME_UC} STREQUAL ${PNAME} )
+  #message(STATUS "_use_find_package: adjusting ${PNAME}")
+  set( ${PNAME_UC}_VERSION ${${PNAME}_SAVE_VERSION})
 endif()
 # make sure the version numbers match
 if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
