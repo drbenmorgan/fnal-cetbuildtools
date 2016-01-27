@@ -1,19 +1,21 @@
 # ROOT is a special case
 #
-# find_ups_root(  minimum )
-#  minimum - minimum version required
+# find_ups_root(  [minimum] )
+#  minimum - optional minimum version 
 
 include(CheckUpsVersion)
 include(CMakeParseArguments)
 
 function(_set_root_lib_vars)
-  cmake_parse_arguments(SRLV "OPTIONAL" "" "" ${ARGN})
-  foreach (ROOTLIB ${ARGN})
-    string(TOUPPER ${ROOTLIB} ROOTLIB_UC)
-    if (EXISTS ${ROOTSYS}/lib/lib${ROOTLIB}.so)
-      set(ROOT_${ROOTLIB_UC} ${ROOTSYS}/lib/lib${ROOTLIB}.so PARENT_SCOPE)
-    elseif (NOT SRLV_OPTIONAL)
-      message(SEND_ERROR "find_ups_root: expected ROOT library lib${ROOTLIB}.so missing.")
+  file(GLOB root_libs
+    LIST_DIRECTORIES false
+    ${ROOTSYS}/lib/lib*.so ${ROOTSYS}/lib/lib*.a)
+  foreach (root_lib_path ${root_libs})
+    if (NOT root_lib_path MATCHES "Dict\\.")
+      get_filename_component(root_lib_stem ${root_lib_path} NAME_WE)
+      string(REGEX REPLACE "^lib" "" ROOTLIB ${root_lib_stem})
+      string(TOUPPER ${ROOTLIB} ROOTLIB_UC)
+      set(ROOT_${ROOTLIB_UC} ${root_lib_path} PARENT_SCOPE)
     endif()
   endforeach()
 endfunction()
@@ -26,13 +28,16 @@ function(_set_and_check_prog VAR PROG)
 endfunction()
 
 # since variables are passed, this is implemented as a macro
-macro( find_ups_root minimum )
+macro( find_ups_root )
 
 # require ROOTSYS
 set( ROOTSYS $ENV{ROOTSYS} )
 if ( NOT ROOTSYS )
   message(FATAL_ERROR "root has not been setup")
 endif ()
+
+cmake_parse_arguments( FUR "" "" "" ${ARGN} )
+set( minimum )
 
 # only execute if this macro has not already been called
 if( NOT ROOT_VERSION )
@@ -45,9 +50,13 @@ if ( NOT ROOT_VERSION )
    STRING( REGEX REPLACE "^[r][o][o][t][ ]+([^ ]+).*" "\\1" ROOT_VERSION "${ROOT_STRING}" )
 endif ()
 
-#message( STATUS "find_ups_root: checking root ${ROOT_VERSION} against ${minimum}" )
-_check_version( ROOT ${ROOT_VERSION} ${minimum} )
-set( ROOT_DOT_VERSION ${dotver} )
+if( FUR_UNPARSED_ARGUMENTS )
+  list( GET FUR_UNPARSED_ARGUMENTS 0 minimum )
+  #message( STATUS "find_ups_root: checking root ${ROOT_VERSION} against ${minimum}" )
+  _check_version( ROOT ${ROOT_VERSION} ${minimum} )
+endif()
+ _get_dotver( ${ROOT_VERSION} )
+ set( ROOT_DOT_VERSION ${dotver} )
 # compare for recursion
 list(FIND cet_product_list root found_product_match)
 if( ${found_product_match} LESS 0 )
@@ -79,31 +88,15 @@ endif()
 # add include directory to include path if it exists
 include_directories ( $ENV{ROOT_INC} )
 
-# define ROOT libraries
-_set_root_lib_vars(
-  ASImage ASImageGui Core EG Eve FFTW FitPanel
-  Foam FTGL Fumili Gdml Ged Genetic GenVector Geom GeomBuilder
-  GeomPainter GLEW Gpad Graf Graf3d Gui GuiBld GuiHtml Gviz3d GX11
-  GX11TTF Hbook Hist HistPainter Html Krb5Auth MathCore Matrix MemStat
-  minicern Minuit Minuit2 MLP Net New Physics Postscript Proof
-  ProofBench ProofDraw ProofPlayer PyROOT Quadp Recorder RGL Rint
-  RIO RootAuth SessionViewer Smatrix Spectrum SpectrumPainter SPlot
-  SQLIO SrvAuth Thread TMVA Tree TreePlayer TreeViewer VMC X3d XMLIO
-  XMLParser
-)
-
-_set_root_lib_vars(EGPythia6 OPTIONAL)
-
 check_ups_version(root ${ROOT_VERSION} v6_00_00
   PRODUCT_OLDER_VAR HAVE_ROOT5
   PRODUCT_MATCHES_VAR HAVE_ROOT6
   )
 
-if (HAVE_ROOT5)
-  _set_root_lib_vars(Cint Cintex Reflex)
-endif()
-
 include_directories ( ${ROOTSYS}/include )
+
+# Set library variables
+_set_root_lib_vars()
 
 # define genreflex executable
 _set_and_check_prog(ROOT_GENREFLEX ${ROOTSYS}/bin/genreflex)

@@ -26,6 +26,7 @@ INSTALL(FILES
   FindUpsGeant4.cmake
   FindUpsPackage.cmake
   FindUpsRoot.cmake
+  InstallFiles.cmake
   InstallPerllib.cmake
   InstallPython.cmake
   InstallSource.cmake

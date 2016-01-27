@@ -60,7 +60,7 @@ set_ cetv=` grep -e '^[ \t]*cetbuildtools' $CETPKG_SOURCE/ups/product_deps | gre
 setup -B $cetb $cetv
 test "$?" = 0 || set_ setup_fail="true"
 # now get the rest of the products
-set_ cmd="$CETBUILDTOOLS_DIR/bin/set_dev_products $CETPKG_SOURCE $CETPKG_BUILD simple"
+set_ cmd="$CETBUILDTOOLS_DIR/bin/set_dev_products $CETPKG_SOURCE $CETPKG_BUILD noarch"
 #echo Ready to run $cmd
 source `$cmd`
 test "$?" = 0 || set_ setup_fail="true"
@@ -78,7 +78,7 @@ test "${exit_now}" = "true" && return 1
 source $CETBUILDTOOLS_DIR/bin/set_dev_bin
 
 # final sanity check and report
-source $CETBUILDTOOLS_DIR/bin/set_dev_check_report simple
+source $CETBUILDTOOLS_DIR/bin/set_dev_check_report noarch
 
 # cleanup before exiting
 test "$ss" = csh && unalias tnotnull nullout set_ vecho_ return

@@ -34,10 +34,9 @@ include(CetCurrentSubdir)
 # make sure ROOT_VERSION has been defined
 if( NOT ROOT_VERSION )
   message(FATAL_ERROR "build_dictionary: ROOT_VERSION is undefined")
+elseif(NOT (HAVE_ROOT6 OR HAVE_ROOT5))
+  message(FATAL_ERROR "build_dictionary: missing ROOT classification variables.")
 endif()
-check_ups_version(root ${ROOT_VERSION} v6_00_00
-  PRODUCT_MATCHES_VAR HAVE_ROOT6
-  )
 
 if (HAVE_ROOT6)
   set(BD_WANT_ROOTMAP TRUE)
@@ -45,7 +44,7 @@ if (HAVE_ROOT6)
   set( GENREFLEX_FLAGS
     --fail_on_warnings
     )
-else()
+else() # ROOT5
   set(BD_WANT_CAP_FILE TRUE)
   set( GENREFLEX_FLAGS
     --fail_on_warnings
@@ -71,7 +70,7 @@ macro( _set_dictionary_name )
 endmacro( _set_dictionary_name )
 
 function( _generate_dictionary dictname )
-  cmake_parse_arguments(GD "DICT_FUNCTIONS" "" "" ${ARGN})
+  cmake_parse_arguments(GD "DICT_FUNCTIONS" "ROOTMAP_OUTPUT;PCM_OUTPUT_VAR" "" ${ARGN})
   set(generate_dictionary_usage "_generate_dictionary( [DICT_FUNCTIONS] [dictionary_name] )")
   #message(STATUS "calling generate_dictionary with ${ARGC} arguments: ${ARGV}")
   if (NOT HAVE_ROOT6 AND NOT GD_DICT_FUNCTIONS AND NOT CET_DICT_FUNCTIONS)
@@ -98,11 +97,10 @@ function( _generate_dictionary dictname )
       -l ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict${CMAKE_SHARED_LIBRARY_SUFFIX}
       )
   endif()
-  if (BD_WANT_ROOTMAP)
-    set(ROOTMAP_OUTPUT ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict.rootmap)
+  if (GD_ROOTMAP_OUTPUT)
     list(APPEND GENREFLEX_FLAGS
       --rootmap-lib=${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict${CMAKE_SHARED_LIBRARY_SUFFIX}
-      --rootmap=${ROOTMAP_OUTPUT}
+      --rootmap=${GD_ROOTMAP_OUTPUT}
       )
   endif()
   if (BD_WANT_CAP_FILE)
@@ -113,10 +111,13 @@ function( _generate_dictionary dictname )
   endif()
   if (BD_WANT_PCM)
     set(PCM_OUTPUT ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict_rdict.pcm)
+    if (GD_PCM_OUTPUT_VAR)
+      set(${GD_PCM_OUTPUT_VAR} ${PCM_OUTPUT} PARENT_SCOPE)
+    endif()
   endif()
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp
-    ${SOURCE_OUTPUT} ${ROOTMAP_OUTPUT} ${PCM_OUTPUT}
+    ${SOURCE_OUTPUT} ${GD_ROOTMAP_OUTPUT} ${PCM_OUTPUT}
     COMMAND ${ROOT_GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
     -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
 		-I ${CMAKE_SOURCE_DIR}
@@ -187,8 +188,21 @@ function ( build_dictionary )
   list(APPEND dictionary_liblist ${ROOT_CORE} ${ROOT_REFLEX})
   #message(STATUS "BUILD_DICTIONARY: building dictionary ${dictname}")
   #message(STATUS "BUILD_DICTIONARY: link dictionary ${dictname} with ${dictionary_liblist} ")
-  _generate_dictionary( ${dictname} )
+  if (BD_WANT_ROOTMAP)
+    set(ROOTMAP_OUTPUT ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict.rootmap)
+    _generate_dictionary( ${dictname} ROOTMAP_OUTPUT ${ROOTMAP_OUTPUT} PCM_OUTPUT_VAR PCM_OUTPUT)
+  else()
+    _generate_dictionary( ${dictname} PCM_OUTPUT_VAR PCM_OUTPUT)
+  endif()
   add_library(${dictname}_dict SHARED ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp )
+  if (BD_WANT_ROOTMAP)
+    add_custom_command(TARGET ${dictname}_dict POST_BUILD
+      COMMAND perl -wapi.bak -e s&\\.dylib\\.so&.dylib&g ${ROOTMAP_OUTPUT}
+      BYPRODUCTS ${ROOTMAP_OUTPUT}.bak
+      COMMENT Fixing shared library reference in ${ROOTMAP_OUTPUT}
+      VERBATIM
+      )
+  endif()
   if (BD_COMPILE_FLAGS)
     set_target_properties(${dictname}_dict
       PROPERTIES COMPILE_FLAGS ${BD_COMPILE_FLAGS})
@@ -217,8 +231,12 @@ function ( build_dictionary )
     if (BD_WANT_ROOTMAP)
       install ( FILES ${ROOTMAP_OUTPUT} DESTINATION ${flavorqual_dir}/lib )
     endif()
-    if (BD_WANT_PCM)
+    if (PCM_OUTPUT)
       install ( FILES ${PCM_OUTPUT} DESTINATION ${flavorqual_dir}/lib )
     endif()
   endif()
+  if (NOT TARGET BuildDictionary_AllDicts)
+    add_custom_target(BuildDictionary_AllDicts)
+  endif()
+  add_dependencies(BuildDictionary_AllDicts ${dictname}_dict)
 endfunction ( build_dictionary )

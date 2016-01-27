@@ -1,14 +1,19 @@
 # Special case for geant4 since it has so many libraries
 #
-# find_ups_geant4(  minimum )
-#  minimum - minimum version required
+# find_ups_geant4(  [minimum] )
+#  minimum - optional minimum version 
 
 include(CheckUpsVersion)
 
 # since variables are passed, this is implemented as a macro
-macro( find_ups_geant4 version )
+macro( find_ups_geant4  )
 
-find_ups_product( geant4 ${version} )
+cmake_parse_arguments( FUG "" "" "" ${ARGN} )
+set( minimum )
+if( FUG_UNPARSED_ARGUMENTS )
+  list( GET FUG_UNPARSED_ARGUMENTS 0 minimum )
+endif()
+find_ups_product( geant4 ${minimum} )
 find_ups_product( xerces_c v3_0_0 )
 
 # add include directory to include path if it exists

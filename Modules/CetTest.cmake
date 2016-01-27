@@ -2,7 +2,7 @@
 # cet_test: specify tests in a concise and transparent way (see also
 #           cet_test_env() and cet_test_assertion(), below).
 #
-# Usage: cet_test(target [<options>] [<args>] [<data-files>])
+# Usage: cet_test(target [<options>] [<args>])
 #
 ####################################
 # Options:
@@ -12,8 +12,10 @@
 #    mutually exclusive with the PREBUILT option.
 #
 # PREBUILT
-#   Do not build the target -- pick it up from the source dir (eg scripts).
-#    This option is mutually exclusive with the HANDBUILT option.
+#   Do not build the target -- pick it up from the source dir (eg
+#    scripts).  This option is mutually exclusive with the HANDBUILT
+#    option and simply calls the cet_script() function with appropriate
+#    options.
 #
 # NO_AUTO
 #   Do not add the target to the auto test list.
@@ -41,8 +43,9 @@
 #
 # DATAFILES
 #   Input and/or references files to be copied to the test area in the
-#    build tree for use by the test. The DATAFILES keyword is optional provided
-#    the placement of the files in the argument list is unambiguous.
+#    build tree for use by the test. If there is no path, or a relative
+#    path, the file is assumed to be in or under
+#    ${CMAKE_CURRENT_SOURCE_DIR}.
 #
 # DEPENDENCIES
 #   List of top-level dependencies to consider for a PREBUILT
@@ -75,6 +78,11 @@
 #   also be specified. OUTPUT_FILTER must be a program which expects an
 #   input filename as argument and puts the filtered output on STDOUT.
 #
+# REQUIRED_FILES
+#   These files are required to be present before the test will be
+#   executed. If any are missing, ctest will record NOT RUN for this
+#   test.
+#
 # SOURCES
 #   Sources to use to build the target (default is ${target}.cc).
 #
@@ -104,6 +112,23 @@
 # CET_DEFINED_TEST_GROUPS
 #  Any test group names CMake sees will be added to this list.
 #
+####################################
+# Notes:
+#
+# * cet_make_exec() and art_make_exec() are more flexible than building
+#   the test exec with cet_test(), and are to be preferred (use the
+#   NO_INSTALL option to same as appropriate). Use
+#   cet_test(... HANDBUILT TEST_EXEC ...) to use test execs built this
+#   way.
+#
+# * The CMake properties PASS_REGULAR_EXPRESSION and
+#   FAIL_REGULAR_EXPRESSION are incompatible with the REF option, but we
+#   cannot check for them if you use CMake's add_tests_properties()
+#   rather than cet_test(CET_TEST_PROPERTIES ...).
+#
+# * If you intend to set the property SKIP_RETURN_CODE, you should use
+#   CET_TEST_PROPERTIES to set it rather than add_tests_properties(), as
+#   cet_test() needs to take account of your preference.
 ########################################################################
 # cet_test_env: set environment for all tests here specified.
 #
@@ -245,7 +270,7 @@ FUNCTION(cet_test CET_TARGET)
   CMAKE_PARSE_ARGUMENTS (CET
     "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE"
     "OUTPUT_FILTER;TEST_EXEC"
-    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTER_ARGS;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
+    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
     )
   # Set up to handle a per-test work directory for parallel testing.
@@ -259,13 +284,22 @@ FUNCTION(cet_test CET_TARGET)
   ELSE()
     SET(CET_TEST_EXEC ${EXECUTABLE_OUTPUT_PATH}/${CET_TARGET})
   ENDIF()
-  # Assume any remaining arguments are data files.
   IF(CET_UNPARSED_ARGUMENTS)
-    SET(CET_DATAFILES ${CET_DATAFILES} ${CET_UNPARSED_ARGUMENTS})
+    message(FATAL_ERROR "cet_test: DATAFILES option is now mandatory: non-option arguments are no longer permitted.")
   ENDIF()
   if (DEFINED CET_DATAFILES)
     list(REMOVE_DUPLICATES CET_DATAFILES)
-  endif()
+    set(datafiles_tmp)
+    foreach (df ${CET_DATAFILES})
+      get_filename_component(dfd ${df} DIRECTORY)
+      if (dfd)
+        list(APPEND datafiles_tmp ${df})
+      else(dfd)
+        list(APPEND datafiles_tmp ${CMAKE_CURRENT_SOURCE_DIR}/${df})
+      endif(dfd)
+    endforeach()
+    set(CET_DATAFILES ${datafiles_tmp})
+  endif(DEFINED CET_DATAFILES)
   IF(CET_HANDBUILT AND CET_PREBUILT)
     # CET_HANDBUILT and CET_PREBUILT are mutually exclusive.
     MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot have both CET_HANDBUILT "
@@ -276,6 +310,8 @@ FUNCTION(cet_test CET_TARGET)
     ENDIF()
     cet_script(${CET_TARGET} ${CET_NO_INSTALL} DEPENDENCIES ${CET_DEPENDENCIES})
   ELSEIF(NOT CET_HANDBUILT) # Normal build.
+# Too noisy for now!
+#    MESSAGE(WARNING "Building the test executable with cet_test is deprecated: use cet_make_exec(NO_INSTALL) or art_make_exec(NO_INSTALL) and cet_test(HANDBUILT) instead.")
     # Build the executable.
     IF(NOT CET_SOURCES) # Useful default.
       SET(CET_SOURCES ${CET_TARGET}.cc)
@@ -301,23 +337,23 @@ FUNCTION(cet_test CET_TARGET)
       ENDIF()
     ENDIF()
     if(CET_LIBRARIES)
-       set(link_lib_list "")
-       foreach (lib ${CET_LIBRARIES})
-	 string(REGEX MATCH [/] has_path "${lib}")
-	 if( has_path )
-	   list(APPEND link_lib_list ${lib})
-	 else()
-	   string(TOUPPER  ${lib} ${lib}_UC )
-	   #_cet_debug_message( "simple_plugin: check ${lib}" )
-	   if( ${${lib}_UC} )
-             _cet_debug_message( "changing ${lib} to ${${${lib}_UC}}")
-             list(APPEND link_lib_list ${${${lib}_UC}})
-	   else()
-             list(APPEND link_lib_list ${lib})
-	   endif()
-	 endif( has_path )
-       endforeach()
-       TARGET_LINK_LIBRARIES(${CET_TARGET} ${link_lib_list})
+      set(link_lib_list "")
+      foreach (lib ${CET_LIBRARIES})
+	      string(REGEX MATCH [/] has_path "${lib}")
+	      if( has_path )
+	        list(APPEND link_lib_list ${lib})
+	      else()
+	        string(TOUPPER  ${lib} ${lib}_UC )
+	        #_cet_debug_message( "simple_plugin: check ${lib}" )
+	        if( ${${lib}_UC} )
+            _cet_debug_message( "changing ${lib} to ${${${lib}_UC}}")
+            list(APPEND link_lib_list ${${${lib}_UC}})
+	        else()
+            list(APPEND link_lib_list ${lib})
+	        endif()
+	      endif( has_path )
+      endforeach()
+      TARGET_LINK_LIBRARIES(${CET_TARGET} ${link_lib_list})
     endif()
   ENDIF()
   cet_copy(${CET_DATAFILES} DESTINATION ${CET_TEST_WORKDIR} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -327,10 +363,18 @@ FUNCTION(cet_test CET_TARGET)
   _update_defined_test_groups(${CET_OPTIONAL_GROUPS})
   _check_want_test("${CET_OPTIONAL_GROUPS}" WANT_TEST)
   IF(NOT CET_NO_AUTO AND WANT_TEST)
+    LIST(FIND CET_TEST_PROPERTIES SKIP_RETURN_CODE skip_return_code)
+    IF (skip_return_code GREATER -1)
+      MATH(EXPR skip_return_code "${skip_return_code} + 1")
+      LIST(GET CET_TEST_PROPERTIES ${skip_return_code} skip_return_code)
+    ELSE()
+      SET(skip_return_code 247)
+      LIST(APPEND CET_TEST_PROPERTIES SKIP_RETURN_CODE ${skip_return_code})
+    ENDIF()
     IF(CET_REF)
-      GET_TEST_PROPERTY(${CET_TARGET} PASS_REGULAR_EXPRESSION has_pass_exp)
-      GET_TEST_PROPERTY(${CET_TARGET} FAIL_REGULAR_EXPRESSION has_fail_exp)
-      IF(has_pass_exp OR has_fail_exp)
+      LIST(FIND CET_TEST_PROPERTIES PASS_REGULAR_EXPRESSION has_pass_exp)
+      LIST(FIND CET_TEST_PROPERTIES FAIL_REGULAR_EXPRESSION has_fail_exp)
+      IF(has_pass_exp GREATER -1 OR has_fail_exp GREATER -1)
         MESSAGE(FATAL_ERROR "Cannot specify REF option for test ${CET_TARGET} in conjunction with (PASS|FAIL)_REGULAR_EXPESSION.")
       ENDIF()
       LIST(LENGTH CET_REF CET_REF_LEN)
@@ -357,7 +401,10 @@ FUNCTION(cet_test CET_TARGET)
       ENDIF()
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-        COMMAND ${CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR} --datafiles "${CET_DATAFILES}"
+        COMMAND ${CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
+        --required-files "${CET_REQUIRED_FILES}"
+        --datafiles "${CET_DATAFILES}"
+        --skip-return-code ${skip_return_code}
         ${CMAKE_COMMAND}
         -DTEST_EXEC=${CET_TEST_EXEC}
         -DTEST_ARGS=${TEST_ARGS}
@@ -373,7 +420,10 @@ FUNCTION(cet_test CET_TARGET)
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
         COMMAND
-        ${CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR} --datafiles "${CET_DATAFILES}"
+        ${CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
+        --required-files "${CET_REQUIRED_FILES}"
+        --datafiles "${CET_DATAFILES}"
+        --skip-return-code ${skip_return_code}
         ${CET_TEST_EXEC} ${CET_TEST_ARGS})
     ENDIF(CET_REF)
     IF(${CMAKE_VERSION} VERSION_GREATER "2.8")

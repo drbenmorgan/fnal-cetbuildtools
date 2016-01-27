@@ -1,8 +1,8 @@
 ########################################################################
 # cet_copy
 #
-# Simple internal copy target to (hopefully) avoid triggering a CMake
-# when files have changed.
+# Simple internal copy target to avoid triggering a CMake when files
+# have changed.
 #
 # Usage: cet_copy(<sources>... DESTINATION <dir> [options])
 #
@@ -67,6 +67,7 @@ function (cet_copy)
     endif()
     add_custom_command(OUTPUT "${dest_path}"
       WORKING_DIRECTORY "${CETC_WORKING_DIRECTORY}"
+      COMMAND ${CMAKE_COMMAND} -E make_directory "${CETC_DESTINATION}"
       COMMAND ${CMAKE_COMMAND} -E copy "${source}" "${dest_path}"
       COMMENT "Copying ${source} to ${dest_path}"
       DEPENDS "${source}" ${CETC_DEPENDENCIES}

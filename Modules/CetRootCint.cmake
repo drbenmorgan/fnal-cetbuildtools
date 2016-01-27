@@ -4,6 +4,13 @@
 
 macro( cet_rootcint rc_output_name )
 
+# make sure ROOT_VERSION has been defined
+if( NOT ROOT_VERSION )
+  message(FATAL_ERROR "cet_rootcint: ROOT_VERSION is undefined")
+elseif(NOT (HAVE_ROOT6 OR HAVE_ROOT5))
+  message(FATAL_ERROR "cet_rootcint: missing ROOT classification variables.")
+endif()
+
   set(cet_rootcint_usage "USAGE: cet_rootcint( <package name> [NO_INSTALL] )")
   cet_parse_args( RC "" "NO_INSTALL" ${ARGN})
 
@@ -57,8 +64,13 @@ macro( cet_rootcint rc_output_name )
 
   # set variable for install_source
   if( NOT RC_NO_INSTALL )
-    set(cet_generated_code ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.cc
-                	   ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.h )
+    if( HAVE_ROOT6 )
+      set(cet_generated_code ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.cc )
+    else()
+      set(cet_generated_code ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.cc
+                	     ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.h )
+    endif()
   endif( NOT RC_NO_INSTALL )
+  #message( STATUS "cet_rootcint debug: generated code list ${cet_generated_code}")
 
 endmacro( cet_rootcint )

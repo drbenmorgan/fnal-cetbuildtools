@@ -2,7 +2,6 @@
 # Modifications Copyright 2015 Ben Morgan <Ben.Morgan@warwick.ac.uk
 # Modifications Copyright 2015 University of Warwick
 
-
 set(GET_PRODUCT_INFO ${cetbuildtools_BINDIR}/report_product_info)
 message(STATUS "${GET_PRODUCT_INFO}")
 
