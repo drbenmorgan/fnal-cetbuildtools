@@ -13,7 +13,7 @@ macro(find_ups_boost)
   # boost is a special case
   set(BOOST_VERS $ENV{BOOST_VERSION})
   if(NOT BOOST_VERS)
-    messageFATAL_ERROR "Boost library has not been setup")
+    message(FATAL_ERROR "Boost library has not been setup")
   endif()
 
   cmake_parse_arguments(FUB "" "" "" ${ARGN})
