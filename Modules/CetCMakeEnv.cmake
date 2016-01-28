@@ -241,12 +241,17 @@ macro(cet_cmake_env)
   # initialize cmake config file fragments
   _cet_init_config_var()
 
+  # THIS IS THE PART THAT HARDCODES THE COMPILER DEPENDENCE
+  # - No longer call, on assumption that if one is using UPS, it has
+  #   set PATH and/or CC/CXX/FC correctly in the environment
+  #-----
   # Make sure compiler is set as the configuration requires.
-  if( "${arch}" MATCHES "noarch" )
-  message(STATUS "${product} is null flavored")
-  else()
-    _verify_compiler_quals()
-  endif()
+  #if( "${arch}" MATCHES "noarch" )
+  #message(STATUS "${product} is null flavored")
+  #else()
+  #_verify_compiler_quals()
+  #endif()
+  #-----
 
   #set package version from ups version
   set_version_from_ups( ${version} )
