@@ -1,5 +1,5 @@
 ########################################################################
-# cet_set_compiler_flags( [extra flags] ) 
+# cet_set_compiler_flags( [extra flags] )
 #
 #    sets the default compiler flags
 #
@@ -120,178 +120,185 @@ include(CetGetProductInfo)
 include(CetHaveQual)
 include(CetRegexEscape)
 
-macro( cet_report_compiler_flags )
-  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
-  message( STATUS "compiler flags for directory " ${CURRENT_SUBDIR} " and below")
-  message( STATUS "   C++     FLAGS: ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
-  message( STATUS "   C       FLAGS: ${CMAKE_C_FLAGS_${BTYPE_UC}}")
-  if (CMAKE_Fortran_COMPILER)
+# - Print compiler flags as set
+macro(cet_report_compiler_flags)
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
+  message(STATUS "compiler flags for directory " ${CURRENT_SUBDIR} " and below")
+  message(STATUS "   C++     FLAGS: ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
+  message(STATUS "   C       FLAGS: ${CMAKE_C_FLAGS_${BTYPE_UC}}")
+  if(CMAKE_Fortran_COMPILER)
     message( STATUS "   Fortran FLAGS: ${CMAKE_Fortran_FLAGS_${BTYPE_UC}}")
   endif()
-endmacro( cet_report_compiler_flags )
+endmacro()
 
+# - Process flags...
 macro( _cet_process_flags PTYPE_UC )
-   # turn a space separated string into a colon separated list
-  STRING( REGEX REPLACE " " ";" tmp_cxx_flags "${CMAKE_CXX_FLAGS_${PTYPE_UC}}")
-  STRING( REGEX REPLACE " " ";" tmp_c_flags "${CMAKE_C_FLAGS_${PTYPE_UC}}")
-  ##message( STATUS "tmp_cxx_flags: ${tmp_cxx_flags}")
-  ##message( STATUS "tmp_c_flags: ${tmp_c_flags}")
-  foreach( flag ${tmp_cxx_flags} )
-     if( ${flag} MATCHES "^-W(.*)" )
-        ##message( STATUS "Warning: ${flag}" )
-     elseif( ${flag} MATCHES "-pedantic" )
-        ##message( STATUS "Ignoring: ${flag}" )
-     elseif( ${flag} MATCHES "-std[=]c[+][+]98" )
-        ##message( STATUS "Ignoring: ${flag}" )
-     else()
-        ##message( STATUS "keep ${flag}" )
-        list(APPEND TMP_CXX_FLAGS_${PTYPE_UC} ${flag} )
-     endif()
-  endforeach( flag )
-  foreach( flag ${tmp_c_flags} )
-     if( ${flag} MATCHES "^-W(.*)" )
-        ##message( STATUS "Warning: ${flag}" )
-     elseif( ${flag} MATCHES "-pedantic" )
-        ##message( STATUS "Ignoring: ${flag}" )
-     else()
-        ##message( STATUS "keep ${flag}" )
-        list(APPEND TMP_C_FLAGS_${PTYPE_UC} ${flag} )
-     endif()
-  endforeach( flag )
-  ##message( STATUS "TMP_CXX_FLAGS_${PTYPE_UC}: ${TMP_CXX_FLAGS_${PTYPE_UC}}")
-  ##message( STATUS "TMP_C_FLAGS_${PTYPE_UC}: ${TMP_C_FLAGS_${PTYPE_UC}}")
+  # turn a space separated string into a colon separated list
+  string(REGEX REPLACE " " ";" tmp_cxx_flags "${CMAKE_CXX_FLAGS_${PTYPE_UC}}")
+  string(REGEX REPLACE " " ";" tmp_c_flags "${CMAKE_C_FLAGS_${PTYPE_UC}}")
 
-endmacro( _cet_process_flags )
+  # - CXX flags
+  foreach(flag ${tmp_cxx_flags})
+    if(${flag} MATCHES "^-W(.*)")
+      ##message( STATUS "Warning: ${flag}" )
+    elseif(${flag} MATCHES "-pedantic")
+      ##message( STATUS "Ignoring: ${flag}" )
+    elseif(${flag} MATCHES "-std[=]c[+][+]98")
+      ##message( STATUS "Ignoring: ${flag}" )
+    else()
+      list(APPEND TMP_CXX_FLAGS_${PTYPE_UC} ${flag})
+    endif()
+  endforeach()
 
-macro( cet_base_flags )
-  foreach( mytype DEBUG;OPT;PROF )
-     ##message( STATUS "checking ${mytype}" )
-     _cet_process_flags( ${mytype} )
-     ##message( STATUS "${mytype} C   flags: ${TMP_C_FLAGS_${mytype}}")
-     ##message( STATUS "${mytype} CXX flags: ${TMP_CXX_FLAGS_${mytype}}")
-     set( CET_BASE_CXX_FLAG_${mytype} ${TMP_CXX_FLAGS_${mytype}}
-          CACHE STRING "base CXX ${mytype} flags for ups table"
-	  FORCE)
-     set( CET_BASE_C_FLAG_${mytype} ${TMP_C_FLAGS_${mytype}}
-          CACHE STRING "base C ${mytype} flags for ups table"
-	  FORCE)
-  endforeach( mytype )
-  ##message( STATUS "CET_BASE_CXX_FLAG_DEBUG: ${CET_BASE_CXX_FLAG_DEBUG}")
-  ##message( STATUS "CET_BASE_CXX_FLAG_OPT:   ${CET_BASE_CXX_FLAG_OPT}")
-  ##message( STATUS "CET_BASE_CXX_FLAG_PROF:  ${CET_BASE_CXX_FLAG_PROF}")
-endmacro( cet_base_flags )
+  # - C flags
+  foreach(flag ${tmp_c_flags})
+    if(${flag} MATCHES "^-W(.*)")
+      ##message( STATUS "Warning: ${flag}" )
+    elseif( ${flag} MATCHES "-pedantic" )
+      ##message( STATUS "Ignoring: ${flag}" )
+    else()
+      list(APPEND TMP_C_FLAGS_${PTYPE_UC} ${flag})
+    endif()
+  endforeach()
+endmacro()
 
-macro( _cet_add_build_types )
-  SET( CMAKE_CXX_FLAGS_OPT "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
+
+# - Base flags
+macro(cet_base_flags)
+  foreach(mytype DEBUG;OPT;PROF)
+    _cet_process_flags( ${mytype})
+    set(CET_BASE_CXX_FLAG_${mytype} ${TMP_CXX_FLAGS_${mytype}}
+      CACHE STRING "base CXX ${mytype} flags for ups table"
+      FORCE)
+    set(CET_BASE_C_FLAG_${mytype} ${TMP_C_FLAGS_${mytype}}
+      CACHE STRING "base C ${mytype} flags for ups table"
+      FORCE)
+  endforeach()
+endmacro()
+
+
+# - Custom build types
+macro(_cet_add_build_types)
+  # - "OPT" == "RELEASE"
+  SET(CMAKE_CXX_FLAGS_OPT "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
     "Flags used by the C++ compiler for optimized builds."
-    FORCE )
-  SET( CMAKE_C_FLAGS_OPT "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING
+    FORCE)
+  SET(CMAKE_C_FLAGS_OPT "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING
     "Flags used by the C compiler for optimized builds."
-    FORCE )
-  SET( CMAKE_EXE_LINKER_FLAGS_OPT "${CMAKE_EXE_LINKER_FLAGS_RELEASE}"
+    FORCE)
+  SET(CMAKE_EXE_LINKER_FLAGS_OPT "${CMAKE_EXE_LINKER_FLAGS_RELEASE}"
     CACHE STRING
     "Flags used for linking binaries for optimized builds."
-    FORCE )
-  SET( CMAKE_SHARED_LINKER_FLAGS_OPT "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}"
+    FORCE)
+  SET(CMAKE_SHARED_LINKER_FLAGS_OPT "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}"
     CACHE STRING
     "Flags used by the shared libraries linker for optimized builds."
-    FORCE )
+    FORCE)
   MARK_AS_ADVANCED(
     CMAKE_CXX_FLAGS_OPT
     CMAKE_C_FLAGS_OPT
     CMAKE_EXE_LINKER_FLAGS_OPT
-    CMAKE_SHARED_LINKER_FLAGS_OPT )
+    CMAKE_SHARED_LINKER_FLAGS_OPT
+    )
 
-  SET( CMAKE_CXX_FLAGS_PROF "${CMAKE_CXX_FLAGS_MINSIZEREL}" CACHE STRING
+  # - "PROF" == "MINSIZEREL"
+  SET(CMAKE_CXX_FLAGS_PROF "${CMAKE_CXX_FLAGS_MINSIZEREL}" CACHE STRING
     "Flags used by the C++ compiler for optimized builds."
-    FORCE )
-  SET( CMAKE_C_FLAGS_PROF "${CMAKE_C_FLAGS_MINSIZEREL}" CACHE STRING
+    FORCE)
+  SET(CMAKE_C_FLAGS_PROF "${CMAKE_C_FLAGS_MINSIZEREL}" CACHE STRING
     "Flags used by the C compiler for optimized builds."
-    FORCE )
-  SET( CMAKE_EXE_LINKER_FLAGS_PROF "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}"
+    FORCE)
+  SET(CMAKE_EXE_LINKER_FLAGS_PROF "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}"
     CACHE STRING
     "Flags used for linking binaries for optimized builds."
-    FORCE )
-  SET( CMAKE_SHARED_LINKER_FLAGS_PROF "${CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL}"
+    FORCE)
+  SET(CMAKE_SHARED_LINKER_FLAGS_PROF "${CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL}"
     CACHE STRING
     "Flags used by the shared libraries linker for optimized builds."
-    FORCE )
-
+    FORCE)
   MARK_AS_ADVANCED(
     CMAKE_CXX_FLAGS_PROF
     CMAKE_C_FLAGS_PROF
     CMAKE_EXE_LINKER_FLAGS_PROF
-    CMAKE_SHARED_LINKER_FLAGS_PROF )
+    CMAKE_SHARED_LINKER_FLAGS_PROF
+    )
 
   # Update the documentation string of CMAKE_BUILD_TYPE for GUIs
-  SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
+  SET(CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel Opt Prof."
-    FORCE )
+    FORCE)
+endmacro()
 
-endmacro( _cet_add_build_types )
 
+# - C++ standard
 function(_verify_cxx_std_flag FLAGS FLAG_VAR)
   _find_std_flag(FLAGS FOUND_STD_FLAG)
   _std_flag_from_qual(QUAL_STD_FLAG)
 
-  if (FOUND_STD_FLAG AND QUAL_STD_FLAG AND NOT FOUND_STD_FLAG STREQUAL QUAL_STD_FLAG)
+  if(FOUND_STD_FLAG AND QUAL_STD_FLAG AND NOT FOUND_STD_FLAG STREQUAL QUAL_STD_FLAG)
     message(FATAL_ERROR "Qualifier specifies ${QUAL_STD_FLAG}, but user specifies ${FOUND_STD_FLAG}.\nPlease change qualifier or (preferably) remove user setting of ${FOUND_STD_FLAG}")
   endif()
   set(${FLAG_VAR} ${QUAL_STD_FLAG} PARENT_SCOPE)
 endfunction()
 
-macro( cet_enable_asserts )
+# - Enable Asserts for any mode
+macro(cet_enable_asserts)
   remove_definitions(-DNDEBUG)
-endmacro( cet_enable_asserts )
+endmacro()
 
-macro( cet_disable_asserts )
+# - Disable asserts for any mode
+macro(cet_disable_asserts)
   remove_definitions(-DNDEBUG)
   add_definitions(-DNDEBUG)
-endmacro( cet_disable_asserts )
+endmacro()
 
-macro( cet_maybe_disable_asserts )
-  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+# - Disable asserts for certain modes
+macro(cet_maybe_disable_asserts)
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
   cet_enable_asserts() # Starting point
-  if( ${BTYPE_UC} MATCHES "OPT" OR
+  if(${BTYPE_UC} MATCHES "OPT" OR
       ${BTYPE_UC} MATCHES "PROF" OR
       ${BTYPE_UC} MATCHES "RELEASE" OR
-      ${BTYPE_UC} MATCHES "MINSIZEREL" )
+      ${BTYPE_UC} MATCHES "MINSIZEREL")
     cet_disable_asserts()
-  endif()
-endmacro( cet_maybe_disable_asserts )
-
-macro (_parse_flags_options)
-  cmake_parse_arguments(CSCF "C;CXX" "" "LANGUAGES" ${ARGN})
-  if (CSCF_C)
-    list(APPEND CSCF_LANGUAGES "C")
-  endif()
-  if (CSCF_CXX)
-    list(APPEND CSCF_LANGUAGES "CXX")
-  endif()
-  if (NOT CSCF_LANGUAGES)
-    SET(CSCF_LANGUAGES C CXX)
   endif()
 endmacro()
 
-macro( cet_add_compiler_flags )
+# - ??
+macro(_parse_flags_options)
+  cmake_parse_arguments(CSCF "C;CXX" "" "LANGUAGES" ${ARGN})
+  if(CSCF_C)
+    list(APPEND CSCF_LANGUAGES "C")
+  endif()
+  if(CSCF_CXX)
+    list(APPEND CSCF_LANGUAGES "CXX")
+  endif()
+  if(NOT CSCF_LANGUAGES)
+    set(CSCF_LANGUAGES C CXX)
+  endif()
+endmacro()
+
+# - add compiler flags
+macro(cet_add_compiler_flags)
   _parse_flags_options(${ARGN})
   string(REGEX REPLACE ";" " " CSCF_ARGS "${CSCF_UNPARSED_ARGUMENTS}")
   string(REGEX MATCH "(^| )-std=" CSCF_HAVE_STD ${CSCF_ARGS})
-  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
   # temporary hack while we wait for the real fix
   #_verify_cxx_std_flag(${CSCF_CXX})
   _verify_cxx_std_flag(CSCF_CXX QUAL_STD_FLAG)
   foreach(acf_lang ${CSCF_LANGUAGES})
-    if (CSCF_HAVE_STD)
+    if(CSCF_HAVE_STD)
       cet_remove_compiler_flags(LANGUAGES ${acf_lang} REGEX "-std=[^ ]*")
     endif()
     set(CMAKE_${acf_lang}_FLAGS_${BTYPE_UC} "${CMAKE_${acf_lang}_FLAGS_${BTYPE_UC}} ${CSCF_ARGS}")
   endforeach()
-endmacro( cet_add_compiler_flags )
+endmacro()
 
+# - ??
 function(_rm_flag_trim_whitespace VAR FLAG)
-  if (NOT ("X${FLAG}" STREQUAL "X"))
-    string(REGEX REPLACE "(^| )${FLAG}( |$)" " " ${VAR} "${${VAR}}" )
+  if(NOT ("X${FLAG}" STREQUAL "X"))
+    string(REGEX REPLACE "(^| )${FLAG}( |$)" " " ${VAR} "${${VAR}}")
   endif()
   string(REGEX REPLACE "^ +" "" ${VAR} "${${VAR}}")
   string(REGEX REPLACE " +$" "" ${VAR} "${${VAR}}")
@@ -300,12 +307,14 @@ function(_rm_flag_trim_whitespace VAR FLAG)
   set(${VAR} "${${VAR}}" PARENT_SCOPE)
 endfunction()
 
-macro( cet_remove_compiler_flags )
+# - RM compiler flags
+macro(cet_remove_compiler_flags)
   _parse_flags_options(${ARGN})
   cmake_parse_arguments(CSCF "REGEX" "" "" ${CSCF_UNPARSED_ARGUMENTS})
-  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
-  foreach (arg ${CSCF_UNPARSED_ARGUMENTS})
-    if (NOT CSCF_REGEX)
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
+
+  foreach(arg ${CSCF_UNPARSED_ARGUMENTS})
+    if(NOT CSCF_REGEX)
       cet_regex_escape("${arg}" arg)
     endif()
     foreach (rcf_lang ${CSCF_LANGUAGES})
@@ -314,17 +323,18 @@ macro( cet_remove_compiler_flags )
   endforeach()
 endmacro()
 
-# Find the first -std flag in the incoming list and put it in the
+# - Find the first -std flag in the incoming list and put it in the
 # outgoing var.
 function(_find_std_flag IN_VAR OUT_VAR)
   string(REGEX MATCH "(^| )-std=[^ ]*" found_std_flag "${${IN_VAR}}")
   set(${OUT_VAR} "${found_std_flag}" PARENT_SCOPE)
 endfunction()
 
+# - ?
 function(_find_extra_std_flags IN_VAR OUT_VAR)
   string(REGEX MATCHALL "(^| )-std=[^ ]*" found_std_flags "${${IN_VAR}}")
   list(LENGTH found_std_flags fsf_len)
-  if (fsf_len GREATER 1)
+  if(fsf_len GREATER 1)
     list(GET found_std_flags 0 tmp)
     set(${OUT_VAR} "${tmp}" PARENT_SCOPE)
   else()
@@ -332,32 +342,34 @@ function(_find_extra_std_flags IN_VAR OUT_VAR)
   endif()
 endfunction()
 
+# - Sets the C++ standard flag given the qualifier
 function(_std_flag_from_qual OUT_VAR)
   cet_have_qual("e[245]" REGEX want_cpp11)
-  if (want_cpp11)
+  if(want_cpp11)
     set(${OUT_VAR} "-std=c++11" PARENT_SCOPE)
     return()
   endif()
   cet_have_qual("i[12]" REGEX want_cpp11)
-  if (want_cpp11)
+  if(want_cpp11)
     set(${OUT_VAR} "-std=c++0x" PARENT_SCOPE)
     return()
   endif()
   cet_have_qual("e6" REGEX want_cpp1y)
-  if (want_cpp1y)
+  if(want_cpp1y)
     set(${OUT_VAR} "-std=c++1y" PARENT_SCOPE)
   else()
     cet_have_qual("e[79]" REGEX want_cpp14)
-    if (want_cpp14)
+    if(want_cpp14)
       set(${OUT_VAR} "-std=c++14" PARENT_SCOPE)
     endif()
   endif()
 endfunction()
 
+# - ?
 macro(_remove_extra_std_flags VAR)
   string(REGEX MATCHALL "(^| )-std=[^ ]*" found_std_flags "${${VAR}}")
   list(LENGTH found_std_flags fsf_len)
-  if (fsf_len GREATER 1)
+  if(fsf_len GREATER 1)
     list(REMOVE_AT found_std_flags -1)
     foreach (flag ${found_std_flags})
       cet_regex_escape("${flag}" flag)
@@ -366,54 +378,56 @@ macro(_remove_extra_std_flags VAR)
   endif()
 endmacro()
 
-macro( cet_set_compiler_flags )
+#-----------------------------------------------------------------------
+# Actual bulk method
+macro(cet_set_compiler_flags)
   CET_PARSE_ARGS(CSCF
     "DIAGS;DWARF_VER;EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
     "ALLOW_DEPRECATIONS;DWARF_STRICT;ENABLE_ASSERTS;NO_UNDEFINED;WERROR"
     ${ARGN}
     )
 
-  if (CSCF_DEFAULT_ARGS)
+  if(CSCF_DEFAULT_ARGS)
     message(FATAL_ERROR "Unexpected extra arguments: ${CSCF_DEFAULT_ARGS}.\nConsider EXTRA_FLAGS, EXTRA_C_FLAGS, EXTRA_CXX_FLAGS or EXTRA_DEFINITIONS")
   endif()
 
   _verify_cxx_std_flag(CSCF_EXTRA_CXX_FLAGS QUAL_STD_FLAG)
 
   # turn a colon separated list into a space separated string
-  STRING( REGEX REPLACE ";" " " CSCF_EXTRA_CXX_FLAGS "${CSCF_EXTRA_CXX_FLAGS}")
-  STRING( REGEX REPLACE ";" " " CSCF_EXTRA_C_FLAGS "${CSCF_EXTRA_C_FLAGS}")
-  STRING( REGEX REPLACE ";" " " CSCF_EXTRA_FLAGS "${CSCF_EXTRA_FLAGS}")
+  STRING(REGEX REPLACE ";" " " CSCF_EXTRA_CXX_FLAGS "${CSCF_EXTRA_CXX_FLAGS}")
+  STRING(REGEX REPLACE ";" " " CSCF_EXTRA_C_FLAGS "${CSCF_EXTRA_C_FLAGS}")
+  STRING(REGEX REPLACE ";" " " CSCF_EXTRA_FLAGS "${CSCF_EXTRA_FLAGS}")
 
-  set( DFLAGS_CAVALIER "" )
-  set( DXXFLAGS_CAVALIER "" )
-  set( DFLAGS_CAUTIOUS "${DFLAGS_CAVALIER} -Wall -Werror=return-type" )
-  set( DXXFLAGS_CAUTIOUS "${DXXFLAGS_CAVALIER}" )
-  set( DFLAGS_VIGILANT "${DFLAGS_CAUTIOUS} -Wextra -Wno-long-long -Winit-self" )
-  if (NOT CMAKE_C_COMPILER MATCHES "/?icc$") # Not understood by ICC
-    set( DFLAGS_VIGILANT "${DFLAGS_VIGILANT} -Wno-unused-local-typedefs" )
+  set(DFLAGS_CAVALIER "")
+  set(DXXFLAGS_CAVALIER "" )
+  set(DFLAGS_CAUTIOUS "${DFLAGS_CAVALIER} -Wall -Werror=return-type")
+  set(DXXFLAGS_CAUTIOUS "${DXXFLAGS_CAVALIER}")
+  set(DFLAGS_VIGILANT "${DFLAGS_CAUTIOUS} -Wextra -Wno-long-long -Winit-self")
+  if(NOT CMAKE_C_COMPILER MATCHES "/?icc$") # Not understood by ICC
+    set(DFLAGS_VIGILANT "${DFLAGS_VIGILANT} -Wno-unused-local-typedefs")
   endif()
-  set( DXXFLAGS_VIGILANT "${DXXFLAGS_CAUTIOUS} -Woverloaded-virtual" )
-  set( DFLAGS_PARANOID "${DFLAGS_VIGILANT} -pedantic -Wformat-y2k -Wswitch-default -Wsync-nand -Wtrampolines -Wlogical-op -Wshadow -Wcast-qual" )
-  set( DXXFLAGS_PARANOID "${DXXFLAGS_VIGILANT}" )
+  set(DXXFLAGS_VIGILANT "${DXXFLAGS_CAUTIOUS} -Woverloaded-virtual" )
+  set(DFLAGS_PARANOID "${DFLAGS_VIGILANT} -pedantic -Wformat-y2k -Wswitch-default -Wsync-nand -Wtrampolines -Wlogical-op -Wshadow -Wcast-qual")
+  set(DXXFLAGS_PARANOID "${DXXFLAGS_VIGILANT}" )
 
-  if (NOT CSCF_DIAGS)
+  if(NOT CSCF_DIAGS)
     SET(CSCF_DIAGS "CAUTIOUS")
   endif()
 
-  if (CSCF_NO_UNDEFINED)
-    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  if(CSCF_NO_UNDEFINED)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
     else()
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
     endif()
-  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # Make OS X match default SLF6 behavior.
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
   endif()
 
-  if (CSCF_WERROR)
+  if(CSCF_WERROR)
     set(CSCF_WERROR "-Werror")
-    if (CSCF_ALLOW_DEPRECATIONS)
+    if(CSCF_ALLOW_DEPRECATIONS)
       set(CSCF_WERROR "${CSCF_WERROR} -Wno-error=deprecated-declarations")
     endif()
   else()
@@ -424,21 +438,21 @@ macro( cet_set_compiler_flags )
   endif()
 
   string(TOUPPER "${CSCF_DIAGS}" CSCF_DIAGS)
-  if (CSCF_DIAGS STREQUAL "CAVALIER" OR
-      CSCF_DIAGS STREQUAL "CAUTIOUS" OR
-      CSCF_DIAGS STREQUAL "VIGILANT" OR
-      CSCF_DIAGS STREQUAL "PARANOID")
+  if(CSCF_DIAGS STREQUAL "CAVALIER" OR
+     CSCF_DIAGS STREQUAL "CAUTIOUS" OR
+     CSCF_DIAGS STREQUAL "VIGILANT" OR
+     CSCF_DIAGS STREQUAL "PARANOID")
     message(STATUS "Selected diagnostics option ${CSCF_DIAGS}")
   else()
     message(FATAL_ERROR "Unrecognized DIAGS option ${CSCF_DIAGS}")
   endif()
 
-  if (NOT CSCF_DWARF_VER)
+  if(NOT CSCF_DWARF_VER)
     # Default to DWARF2 until our debuggers come up to speed.
     set(CSCF_DWARF_VER 2)
   endif()
 
-  if (CSCF_DWARF_VER EQUAL 2)
+  if(CSCF_DWARF_VER EQUAL 2)
     set(GDWARF "-gdwarf-2")
   elseif (CSCF_DWARF_VER EQUAL 3)
     set(GDWARF "-gdwarf-3")
@@ -448,95 +462,96 @@ macro( cet_set_compiler_flags )
     message(FATAL_ERROR "Unexpected value of DWARF_VER: ${CSCF_DWARF_VER}. Valid values are 2 - 4.")
   endif()
 
-  if (GDWARF AND CSCF_DWARF_STRICT)
+  if(GDWARF AND CSCF_DWARF_STRICT)
     set(GDWARF "${GDWARF} -gstrict-dwarf")
   endif()
 
-  set( CMAKE_C_FLAGS_DEBUG "-g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_C_FLAGS_MINSIZEREL "-O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set(CMAKE_C_FLAGS_DEBUG "-g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}")
+  set(CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}")
+  set(CMAKE_C_FLAGS_MINSIZEREL "-O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}")
+  set(CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}")
+  set(CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}")
 
- _cet_add_build_types() 
+  _cet_add_build_types()
 
   if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "" FORCE)
   endif()
 
-  if( PACKAGE_TOP_DIRECTORY )
-     STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-     if( CURRENT_SUBDIR STREQUAL PACKAGE_TOP_DIRECTORY)
-       SET ( CURRENT_SUBDIR "<top>" )
-     endif()
+  if(PACKAGE_TOP_DIRECTORY)
+    STRING(REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    if(CURRENT_SUBDIR STREQUAL PACKAGE_TOP_DIRECTORY)
+      SET(CURRENT_SUBDIR "<top>")
+    endif()
   else()
-     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-     if( CURRENT_SUBDIR STREQUAL CMAKE_SOURCE_DIR )
-       SET ( CURRENT_SUBDIR "<top>" )
-     endif()
+    STRING(REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    if(CURRENT_SUBDIR STREQUAL CMAKE_SOURCE_DIR)
+      SET(CURRENT_SUBDIR "<top>")
+    endif()
   endif()
 
-  if( NOT ${CURRENT_SUBDIR} MATCHES "<top>" )
+  if(NOT ${CURRENT_SUBDIR} MATCHES "<top>")
     message(STATUS "cmake build type set to ${CMAKE_BUILD_TYPE} in directory " ${CURRENT_SUBDIR} " and below")
   endif()
 
-  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
   remove_definitions(-DNDEBUG)
-  if ( CSCF_ENABLE_ASSERTS )
+  if(CSCF_ENABLE_ASSERTS)
     cet_enable_asserts()
   else()
     cet_maybe_disable_asserts()
   endif()
   add_definitions(${CSCF_EXTRA_DEFINITIONS})
-  
+
   #message( STATUS "compiling with ${CMAKE_BASE_NAME} ${CMAKE_CXX_FLAGS}")
 
-  get_directory_property( CSCF_CD COMPILE_DEFINITIONS )
-  if( CSCF_CD )
-    message( STATUS "   DEFINE (-D): ${CSCF_CD}")
+  get_directory_property(CSCF_CD COMPILE_DEFINITIONS)
+  if(CSCF_CD)
+    message(STATUS "   DEFINE (-D): ${CSCF_CD}")
   endif()
- 
+
   _remove_extra_std_flags(CMAKE_C_FLAGS_${BTYPE_UC})
   _remove_extra_std_flags(CMAKE_CXX_FLAGS_${BTYPE_UC})
   _remove_extra_std_flags(CMAKE_Fortran_FLAGS_${BTYPE_UC})
+endmacro()
 
-endmacro( cet_set_compiler_flags )
-
-macro( cet_query_system )
+# - Print stuff
+macro(cet_query_system)
   ### This macro is useful if you need to check a variable
   ## http://cmake.org/Wiki/CMake_Useful_Variables#Compilers_and_Tools
   ## also see http://cmake.org/Wiki/CMake_Useful_Variables/Logging_Useful_Variables
-  message( STATUS "cet_query_system: begin compiler report")
-  message( STATUS "CMAKE_SYSTEM_NAME is ${CMAKE_SYSTEM_NAME}" )
-  message( STATUS "CMAKE_BASE_NAME is ${CMAKE_BASE_NAME}" )
-  message( STATUS "CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
-  message( STATUS "CMAKE_CONFIGURATION_TYPES is ${CMAKE_CONFIGURATION_TYPES}" )
-  message( STATUS "BUILD_SHARED_LIBS  is ${BUILD_SHARED_LIBS}")
-  message( STATUS "CMAKE_CXX_COMPILER_ID is ${CMAKE_CXX_COMPILER_ID}" )
-  message( STATUS "CMAKE_COMPILER_IS_GNUCXX is ${CMAKE_COMPILER_IS_GNUCXX}" )
-  message( STATUS "CMAKE_COMPILER_IS_MINGW is ${CMAKE_COMPILER_IS_MINGW}" )
-  message( STATUS "CMAKE_COMPILER_IS_CYGWIN is ${CMAKE_COMPILER_IS_CYGWIN}" )
-  message( STATUS "CMAKE_AR is ${CMAKE_AR}" )
-  message( STATUS "CMAKE_RANLIB is ${CMAKE_RANLIB}" )
-  message( STATUS "CMAKE_CXX_COMPILER is ${CMAKE_CXX_COMPILER}")
-  message( STATUS "CMAKE_CXX_OUTPUT_EXTENSION is ${CMAKE_CXX_OUTPUT_EXTENSION}" )
-  message( STATUS "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}" )
-  message( STATUS "CMAKE_CXX_FLAGS_RELEASE is ${CMAKE_CXX_FLAGS_RELEASE}" )
-  message( STATUS "CMAKE_CXX_FLAGS_MINSIZEREL is ${CMAKE_CXX_FLAGS_MINSIZEREL}" )
-  message( STATUS "CMAKE_CXX_FLAGS_RELWITHDEBINFO is ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" )
-  message( STATUS "CMAKE_CXX_STANDARD_LIBRARIES is ${CMAKE_CXX_STANDARD_LIBRARIES}" )
-  message( STATUS "CMAKE_CXX_LINK_FLAGS is ${CMAKE_CXX_LINK_FLAGS}" )
-  message( STATUS "CMAKE_C_COMPILER is ${CMAKE_C_COMPILER}")
-  message( STATUS "CMAKE_C_FLAGS is ${CMAKE_C_FLAGS}")
-  message( STATUS "CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}" )
-  message( STATUS "CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}" )
-  message( STATUS "CMAKE_C_FLAGS_MINSIZEREL is ${CMAKE_C_FLAGS_MINSIZEREL}" )
-  message( STATUS "CMAKE_C_FLAGS_RELWITHDEBINFO is ${CMAKE_C_FLAGS_RELWITHDEBINFO}" )
-  message( STATUS "CMAKE_C_OUTPUT_EXTENSION is ${CMAKE_C_OUTPUT_EXTENSION}")
-  message( STATUS "CMAKE_SHARED_LIBRARY_CXX_FLAGS is ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}" )
-  message( STATUS "CMAKE_SHARED_MODULE_CXX_FLAGS is ${CMAKE_SHARED_MODULE_CXX_FLAGS}" )
-  message( STATUS "CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS is ${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS}" )
-  message( STATUS "CMAKE_SHARED_LINKER_FLAGS  is ${CMAKE_SHARED_LINKER_FLAGS}")
-  message( STATUS "cet_query_system: end compiler report")
-endmacro( cet_query_system )
+  message(STATUS "cet_query_system: begin compiler report")
+  message(STATUS "CMAKE_SYSTEM_NAME is ${CMAKE_SYSTEM_NAME}")
+  message(STATUS "CMAKE_BASE_NAME is ${CMAKE_BASE_NAME}")
+  message(STATUS "CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
+  message(STATUS "CMAKE_CONFIGURATION_TYPES is ${CMAKE_CONFIGURATION_TYPES}")
+  message(STATUS "BUILD_SHARED_LIBS  is ${BUILD_SHARED_LIBS}")
+  message(STATUS "CMAKE_CXX_COMPILER_ID is ${CMAKE_CXX_COMPILER_ID}")
+  message(STATUS "CMAKE_COMPILER_IS_GNUCXX is ${CMAKE_COMPILER_IS_GNUCXX}")
+  message(STATUS "CMAKE_COMPILER_IS_MINGW is ${CMAKE_COMPILER_IS_MINGW}")
+  message(STATUS "CMAKE_COMPILER_IS_CYGWIN is ${CMAKE_COMPILER_IS_CYGWIN}")
+  message(STATUS "CMAKE_AR is ${CMAKE_AR}")
+  message(STATUS "CMAKE_RANLIB is ${CMAKE_RANLIB}")
+  message(STATUS "CMAKE_CXX_COMPILER is ${CMAKE_CXX_COMPILER}")
+  message(STATUS "CMAKE_CXX_OUTPUT_EXTENSION is ${CMAKE_CXX_OUTPUT_EXTENSION}")
+  message(STATUS "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}")
+  message(STATUS "CMAKE_CXX_FLAGS_RELEASE is ${CMAKE_CXX_FLAGS_RELEASE}")
+  message(STATUS "CMAKE_CXX_FLAGS_MINSIZEREL is ${CMAKE_CXX_FLAGS_MINSIZEREL}")
+  message(STATUS "CMAKE_CXX_FLAGS_RELWITHDEBINFO is ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+  message(STATUS "CMAKE_CXX_STANDARD_LIBRARIES is ${CMAKE_CXX_STANDARD_LIBRARIES}")
+  message(STATUS "CMAKE_CXX_LINK_FLAGS is ${CMAKE_CXX_LINK_FLAGS}")
+  message(STATUS "CMAKE_C_COMPILER is ${CMAKE_C_COMPILER}")
+  message(STATUS "CMAKE_C_FLAGS is ${CMAKE_C_FLAGS}")
+  message(STATUS "CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
+  message(STATUS "CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}")
+  message(STATUS "CMAKE_C_FLAGS_MINSIZEREL is ${CMAKE_C_FLAGS_MINSIZEREL}")
+  message(STATUS "CMAKE_C_FLAGS_RELWITHDEBINFO is ${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+  message(STATUS "CMAKE_C_OUTPUT_EXTENSION is ${CMAKE_C_OUTPUT_EXTENSION}")
+  message(STATUS "CMAKE_SHARED_LIBRARY_CXX_FLAGS is ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}")
+  message(STATUS "CMAKE_SHARED_MODULE_CXX_FLAGS is ${CMAKE_SHARED_MODULE_CXX_FLAGS}")
+  message(STATUS "CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS is ${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS}")
+  message(STATUS "CMAKE_SHARED_LINKER_FLAGS  is ${CMAKE_SHARED_LINKER_FLAGS}")
+  message(STATUS "cet_query_system: end compiler report")
+endmacro()
+
