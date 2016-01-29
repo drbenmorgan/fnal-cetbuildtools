@@ -392,8 +392,11 @@ The call sequence is:
     - [`InstallSource`](Modules/InstallSource.cmake)
     - [`InstallFiles`](Modules/InstallFiles.cmake)
     - [`InstallPerlLib`](Modules/InstallPerlLib.cmake)
+      - **Depends on `cetlib` if  `_cet_perl_plugin_version` called**
     - [`CetCMakeUtils`](Modules/CetCMakeUtils.cmake)
+      - **`cet_find_cetskelgen` depends on content of `cetlib`...**
     - [`CetMake`](Modules/CetMake.cmake)
+      - **side effect - calls `file(MAKE_DIRECTORY "${EXECUTABLE_OUTPUT_PATH}/")`**
     - [`CetCMakeConfig`](Modules/CetCMakeConfig.cmake)
   - [`_cet_init_config_var`](Modules/CetCMakeUtils.cmake)
     - Just sets a series of empty CMake CACHE variables
