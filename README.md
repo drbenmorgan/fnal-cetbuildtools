@@ -281,6 +281,41 @@ Working through the content and apparent tasks of the `set_dev_XXX` scripts, the
 - [`set_dev_fhicl`](bin/set_dev_fhicl) sourced shell script that prepends `.` and `CETPKG_BUILD/fcl` to `FHICL_FILE_PATH` (NB: may not always do this if package doesn't supply fhicl config).
 - Remaining `set_dev_XXX` scripts appear to be for reporting and error checking(?).
 
+Use of Environment Variables
+----------------------------
+Though `setup_for_development` will set the list of variables above, they are *almost never used* in the CMake modules of 
+`cetbuildtools` (those for dependent packages *are* used, but only in [`find_ups_product`](Modules/FindUpsPackage.cmake) and similar). How then is UPS etc information used? There are three main sources of information, which are, together with their use cases:
+
+- A package's `ups/product_deps` file
+  - Main accessors of this, at least as far as `cetbuildtools` is concerned are the various `report_XXXdir` Perl programs, e.g. [`report_bindir`](bin/report_bindir)
+  - These simply parse out the related directory info from the `product_deps` table.
+    - **Noted that this set of programs only differ by the name of the table entry to be read, so could be reduced to a single program with subcommands like svn/git**.
+  - These are used in the CMake part of `cetbuildtools` only in [`CetCMakeEnv`](Modules/CetCMakeEnv.cmake), where macros named `cet_set_XXX_directory` are used to wrap calls to the `report_XXXdir` programs.
+    - All effectively do the same thing (so lot of boilerplate code), and result in new CMake CACHE variables `${product}_XXX_dir` for each "thing".
+    - There is some templating of these paths with require CMake variables `flavorqual_dir`, `product` and `version` to be present (the latter two are set using the `cetpkg_variable_report` file as described below).
+    - `flavorqual_dir` comes from a call to [`set_flavor_qual`](Modules/SetFlavorQual.cmake) - that's quite heavily UPS dependent.
+- The environment as set by `setup_for_development` using the info in that file
+   - Direct access via CMake's `$ENV{VARNAME}` construct is limited exclusively(?) to getting information about things external to the package being built.
+   - For example, finding packages via UPS etc.
+   - *Most of this can disappear if CMake PackageConfig files are written correctly and UPS taught to set `CMAKE_PREFIX_PATH` and other standard env vars correctly*
+- The `cetpkg_variable_report` file created by [`set_dev_products`](bin/set_dev_products).
+  - The primary user of this file is the [`bin/report_product_info`](bin/report_product_info) Perl program.
+  - This simply prints out `KEY=VALUE` pairs for keys upplied on the command line.
+  - **In `cetbuildtools`, a CMake interface to `report_product_info` is supplied by the [`cet_get_product_info_item`](Modules/CetGetProductInfo.cmake) function.**
+  - **This is only used in [`CetCMakeEnv.cmake`](Modules/CetCMakeEnv.cmake) **
+    - **eight calls are made to extract the keys:**
+      - **product**
+      - **version**
+      - **default_version**
+      - **qualifier**
+      - **CC/CXX/FC**
+      - At least the first four result in CMake CACHE vars of the same names
+  - *Also used in [`bin/parse_deps.pm`](bin/parse_deps.pm), though this appears to only be in relation to the initial creation in [`set_dev_products`](bin/set_dev_products).*
+  - *It's also accessed by [`bin/buildtool`](bin/buildtool), but this is ignored for now as it's not used directly by `cetbuildtools`, plus it's likely that this program can be mostly replaced with standard CMake interfaces.*
+  
+
+
+
 
 
 Imported/Exported Targets
