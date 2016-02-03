@@ -238,6 +238,50 @@ lock in on not only `cetbuildtools` but also UPS. In other words, if your
 package is built with `cetbuildtools`, it *cannot* exist outside a UPS
 installation tree.
 
+What Actually Happens When `setup_for_development` Is Run?
+----------------------------------------------------------
+The general "developer setup" for a `cetbuildtools` based package is to
+
+1. Create build directory and `cd` to this
+2. Source the `ups/setup_for_development` script in the packages source tree
+3. Run `cmake` to configure/build
+
+The major environment variables are set in this process, and basically `setup_for_development` directly sets
+
+- `CETPKG_BUILD` : Build directory and basically taken as the working directory where `setup_for_development` is run.
+- `CETPKG_SOURCE` : Source directory and taken as one directory level above `setup_for_development`.
+
+and then uses the `set_dev_XXX` programs/scripts provided by `cetbuildtools`. Because these may behave
+differently (and `setup_for_development` may vary) depending on whether the package builds binary targets,
+the following is based on trying to run the setup process for the minimal binary package [cetlib](https://github.com/drbenmorgan/fnal-cetlib).
+
+Working through the content and apparent tasks of the `set_dev_XXX` scripts, these are divided into
+
+- [`set_dev_products`](bin/set_dev_products) Perl program that
+   - Takes command line arguments:
+     - `source_dir`, `build_dir` : compulsory. First indicates location of source tree, and will later assume this contains a `ups` subdirectory. Second is where the build will take place
+     - `[-d|-o|-p|noarch]` which map to CET build modes `Debug`, `Opt`, `Prof` and None respectively
+     - Additional qualifiers (guess things like `eN` etc).
+   - Assuming run is successful, it will output files in `build_dir`:
+     - `<project_name>-<ups_version>`
+       - This is a shell script to be sourced, and sets the environment variables:
+         - `CETPKG_NAME` : Equivalent to `PROJECT_NAME` in CMake
+         - `CETPKG_VERSION` : UPS-style version, i.e. `vMAJOR_MINOR_PATCH`, so same info as CMake's `PROJECT_VERSION` just a different format.
+         - `CETPKG_QUAL` : Colon separate list of qualifiers
+         - `CETPKG_TYPE` : the build mode, so should map directly to `CMAKE_BUILD_TYPE`. In this regard no direct support for multiconfig generators, at least not if modes should never be mixed.
+         - `CETPKG_CC` : Base name (?) of C compiler, *possibly* equivalent to standard `CC` env var.
+         - `CETPKG_CXX` : Base name (?) of C++ compiler, *possibly* equivalent to standard `CXX` env var.
+         - `CETPKG_FC` : Base name (?) of Fortran compiler, *possibly* equivalent to standard `FC` env var.
+         - Remainder of file calls UPS `setup` command for each direct dependency as required.
+     - `cetpkg_variable_report`, basically tje same variables as above, but in Key Value format.
+     - `diag_report`, purpose not yet clear, seems empty on successful run.
+   - The full path to the `<project_name>-<ups_version>` file is returned as output, and *this is sourced by the `setup_for_development` script.
+- [`set_dev_bin`](bin/set_dev_bin) sourced shell script that prepends `CETPKG_BUILD/bin` to the `PATH`.
+- [`set_dev_lib`](bin/set_dev_lib) sourced shell script that prepends `CETPKG_BUILD/lib` to the dynamic loader path.
+- [`set_dev_fhicl`](bin/set_dev_fhicl) sourced shell script that prepends `.` and `CETPKG_BUILD/fcl` to `FHICL_FILE_PATH` (NB: may not always do this if package doesn't supply fhicl config).
+- Remaining `set_dev_XXX` scripts appear to be for reporting and error checking(?).
+
+
 
 Imported/Exported Targets
 =========================
