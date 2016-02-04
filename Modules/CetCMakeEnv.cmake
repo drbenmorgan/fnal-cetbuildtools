@@ -300,24 +300,20 @@ macro(cet_check_gcc)
 endmacro(cet_check_gcc)
 
 #-----------------------------------------------------------------------
+# Use new cbt-query tool to get directories
+set(CET_CBT_QUERY "${cetbuildtools_BINDIR}/cbt-query")
+
+#-----------------------------------------------------------------------
 # # Run `report_libdir` utility
 macro( cet_set_lib_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_libdir
-  set(REPORT_LIBDIR "${cetbuildtools_BINDIR}/report_libdir")
-  if(NOT (EXISTS "${REPORT_LIBDIR}"))
-    message(FATAL_ERROR "Can't find report_libdir")
-  endif()
-
-  execute_process(COMMAND ${REPORT_LIBDIR} ${cet_ups_dir}
+  execute_process(COMMAND ${CET_CBT_QUERY} libdir ${cet_ups_dir}
     OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 
   if( ${REPORT_LIB_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_lib_dir ${flavorqual_dir}/lib CACHE STRING "Package lib directory" FORCE )
-  elseif( ${REPORT_LIB_DIR_MSG} MATCHES "NONE" )
-     set( ${product}_lib_dir ${REPORT_LIB_DIR_MSG} CACHE STRING "Package lib directory" FORCE )
-  elseif( ${REPORT_LIB_DIR_MSG} MATCHES "ERROR" )
+   elseif( ${REPORT_LIB_DIR_MSG} MATCHES "NONE|ERROR" )
      set( ${product}_lib_dir ${REPORT_LIB_DIR_MSG} CACHE STRING "Package lib directory" FORCE )
   else()
     STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" ldir1 "${REPORT_LIB_DIR_MSG}" )
@@ -329,22 +325,14 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_bindir` utility
 macro( cet_set_bin_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_bindir
-  set(REPORT_BINDIR "${cetbuildtools_BINDIR}/report_bindir")
-  if(NOT (EXISTS "${REPORT_BINDIR}"))
-    message(FATAL_ERROR "Can't find report_bindir")
-  endif()
-
-  execute_process(COMMAND ${REPORT_BINDIR} ${cet_ups_dir}
+  execute_process(COMMAND ${CET_CBT_QUERY} bindir ${cet_ups_dir}
     OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 
   if( ${REPORT_BIN_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_bin_dir ${flavorqual_dir}/bin CACHE STRING "Package bin directory" FORCE )
-  elseif( ${REPORT_BIN_DIR_MSG} MATCHES "NONE" )
-     set( ${product}_bin_dir ${REPORT_BIN_DIR_MSG} CACHE STRING "Package bin directory" FORCE )
-  elseif( ${REPORT_BIN_DIR_MSG} MATCHES "ERROR" )
+  elseif( ${REPORT_BIN_DIR_MSG} MATCHES "NONE|ERROR" )
      set( ${product}_bin_dir ${REPORT_BIN_DIR_MSG} CACHE STRING "Package bin directory" FORCE )
   else()
     STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" bdir1 "${REPORT_BIN_DIR_MSG}" )
@@ -356,22 +344,14 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_fcldir` utility
 macro(cet_set_fcl_directory)
-  # find $CETBUILDTOOLS_DIR/bin/report_fcldir
-  set(REPORT_FCLDIR "${cetbuildtools_BINDIR}/report_fcldir")
-  if(NOT (EXISTS "${REPORT_FCLDIR}"))
-    message(FATAL_ERROR "Can't find report_libdir")
-  endif()
-
-  execute_process(COMMAND ${REPORT_FCLDIR} ${cet_ups_dir}
+  execute_process(COMMAND ${CET_CBT_QUERY} fcldir ${cet_ups_dir}
     OUTPUT_VARIABLE REPORT_FCL_DIR_MSG
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 
   if( ${REPORT_FCL_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_fcl_dir ${product}/${version}/fcl CACHE STRING "Package fcl directory" FORCE )
-  elseif( ${REPORT_FCL_DIR_MSG} MATCHES "NONE" )
-     set( ${product}_fcl_dir ${REPORT_FCL_DIR_MSG} CACHE STRING "Package fcl directory" FORCE )
-  elseif( ${REPORT_FCL_DIR_MSG} MATCHES "ERROR" )
+  elseif( ${REPORT_FCL_DIR_MSG} MATCHES "NONE|ERROR" )
      set( ${product}_fcl_dir ${REPORT_FCL_DIR_MSG} CACHE STRING "Package fcl directory" FORCE )
   else()
     STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" fdir1 "${REPORT_FCL_DIR_MSG}" )
@@ -383,22 +363,14 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_fwdir` utility
 macro( cet_set_fw_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_fwdir
-  set(REPORT_FWDIR "${cetbuildtools_BINDIR}/report_fwdir")
-  if(NOT (EXISTS "${REPORT_FWDIR}"))
-    message(FATAL_ERROR "Can't find report_fwdir")
-  endif()
-
-  execute_process(COMMAND ${REPORT_FWDIR} ${cet_ups_dir}
+  execute_process(COMMAND ${CET_CBT_QUERY} fwdir ${cet_ups_dir}
     OUTPUT_VARIABLE REPORT_FW_DIR_MSG
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 
   if( ${REPORT_FW_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_fw_dir "NONE" CACHE STRING "Package fw directory" FORCE )
-  elseif( ${REPORT_FW_DIR_MSG} MATCHES "NONE" )
-     set( ${product}_fw_dir ${REPORT_FW_DIR_MSG} CACHE STRING "Package fw directory" FORCE )
-  elseif( ${REPORT_FW_DIR_MSG} MATCHES "ERROR" )
+  elseif( ${REPORT_FW_DIR_MSG} MATCHES "NONE|ERROR" )
      set( ${product}_fw_dir ${REPORT_FW_DIR_MSG} CACHE STRING "Package fw directory" FORCE )
   else()
     STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" fdir1 "${REPORT_FW_DIR_MSG}" )
@@ -410,13 +382,7 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_gdmldir` utility
 macro( cet_set_gdml_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_gdmldir
-  set(REPORT_GDMLDIR "${cetbuildtools_BINDIR}/report_gdmldir")
-  if(NOT (EXISTS "${REPORT_GDMLDIR}"))
-    message(FATAL_ERROR "Can't find report_gdmldir")
-  endif()
-
-  execute_process(COMMAND ${REPORT_GDMLDIR} ${cet_ups_dir}
+  execute_process(COMMAND ${CET_CBT_QUERY} gdmldir ${cet_ups_dir}
     OUTPUT_VARIABLE REPORT_GDML_DIR_MSG
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
@@ -437,22 +403,14 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_perllib` utility
 macro( cet_set_perllib_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_perllib
-  set(REPORT_PERLLIB "${cetbuildtools_BINDIR}/report_perllib")
-  if(NOT (EXISTS "${REPORT_PERLLIB}"))
-    message(FATAL_ERROR "Can't find report_gdmldir")
-  endif()
-
-  execute_process(COMMAND ${REPORT_PERLLIB} ${cet_ups_dir}
+  execute_process(COMMAND ${CET_CBT_QUERY} perllib ${cet_ups_dir}
     OUTPUT_VARIABLE REPORT_PERLLIB_MSG
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 
   if( ${REPORT_PERLLIB_MSG} MATCHES "DEFAULT" )
      set( ${product}_perllib "NONE" CACHE STRING "Package perllib directory" FORCE )
-  elseif( ${REPORT_PERLLIB_MSG} MATCHES "NONE" )
-     set( ${product}_perllib ${REPORT_PERLLIB_MSG} CACHE STRING "Package perllib directory" FORCE )
-  elseif( ${REPORT_PERLLIB_MSG} MATCHES "ERROR" )
+  elseif( ${REPORT_PERLLIB_MSG} MATCHES "NONE|ERROR" )
      set( ${product}_perllib ${REPORT_PERLLIB_MSG} CACHE STRING "Package perllib directory" FORCE )
   else()
     STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" fdir1 "${REPORT_PERLLIB_MSG}" )
@@ -466,22 +424,14 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_incdir` utility
 macro( cet_set_inc_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_incdir
-  set(REPORT_INCDIR "${cetbuildtools_BINDIR}/report_incdir")
-  if(NOT (EXISTS "${REPORT_INCDIR}"))
-    message(FATAL_ERROR "Can't find report_incdir")
-  endif()
-
-  execute_process(COMMAND ${REPORT_INCDIR} ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_INCDIR_MSG
+  execute_process(COMMAND ${CET_CBT_QUERY} incdir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_INC_DIR_MSG
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 
   if( ${REPORT_INC_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_inc_dir "${product}/${version}/include" CACHE STRING "Package include directory" FORCE )
-  elseif( ${REPORT_INC_DIR_MSG} MATCHES "NONE" )
-     set( ${product}_inc_dir ${REPORT_INC_DIR_MSG} CACHE STRING "Package include directory" FORCE )
-  elseif( ${REPORT_INC_DIR_MSG} MATCHES "ERROR" )
+  elseif( ${REPORT_INC_DIR_MSG} MATCHES "NONE|ERROR" )
      set( ${product}_inc_dir ${REPORT_INC_DIR_MSG} CACHE STRING "Package include directory" FORCE )
   else()
     STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" ldir1 "${REPORT_INC_DIR_MSG}" )
@@ -493,22 +443,14 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_testdir` utility
 macro( cet_set_test_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_testdir
-  set(REPORT_TESTDIR "${cetbuildtools_BINDIR}/report_testdir")
-  if(NOT (EXISTS "${REPORT_TESTDIR}"))
-    message(FATAL_ERROR "Can't find report_testdir")
-  endif()
-
-  execute_process(COMMAND ${REPORT_TESTDIR} ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_TESTDIR_MSG
+  execute_process(COMMAND ${CET_CBT_QUERY} testdir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_TEST_DIR_MSG
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 
   if( ${REPORT_TEST_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_test_dir ${product}/${version}/test CACHE STRING "Package test directory" FORCE )
-  elseif( ${REPORT_TEST_DIR_MSG} MATCHES "NONE" )
-     set( ${product}_test_dir ${REPORT_TEST_DIR_MSG} CACHE STRING "Package test directory" FORCE )
-  elseif( ${REPORT_TEST_DIR_MSG} MATCHES "ERROR" )
+  elseif( ${REPORT_TEST_DIR_MSG} MATCHES "NONE|ERROR" )
      set( ${product}_test_dir ${REPORT_TEST_DIR_MSG} CACHE STRING "Package test directory" FORCE )
   else()
     STRING( REGEX REPLACE "flavorqual_dir" "${flavorqual_dir}" bdir1 "${REPORT_TEST_DIR_MSG}" )
