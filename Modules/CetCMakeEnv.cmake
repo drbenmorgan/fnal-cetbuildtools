@@ -303,13 +303,21 @@ endmacro(cet_check_gcc)
 # Use new cbt-query tool to get directories
 set(CET_CBT_QUERY "${cetbuildtools_BINDIR}/cbt-query")
 
+# CMake interface to cbt-query
+function(cet_query _item _dir _oput)
+  execute_process(COMMAND ${CET_CBT_QUERY} ${_item} "${_dir}"
+    OUTPUT_VARIABLE __tmp_stdout
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+    # TODO : Error checking?
+		)
+  set(${_oput} "${__tmp_stdout}" PARENT_SCOPE)
+endfunction()
+
+
 #-----------------------------------------------------------------------
 # # Run `report_libdir` utility
 macro( cet_set_lib_directory )
-  execute_process(COMMAND ${CET_CBT_QUERY} libdir ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
+  cet_query("libdir" "${cet_ups_dir}" REPORT_LIB_DIR_MSG)
 
   if( ${REPORT_LIB_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_lib_dir ${flavorqual_dir}/lib CACHE STRING "Package lib directory" FORCE )
@@ -325,10 +333,7 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_bindir` utility
 macro( cet_set_bin_directory )
-  execute_process(COMMAND ${CET_CBT_QUERY} bindir ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
+  cet_query("bindir" "${cet_ups_dir}" REPORT_BIN_DIR_MSG)
 
   if( ${REPORT_BIN_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_bin_dir ${flavorqual_dir}/bin CACHE STRING "Package bin directory" FORCE )
@@ -344,10 +349,7 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_fcldir` utility
 macro(cet_set_fcl_directory)
-  execute_process(COMMAND ${CET_CBT_QUERY} fcldir ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_FCL_DIR_MSG
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
+  cet_query("fcldir" "${cet_ups_dir}" REPORT_FCL_DIR_MSG)
 
   if( ${REPORT_FCL_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_fcl_dir ${product}/${version}/fcl CACHE STRING "Package fcl directory" FORCE )
@@ -363,10 +365,7 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_fwdir` utility
 macro( cet_set_fw_directory )
-  execute_process(COMMAND ${CET_CBT_QUERY} fwdir ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_FW_DIR_MSG
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
+  cet_query("fwdir" "${cet_ups_dir}" REPORT_FW_DIR_MSG)
 
   if( ${REPORT_FW_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_fw_dir "NONE" CACHE STRING "Package fw directory" FORCE )
@@ -382,10 +381,7 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_gdmldir` utility
 macro( cet_set_gdml_directory )
-  execute_process(COMMAND ${CET_CBT_QUERY} gdmldir ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_GDML_DIR_MSG
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
+  cet_query("gdmldir" "${cet_ups_dir}" REPORT_GDML_DIR_MSG)
 
   if( ${REPORT_GDML_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_gdml_dir "NONE" CACHE STRING "Package gdml directory" FORCE )
@@ -403,10 +399,7 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_perllib` utility
 macro( cet_set_perllib_directory )
-  execute_process(COMMAND ${CET_CBT_QUERY} perllib ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_PERLLIB_MSG
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
+  cet_query("perllib" "${cet_ups_dir}" REPORT_PERLLIB_MSG)
 
   if( ${REPORT_PERLLIB_MSG} MATCHES "DEFAULT" )
      set( ${product}_perllib "NONE" CACHE STRING "Package perllib directory" FORCE )
@@ -424,10 +417,7 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_incdir` utility
 macro( cet_set_inc_directory )
-  execute_process(COMMAND ${CET_CBT_QUERY} incdir ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_INC_DIR_MSG
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
+  cet_query("incdir" "${cet_ups_dir}" REPORT_INC_DIR_MSG)
 
   if( ${REPORT_INC_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_inc_dir "${product}/${version}/include" CACHE STRING "Package include directory" FORCE )
@@ -443,10 +433,7 @@ endmacro()
 #-----------------------------------------------------------------------
 # Run `report_testdir` utility
 macro( cet_set_test_directory )
-  execute_process(COMMAND ${CET_CBT_QUERY} testdir ${cet_ups_dir}
-    OUTPUT_VARIABLE REPORT_TEST_DIR_MSG
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
+  cet_query("testdir" "${cet_ups_dir}" REPORT_TEST_DIR_MSG)
 
   if( ${REPORT_TEST_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_test_dir ${product}/${version}/test CACHE STRING "Package test directory" FORCE )
