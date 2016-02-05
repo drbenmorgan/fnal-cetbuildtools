@@ -6,19 +6,18 @@
 #
 #  install steps:
 #  cd /path/to/build/directory
-#  source /path/to/cetbuildtools/ups/setup_for_development 
+#  source /path/to/cetbuildtools/ups/setup_for_development
 #  cmake [-DCMAKE_INSTALL_PREFIX=/install/path] $CETBUILDTOOLS_SOURCE
 #  make install
 #  make package (tar file for ups)
 
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
-
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Modules)
-
-include(CetCMakeEnv)
-
-# Project name. Necessary before call to cet_cmake_env()
+cmake_minimum_required(VERSION 2.8.12)
 project(cetbuildtools NONE)
+
+# - Set up of needed paths/policies for cbt itself
+set(cetbuildtools_BINDIR "${PROJECT_SOURCE_DIR}/bin")
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Modules)
+include(CetCMakeEnv)
 
 # cetbuildtools has no architecture dependence
 cet_cmake_env( noarch )

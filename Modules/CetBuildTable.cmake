@@ -4,23 +4,7 @@
 #
 
 macro( cet_build_table )
-   # find $CETBUILDTOOLS_DIR/bin/build_table
-   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-   if( ${product} MATCHES "cetbuildtools" )
-       # building cetbuildtools - use our copy
-       #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-       FIND_PROGRAM( BUILD_TABLE_NAME build_table
-                     ${PROJECT_SOURCE_DIR}/bin  )
-   elseif( NOT CETBUILDTOOLS_DIR )
-       FIND_PROGRAM( BUILD_TABLE_NAME build_table )
-   else()
-       FIND_PROGRAM( BUILD_TABLE_NAME build_table
-                     ${CETBUILDTOOLS_DIR}/bin  )
-   endif ()
-   #message(STATUS "BUILD_TABLE_NAME: ${BUILD_TABLE_NAME}")
-   if( NOT BUILD_TABLE_NAME )
-       message(FATAL_ERROR "Can't find build_table")
-   endif()
+   set(BUILD_TABLE_NAME "${cetbuildtools_BINDIR}/build_table")
 
    cet_base_flags()
    # make a temporary file with the variables
@@ -34,8 +18,8 @@ CET_BASE_C_FLAG_PROF:    ${CET_BASE_C_FLAG_PROF}
 " )
 
    ##message( STATUS "cet_build_table: cet_ups_dir is ${cet_ups_dir}")
-   execute_process(COMMAND ${BUILD_TABLE_NAME} 
-                           ${cet_ups_dir} 
+   execute_process(COMMAND ${BUILD_TABLE_NAME}
+                           ${cet_ups_dir}
 			   ${CMAKE_CURRENT_BINARY_DIR}
                    OUTPUT_VARIABLE MSG
 		   OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -48,23 +32,7 @@ endmacro( cet_build_table )
 
 
 macro( cet_version_file )
-   # find $CETBUILDTOOLS_DIR/bin/build_version_file
-   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-   if( ${product} MATCHES "cetbuildtools" )
-       # building cetbuildtools - use our copy
-       #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-       FIND_PROGRAM( BUILD_VERSION_FILE_NAME build_version_file
-                     ${PROJECT_SOURCE_DIR}/bin  )
-   elseif( NOT CETBUILDTOOLS_DIR )
-       FIND_PROGRAM( BUILD_VERSION_FILE_NAME build_version_file )
-   else()
-       FIND_PROGRAM( BUILD_VERSION_FILE_NAME build_version_file
-                     ${CETBUILDTOOLS_DIR}/bin  )
-   endif ()
-   #message(STATUS "BUILD_VERSION_FILE_NAME: ${BUILD_VERSION_FILE_NAME}")
-   if( NOT BUILD_VERSION_FILE_NAME )
-       message(FATAL_ERROR "Can't find build_version_file")
-   endif()
+   set(BUILD_VERSION_FILE_NAME "${cetbuildtools_BINDIR}/build_version_file")
 
 ##   execute_process( COMMAND date
 ##                    OUTPUT_VARIABLE datime
@@ -78,7 +46,7 @@ macro( cet_version_file )
      set( FQUAL ${${product}_full_qualifier} )
    endif()
    ##message( STATUS "calling ${BUILD_VERSION_FILE_NAME} with ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} ${product} ${version} ${default_version} ${UPSFLAVOR} ${FQUAL}")
-   execute_process(COMMAND ${BUILD_VERSION_FILE_NAME} 
+   execute_process(COMMAND ${BUILD_VERSION_FILE_NAME}
 			   ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}
 			   ${product}
 			   ${version}
@@ -91,12 +59,12 @@ macro( cet_version_file )
    ##message( STATUS "${BUILD_VERSION_FILE_NAME} returned ${MSG}")
    # check to see if we have a current chain
    if( ${default_version} MATCHES "current" )
-      install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} 
+      install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}
                DESTINATION ${product}/${version}.version )
-      install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR} 
+      install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}
                DESTINATION ${product}/current.chain )
    else()
-      install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL} 
+      install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${UPSFLAVOR}_${VQUAL}
                DESTINATION ${product}/${version}.version )
    endif()
 

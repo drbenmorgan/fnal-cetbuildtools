@@ -4,7 +4,18 @@
 # cet_cmake_env( [arch] )
 # allow optional architecture declaration
 # noarch is recognized, others are used at your own discretion
-# 
+#
+
+#-----------------------------------------------------------------------
+# HACKY PART - needed *only* whilst clients of cetbuildtools try and
+# locate it via the envvar stanza before including this module
+# Once migration to standard find_package use is complete, this block
+# should be removed
+if(NOT cetbuildtools_BINDIR AND DEFINED ENV{CETBUILDTOOLS_DIR})
+    set(cetbuildtools_BINDIR "$ENV{CETBUILDTOOLS_DIR}/bin")
+endif()
+#-----------------------------------------------------------------------
+message(STATUS "cetbuildtools_BINDIR = ${cetbuildtools_BINDIR}")
 
 # Dummy use of CET_TEST_GROUPS to quell warning.
 if (CET_TEST_GROUPS)
@@ -165,7 +176,7 @@ macro(cet_cmake_env)
   endif()
 
   _get_cetpkg_info()
-  
+
   # temporarily set this policy
   # silently ignore non-existent dependencies
   cmake_policy(SET CMP0046 OLD)
@@ -194,7 +205,7 @@ macro(cet_cmake_env)
 
   set_install_root()
   enable_testing()
-  
+
   include(CetParseArgs)
   cet_parse_args( EOSB "" "ALLOW_IN_SOURCE_BUILD" ${ARGN})
   if( EOSB_DEFAULT_ARGS)
@@ -258,7 +269,8 @@ macro(cet_cmake_env)
   cet_set_perllib_directory()
   cet_set_test_directory()
 
-  set(CETPKG_BUILD $ENV{CETPKG_BUILD})
+  # CETPKG_BUILD == PROJECT_BINARY_DIR?
+  set(CETPKG_BUILD "${PROJECT_BINARY_DIR}")
   if(NOT CETPKG_BUILD)
     message(FATAL_ERROR "Can't locate CETPKG_BUILD, required to build this package.")
   endif()
@@ -270,7 +282,7 @@ macro(cet_cmake_env)
   set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/lib)
   # make sure all executables are in one directory
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-  
+
 endmacro(cet_cmake_env)
 
 macro(cet_check_gcc)
@@ -279,25 +291,9 @@ endmacro(cet_check_gcc)
 
 macro( cet_set_lib_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_libdir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_LIB_DIR report_libdir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_LIB_DIR report_libdir )
-  else()
-      FIND_PROGRAM( REPORT_LIB_DIR report_libdir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_LIB_DIR: ${REPORT_LIB_DIR}")
-  if( NOT REPORT_LIB_DIR )
-      message(FATAL_ERROR "Can't find report_libdir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_LIB_DIR} 
-                          ${cet_ups_dir} 
+  set(REPORT_LIB_DIR "${cetbuildtools_BINDIR}/report_libdir")
+  execute_process(COMMAND ${REPORT_LIB_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -318,25 +314,9 @@ endmacro( cet_set_lib_directory )
 
 macro( cet_set_bin_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_bindir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_BIN_DIR report_bindir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_BIN_DIR report_bindir )
-  else()
-      FIND_PROGRAM( REPORT_BIN_DIR report_bindir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_BIN_DIR: ${REPORT_BIN_DIR}")
-  if( NOT REPORT_BIN_DIR )
-      message(FATAL_ERROR "Can't find report_bindir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_BIN_DIR} 
-                          ${cet_ups_dir} 
+  set(REPORT_BIN_DIR "${cetbuildtools_BINDIR}/report_bindir")
+  execute_process(COMMAND ${REPORT_BIN_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -357,25 +337,9 @@ endmacro( cet_set_bin_directory )
 
 macro( cet_set_fcl_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_fcldir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/fcl")
-      FIND_PROGRAM( REPORT_FCL_DIR report_fcldir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_FCL_DIR report_fcldir )
-  else()
-      FIND_PROGRAM( REPORT_FCL_DIR report_fcldir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_FCL_DIR: ${REPORT_FCL_DIR}")
-  if( NOT REPORT_FCL_DIR )
-      message(FATAL_ERROR "Can't find report_fcldir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_FCL_DIR} 
-                          ${cet_ups_dir} 
+  set(REPORT_FCL_DIR "${cetbuildtools_BINDIR}/report_fcldir")
+  execute_process(COMMAND ${REPORT_FCL_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_FCL_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -396,25 +360,9 @@ endmacro( cet_set_fcl_directory )
 
 macro( cet_set_fw_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_fwdir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_FW_DIR report_fwdir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_FW_DIR report_fwdir )
-  else()
-      FIND_PROGRAM( REPORT_FW_DIR report_fwdir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_FW_DIR: ${REPORT_FW_DIR}")
-  if( NOT REPORT_FW_DIR )
-      message(FATAL_ERROR "Can't find report_fwdir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_FW_DIR} 
-                          ${cet_ups_dir} 
+  set(REPORT_FW_DIR "${cetbuildtools_BINDIR}/report_fwdir")
+  execute_process(COMMAND ${REPORT_FW_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_FW_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -435,25 +383,9 @@ endmacro( cet_set_fw_directory )
 
 macro( cet_set_gdml_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_gdmldir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_GDML_DIR report_gdmldir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_GDML_DIR report_gdmldir )
-  else()
-      FIND_PROGRAM( REPORT_GDML_DIR report_gdmldir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_GDML_DIR: ${REPORT_GDML_DIR}")
-  if( NOT REPORT_GDML_DIR )
-      message(FATAL_ERROR "Can't find report_gdmldir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_GDML_DIR} 
-                          ${cet_ups_dir} 
+  set(REPORT_GDML_DIR "${cetbuildtools_BINDIR}/report_gdmldir")
+  execute_process(COMMAND ${REPORT_GDML_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_GDML_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -474,25 +406,9 @@ endmacro( cet_set_gdml_directory )
 
 macro( cet_set_perllib_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_perllib
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_PERLLIB report_perllib
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_PERLLIB report_perllib )
-  else()
-      FIND_PROGRAM( REPORT_PERLLIB report_perllib
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_PERLLIB: ${REPORT_PERLLIB}")
-  if( NOT REPORT_PERLLIB )
-      message(FATAL_ERROR "Can't find report_perllib")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_PERLLIB} 
-                          ${cet_ups_dir} 
+  set(REPORT_PERLLIB "${cetbuildtools_BINDIR}/report_perllib")
+  execute_process(COMMAND ${REPORT_PERLLIB}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_PERLLIB_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -516,25 +432,9 @@ endmacro( cet_set_perllib_directory )
 
 macro( cet_set_inc_directory )
   # find $CETBUILDTOOLS_DIR/bin/report_incdir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_INC_DIR report_incdir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_INC_DIR report_incdir )
-  else()
-      FIND_PROGRAM( REPORT_INC_DIR report_incdir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_INC_DIR: ${REPORT_INC_DIR}")
-  if( NOT REPORT_INC_DIR )
-      message(FATAL_ERROR "Can't find report_incdir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_INC_DIR} 
-                          ${cet_ups_dir} 
+  set(REPORT_INC_DIR "${cetbuildtools_BINDIR}/report_incdir")
+  execute_process(COMMAND ${REPORT_INC_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_INC_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )
@@ -556,25 +456,9 @@ endmacro( cet_set_inc_directory )
 macro( cet_set_test_directory )
   # The default is product_dir/test
   # find $CETBUILDTOOLS_DIR/bin/report_testdir
-  set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( REPORT_TEST_DIR report_testdir
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( REPORT_TEST_DIR report_testdir )
-  else()
-      FIND_PROGRAM( REPORT_TEST_DIR report_testdir
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
-  #message(STATUS "REPORT_TEST_DIR: ${REPORT_TEST_DIR}")
-  if( NOT REPORT_TEST_DIR )
-      message(FATAL_ERROR "Can't find report_testdir")
-  endif()
-  #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${REPORT_TEST_DIR} 
-                          ${cet_ups_dir} 
+  set(REPORT_TEST_DIR "${cetbuildtools_BINDIR}/report_testdir")
+  execute_process(COMMAND ${REPORT_TEST_DIR}
+                          ${cet_ups_dir}
                   OUTPUT_VARIABLE REPORT_TEST_DIR_MSG
 		  OUTPUT_STRIP_TRAILING_WHITESPACE
 		  )

@@ -8,5 +8,15 @@ set( @product@_UPS_VERSION @version@ )
 
 @CONFIG_FIND_LIBRARY_COMMANDS@
 
+# - Can't double expand variables so have to explicitly put
+#   product/package name here for now.
+set_and_check(@product@_BINDIR "@PACKAGE_cetbuildtools_bin_dir@")
+
+# Add cetbuildtools modules the path - though uses PACKAGE_PREFIX_DIR
+# as generated above, rest of path isn't derived as with product_BINDIR
+# above. Full fix awaits use of the full GNU/CETInstallDirs patch.
+# ** Nevertheless *is* relocatable **!
+list(APPEND CMAKE_MODULE_PATH "${PACKAGE_PREFIX_DIR}/@product@/@version@/Modules")
+
 check_required_components(@product@)
 

@@ -185,12 +185,12 @@ include(CetRegexEscape)
 # If Boost has been specified but the library hasn't, load the library.
 IF((NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND BOOST_VERS)
   find_ups_boost(${BOOST_VERS} unit_test_framework)
-ENDIF() 
+ENDIF()
 
+# - Local variables/properties
 SET(CET_TEST_GROUPS "NONE"
   CACHE STRING "List of optional test groups to be configured."
   )
-
 
 STRING(TOUPPER "${CET_TEST_GROUPS}" CET_TEST_GROUPS_UC)
 
@@ -198,6 +198,13 @@ SET(CET_TEST_ENV ""
   CACHE INTERNAL "Environment to add to every test"
   FORCE
   )
+
+# - Programs and Modules
+# Default comparator
+set(CET_RUNANDCOMPARE "${CMAKE_CURRENT_LIST_DIR}/RunAndCompare.cmake")
+# Test run wrapper
+set(CET_CET_EXEC_TEST "${cetbuildtools_DIR}/cet_exec_test")
+
 
 FUNCTION(_update_defined_test_groups)
   IF(ARGC)
@@ -384,14 +391,12 @@ FUNCTION(cet_test CET_TARGET)
         SEPARATE_ARGUMENTS(FILTER_ARGS UNIX_COMMAND "${CET_OUTPUT_FILTER_ARGS}")
         SET(DEF_OUTPUT_FILTER_ARGS "-DOUTPUT_FILTER_ARGS=${FILTER_ARGS}")
       ENDIF()
-      IF (DEFINED ENV{CETBUILDTOOLS_DIR})
-        SET(COMPARE $ENV{CETBUILDTOOLS_DIR}/Modules/RunAndCompare.cmake)
-      ELSE() # Inside cetbuildtools itself.
-        SET(COMPARE ${PROJECT_SOURCE_DIR}/Modules/RunAndCompare.cmake)
-      ENDIF()
+
+      SET(COMPARE "${CET_RUNANDCOMPARE}")
+
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-        COMMAND cet_exec_test --wd ${CET_TEST_WORKDIR}
+        COMMAND "${CET_CET_EXEC_TEST}" --wd ${CET_TEST_WORKDIR}
         --required-files "${CET_REQUIRED_FILES}"
         --datafiles "${CET_DATAFILES}"
         --skip-return-code ${skip_return_code}
@@ -410,7 +415,7 @@ FUNCTION(cet_test CET_TARGET)
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
         COMMAND
-        cet_exec_test --wd ${CET_TEST_WORKDIR}
+        "${CET_CET_EXEC_TEST}" --wd ${CET_TEST_WORKDIR}
         --required-files "${CET_REQUIRED_FILES}"
         --datafiles "${CET_DATAFILES}"
         --skip-return-code ${skip_return_code}
