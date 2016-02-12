@@ -58,20 +58,20 @@ sub get_cmake_bin_directory {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "bindir" ) {
-	 if( $#words < 2 ) {
-	   $binsubdir = "bin";
-	 } else {
-	   $binsubdir = $words[2];
-	 }
-         if( $words[1] eq "product_dir" ) {
-	    $bindir = "product_dir/$binsubdir";
-         } elsif( $words[1] eq "fq_dir" ) {
-	    $bindir = "flavorqual_dir/$binsubdir";
-         } elsif( $words[1] eq "-" ) {
-	    $bindir = "NONE";
-	 } else {
-	    $bindir = "ERROR";
-	 }
+        if( $#words < 2 ) {
+          $binsubdir = "bin";
+        } else {
+          $binsubdir = $words[2];
+        }
+        if( $words[1] eq "product_dir" ) {
+          $bindir = "product_dir/$binsubdir";
+        } elsif( $words[1] eq "fq_dir" ) {
+          $bindir = "flavorqual_dir/$binsubdir";
+        } elsif( $words[1] eq "-" ) {
+          $bindir = "NONE";
+        } else {
+          $bindir = "ERROR";
+        }
       }
     }
   }
@@ -92,20 +92,20 @@ sub get_cmake_lib_directory {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "libdir" ) {
-	 if( $#words < 2 ) {
-	   $libsubdir = "lib";
-	 } else {
-	   $libsubdir = $words[2];
-	 }
-         if( $words[1] eq "product_dir" ) {
-	    $libdir = "product_dir/$libsubdir";
-         } elsif( $words[1] eq "fq_dir" ) {
-	    $libdir = "flavorqual_dir/$libsubdir";
-         } elsif( $words[1] eq "-" ) {
-	    $libdir = "NONE";
-	 } else {
-	    $libdir = "ERROR";
-	 }
+        if( $#words < 2 ) {
+          $libsubdir = "lib";
+        } else {
+          $libsubdir = $words[2];
+        }
+        if( $words[1] eq "product_dir" ) {
+          $libdir = "product_dir/$libsubdir";
+        } elsif( $words[1] eq "fq_dir" ) {
+          $libdir = "flavorqual_dir/$libsubdir";
+        } elsif( $words[1] eq "-" ) {
+          $libdir = "NONE";
+        } else {
+          $libdir = "ERROR";
+        }
       }
     }
   }
@@ -126,20 +126,20 @@ sub get_cmake_inc_directory {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "incdir" ) {
-	 if( $#words < 2 ) {
-	   $incsubdir = "include";
-	 } else {
-	   $incsubdir = $words[2];
-	 }
-         if( $words[1] eq "product_dir" ) {
-	    $incdir = "product_dir/$incsubdir";
-         } elsif( $words[1] eq "fq_dir" ) {
-	    $incdir = "flavorqual_dir/$incsubdir";
-         } elsif( $words[1] eq "-" ) {
-	    $incdir = "NONE";
-	 } else {
-	    $incdir = "ERROR";
-	 }
+        if( $#words < 2 ) {
+          $incsubdir = "include";
+        } else {
+          $incsubdir = $words[2];
+        }
+        if( $words[1] eq "product_dir" ) {
+          $incdir = "product_dir/$incsubdir";
+        } elsif( $words[1] eq "fq_dir" ) {
+          $incdir = "flavorqual_dir/$incsubdir";
+        } elsif( $words[1] eq "-" ) {
+          $incdir = "NONE";
+        } else {
+          $incdir = "ERROR";
+        }
       }
     }
   }
@@ -160,20 +160,20 @@ sub get_cmake_fcl_directory {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "fcldir" ) {
-	 if( $#words < 2 ) {
-	   $fclsubdir = "fcl";
-	 } else {
-	   $fclsubdir = $words[2];
-	 }
-         if( $words[1] eq "product_dir" ) {
-	    $fcldir = "product_dir/$fclsubdir";
-         } elsif( $words[1] eq "fq_dir" ) {
-	    $fcldir = "flavorqual_dir/$fclsubdir";
-         } elsif( $words[1] eq "-" ) {
-	    $fcldir = "NONE";
-	 } else {
-	    $fcldir = "ERROR";
-	 }
+        if( $#words < 2 ) {
+          $fclsubdir = "fcl";
+        } else {
+          $fclsubdir = $words[2];
+        }
+        if( $words[1] eq "product_dir" ) {
+          $fcldir = "product_dir/$fclsubdir";
+        } elsif( $words[1] eq "fq_dir" ) {
+          $fcldir = "flavorqual_dir/$fclsubdir";
+        } elsif( $words[1] eq "-" ) {
+          $fcldir = "NONE";
+        } else {
+          $fcldir = "ERROR";
+        }
       }
     }
   }
@@ -193,22 +193,22 @@ sub get_cmake_fw_directory {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "fwdir" ) {
-         if( $words[1] eq "-" ) {
-	     $fwdir = "NONE";
-	 } else { 
-            if( ! $words[2] ) { 
-	       $fwdir = "ERROR";
-	    } else {
-	       my $fwsubdir = $words[2];
-               if( $words[1] eq "product_dir" ) {
-		  $fwdir = "product_dir/$fwsubdir";
-               } elsif( $words[1] eq "fq_dir" ) {
-		  $fwdir = "flavorqual_dir/$fwsubdir";
-	       } else {
-		  $fwdir = "ERROR";
-	       }
-	    }
-	 }
+        if( $words[1] eq "-" ) {
+          $fwdir = "NONE";
+        } else { 
+          if( ! $words[2] ) { 
+            $fwdir = "ERROR";
+          } else {
+            my $fwsubdir = $words[2];
+            if( $words[1] eq "product_dir" ) {
+              $fwdir = "product_dir/$fwsubdir";
+            } elsif( $words[1] eq "fq_dir" ) {
+              $fwdir = "flavorqual_dir/$fwsubdir";
+            } else {
+              $fwdir = "ERROR";
+            }
+          }
+        }
       }
     }
   }
@@ -229,20 +229,20 @@ sub get_cmake_gdml_directory {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "gdmldir" ) {
-	 if( $#words < 2 ) {
-	   $gdmlsubdir = "gdml";
-	 } else {
-	   $gdmlsubdir = $words[2];
-	 }
-         if( $words[1] eq "product_dir" ) {
-	    $gdmldir = "product_dir/$gdmlsubdir";
-         } elsif( $words[1] eq "fq_dir" ) {
-	    $gdmldir = "flavorqual_dir/$gdmlsubdir";
-         } elsif( $words[1] eq "-" ) {
-	    $gdmldir = "NONE";
-	 } else {
-	    $gdmldir = "ERROR";
-	 }
+        if( $#words < 2 ) {
+          $gdmlsubdir = "gdml";
+        } else {
+          $gdmlsubdir = $words[2];
+        }
+        if( $words[1] eq "product_dir" ) {
+          $gdmldir = "product_dir/$gdmlsubdir";
+        } elsif( $words[1] eq "fq_dir" ) {
+          $gdmldir = "flavorqual_dir/$gdmlsubdir";
+        } elsif( $words[1] eq "-" ) {
+          $gdmldir = "NONE";
+        } else {
+          $gdmldir = "ERROR";
+        }
       }
     }
   }
@@ -263,20 +263,20 @@ sub get_cmake_perllib {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "perllib" ) {
-	 if( $#words < 2 ) {
-	   $prlsubdir = "perllib";
-	 } else {
-	   $prlsubdir = $words[2];
-	 }
-         if( $words[1] eq "product_dir" ) {
-	    $prldir = "product_dir/$prlsubdir";
-         } elsif( $words[1] eq "fq_dir" ) {
-	    $prldir = "flavorqual_dir/$prlsubdir";
-         } elsif( $words[1] eq "-" ) {
-	    $prldir = "NONE";
-	 } else {
-	    $prldir = "ERROR";
-	 }
+        if( $#words < 2 ) {
+          $prlsubdir = "perllib";
+        } else {
+          $prlsubdir = $words[2];
+        }
+        if( $words[1] eq "product_dir" ) {
+          $prldir = "product_dir/$prlsubdir";
+        } elsif( $words[1] eq "fq_dir" ) {
+          $prldir = "flavorqual_dir/$prlsubdir";
+        } elsif( $words[1] eq "-" ) {
+          $prldir = "NONE";
+        } else {
+          $prldir = "ERROR";
+        }
       }
     }
   }
@@ -297,20 +297,20 @@ sub get_cmake_test_directory {
     } else {
       my @words = split(/\s+/,$line);
       if( $words[0] eq "testdir" ) {
-	 if( $#words < 2 ) {
-	   $testsubdir = "test";
-	 } else {
-	   $testsubdir = $words[2];
-	 }
-         if( $words[1] eq "product_dir" ) {
-	    $testdir = "product_dir/$testsubdir";
-         } elsif( $words[1] eq "fq_dir" ) {
-	    $testdir = "flavorqual_dir/$testsubdir";
-         } elsif( $words[1] eq "-" ) {
-	    $testdir = "NONE";
-	 } else {
-	    $testdir = "ERROR";
-	 }
+        if( $#words < 2 ) {
+          $testsubdir = "test";
+        } else {
+          $testsubdir = $words[2];
+        }
+        if( $words[1] eq "product_dir" ) {
+          $testdir = "product_dir/$testsubdir";
+        } elsif( $words[1] eq "fq_dir" ) {
+          $testdir = "flavorqual_dir/$testsubdir";
+        } elsif( $words[1] eq "-" ) {
+          $testdir = "NONE";
+        } else {
+          $testdir = "ERROR";
+        }
       }
     }
   }

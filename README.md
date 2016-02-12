@@ -238,6 +238,112 @@ lock in on not only `cetbuildtools` but also UPS. In other words, if your
 package is built with `cetbuildtools`, it *cannot* exist outside a UPS
 installation tree.
 
+What Actually Happens When `setup_for_development` Is Run?
+----------------------------------------------------------
+The general "developer setup" for a `cetbuildtools` based package is to
+
+1. Create build directory and `cd` to this
+2. Source the `ups/setup_for_development` script in the packages source tree
+3. Run `cmake` to configure/build
+
+The major environment variables are set in this process, and basically `setup_for_development` directly sets
+
+- `CETPKG_BUILD` : Build directory and basically taken as the working directory where `setup_for_development` is run.
+- `CETPKG_SOURCE` : Source directory and taken as one directory level above `setup_for_development`.
+
+and then uses the `set_dev_XXX` programs/scripts provided by `cetbuildtools`. Because these may behave
+differently (and `setup_for_development` may vary) depending on whether the package builds binary targets,
+the following is based on trying to run the setup process for the minimal binary package [cetlib](https://github.com/drbenmorgan/fnal-cetlib).
+
+Working through the content and apparent tasks of the `set_dev_XXX` scripts, these are divided into
+
+- [`set_dev_products`](bin/set_dev_products) Perl program that
+   - Takes command line arguments:
+     - `source_dir`, `build_dir` : compulsory. First indicates location of source tree, and will later assume this contains a `ups` subdirectory. Second is where the build will take place
+     - `[-d|-o|-p|noarch]` which map to CET build modes `Debug`, `Opt`, `Prof` and None respectively
+     - Additional qualifiers (guess things like `eN` etc).
+   - Assuming run is successful, it will output files in `build_dir`:
+     - `<project_name>-<ups_version>`
+       - This is a shell script to be sourced, and sets the environment variables:
+         - `CETPKG_NAME` : Equivalent to `PROJECT_NAME` in CMake
+         - `CETPKG_VERSION` : UPS-style version, i.e. `vMAJOR_MINOR_PATCH`, so same info as CMake's `PROJECT_VERSION` just a different format.
+         - `CETPKG_QUAL` : Colon separate list of qualifiers
+         - `CETPKG_TYPE` : the build mode, so should map directly to `CMAKE_BUILD_TYPE`. In this regard no direct support for multiconfig generators, at least not if modes should never be mixed.
+         - `CETPKG_CC` : Base name (?) of C compiler, *possibly* equivalent to standard `CC` env var.
+         - `CETPKG_CXX` : Base name (?) of C++ compiler, *possibly* equivalent to standard `CXX` env var.
+         - `CETPKG_FC` : Base name (?) of Fortran compiler, *possibly* equivalent to standard `FC` env var.
+         - Remainder of file calls UPS `setup` command for each direct dependency as required.
+     - `cetpkg_variable_report`, basically tje same variables as above, but in Key Value format.
+     - `diag_report`, purpose not yet clear, seems empty on successful run.
+   - The full path to the `<project_name>-<ups_version>` file is returned as output, and *this is sourced by the `setup_for_development` script.
+- [`set_dev_bin`](bin/set_dev_bin) sourced shell script that prepends `CETPKG_BUILD/bin` to the `PATH`.
+- [`set_dev_lib`](bin/set_dev_lib) sourced shell script that prepends `CETPKG_BUILD/lib` to the dynamic loader path.
+- [`set_dev_fhicl`](bin/set_dev_fhicl) sourced shell script that prepends `.` and `CETPKG_BUILD/fcl` to `FHICL_FILE_PATH` (NB: may not always do this if package doesn't supply fhicl config).
+- Remaining `set_dev_XXX` scripts appear to be for reporting and error checking(?).
+
+Use of Environment Variables
+----------------------------
+Though `setup_for_development` will set the list of variables above, they are *almost never used* in the CMake modules of 
+`cetbuildtools` (those for dependent packages *are* used, but only in [`find_ups_product`](Modules/FindUpsPackage.cmake) and similar). How then is UPS etc information used? There are three main sources of information, which are, together with their use cases:
+
+- A package's `ups/product_deps` file
+  - Main accessors of this, at least as far as `cetbuildtools` is concerned are the various `report_XXXdir` Perl programs, e.g. [`report_bindir`](bin/report_bindir)
+  - These simply parse out the related directory info from the `product_deps` table.
+    - **Noted that this set of programs only differ by the name of the table entry to be read, so could be reduced to a single program with subcommands like svn/git**.
+  - These are used in the CMake part of `cetbuildtools` only in [`CetCMakeEnv`](Modules/CetCMakeEnv.cmake), where macros named `cet_set_XXX_directory` are used to wrap calls to the `report_XXXdir` programs.
+    - All effectively do the same thing (so lot of boilerplate code), and result in new CMake CACHE variables `${product}_XXX_dir` for each "thing".
+    - There is some templating of these paths with require CMake variables `flavorqual_dir`, `product` and `version` to be present (the latter two are set using the `cetpkg_variable_report` file as described below).
+    - `flavorqual_dir` comes from a call to [`set_flavor_qual`](Modules/SetFlavorQual.cmake) - that's quite heavily UPS dependent.
+- The environment as set by `setup_for_development` using the info in that file
+   - Direct access via CMake's `$ENV{VARNAME}` construct is limited exclusively(?) to getting information about things external to the package being built.
+   - For example, finding packages via UPS etc.
+   - *Most of this can disappear if CMake PackageConfig files are written correctly and UPS taught to set `CMAKE_PREFIX_PATH` and other standard env vars correctly*
+- The `cetpkg_variable_report` file created by [`set_dev_products`](bin/set_dev_products).
+  - The primary user of this file is the [`bin/report_product_info`](bin/report_product_info) Perl program.
+  - This simply prints out `KEY=VALUE` pairs for keys upplied on the command line.
+  - **In `cetbuildtools`, a CMake interface to `report_product_info` is supplied by the [`cet_get_product_info_item`](Modules/CetGetProductInfo.cmake) function.**
+  - **This is only used in [`CetCMakeEnv.cmake`](Modules/CetCMakeEnv.cmake) **
+    - **eight calls are made to extract the keys:**
+      - **product**
+      - **version**
+      - **default_version**
+      - **qualifier**
+      - **CC/CXX/FC**
+      - At least the first four result in CMake CACHE vars of the same names
+  - *Also used in [`bin/parse_deps.pm`](bin/parse_deps.pm), though this appears to only be in relation to the initial creation in [`set_dev_products`](bin/set_dev_products).*
+  - *It's also accessed by [`bin/buildtool`](bin/buildtool), but this is ignored for now as it's not used directly by `cetbuildtools`, plus it's likely that this program can be mostly replaced with standard CMake interfaces.*
+  
+
+Environment Vars/UPS TL;DR
+--------------------------
+1. Teach UPS how to set standard portable environment variables for compilers and search paths, e.g. `CC`, `CXX`, `PATH`, `CMAKE_PREFIX_PATH`, `PKG_CONFIG_PATH`.
+2. Get `setup_for_development` (or rather, the underlying [`set_dev_products`](bin/set_dev_products) program) to write a CMake script in the build directory, e.g.
+   
+    ```cmake
+    # Generated by set_dev_products - these are only for use when building "UPS-style"
+    set(CETPKG_XXX "some value")
+    ...
+    # These might be cached, but not required
+    set(product "foo")
+    set(version "vX_Y_Z")
+    set(flavourqual_dir "...")
+    ```
+   
+3. Provide a `cetbuildtools` function that includes this *only* if it is present:
+
+    ```cmake
+    function(cet_load_ups)
+      include(${PROJECT_BINARY_DIR}/cetpkg_report.cmake OPTIONAL RESULT_VAR CET_INSTALL_IS_UPSSTYLE)
+      if(CET_INSTALL_IS_UPSSTYLE)
+        ... do anything extra needed with variables ...
+      endif()
+    endfunction()
+    ```
+
+4. Call that as part of the setup part, e.g call the above in `cet_cmake_env`.
+5. This *should* provide all that's needed to decouple from UPS if required
+
+
 
 Imported/Exported Targets
 =========================
