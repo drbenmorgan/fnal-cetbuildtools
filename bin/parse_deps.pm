@@ -714,6 +714,44 @@ sub cetpkg_info_file {
   }
   print CPG "\nTo check cmake cached variables, use cmake -N -L.\n";
   close(CPG);
+
+  # - In addition, a .cmake file
+  my $cpgcmake = "$param_vals[6]/cetpkg_variable_report.cmake";
+  open(CPGCMAKE, "> $cpgcmake") or die "Couldn't open $cpgcmake";
+  print CPGCMAKE "# - Cetbuildtools cache file, DO NOT EDIT\n";
+  foreach my $index (0 .. $#param_names) {
+    # Only set as internal for now, as user probably shouldn't be
+    # able to edit.
+    printf CPGCMAKE "set(CETPKG_%s%s\"%s\" CACHE INTERNAL \"\" FORCE)\n",
+      uc $param_names[$index], # Var name.
+        " " x (max(map { length() + 2 } @param_names) -
+               length($param_names[$index])), # Space padding.
+          $param_vals[$index]; # Value.
+  }
+
+  # Can we also parse the product_deps file? Given source dir
+  # in param_vals[5]...
+  require cmake_parse_deps;
+  my %cmakesubs = ( 
+    bindir => \&get_cmake_bin_directory,
+    fcldir => \&get_cmake_fcl_directory,
+    fwdir  => \&get_cmake_fw_directory,
+    gdmldir => \&get_cmake_gdml_directory,
+    incdir => \&get_cmake_inc_directory,
+    libdir => \&get_cmake_lib_directory,
+    perllib => \&get_cmake_perllib,
+    testdir => \&get_cmake_test_directory
+  );
+
+  foreach my $item (keys %cmakesubs) {
+    my $itemdir = $cmakesubs{$item}("$param_vals[5]/ups/product_deps");
+    printf CPGCMAKE "set(CETPKG_INSTALL_%s \"%s\" CACHE INTERNAL \"\" FORCE)\n",
+      uc $item,
+      $itemdir;
+  }
+  close(CPGCMAKE);
+  # -----
+
   return($cetpkgfile);
 }
 
