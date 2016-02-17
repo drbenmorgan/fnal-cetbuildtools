@@ -16,6 +16,7 @@ INSTALL(FILES
   CetHaveQual.cmake
   CetMake.cmake
   CetParseArgs.cmake
+  CetPrepend.cmake
   CetRegexEscape.cmake
   CetRootCint.cmake
   CetTest.cmake
