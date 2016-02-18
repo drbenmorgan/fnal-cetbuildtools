@@ -26,6 +26,7 @@
 #
 
 include(CetCurrentSubdir)
+include (CetExclude)
 
 macro( _cet_perl_plugin_version )
   configure_file($ENV{CETLIB_DIR}/perllib/PluginVersionInfo.pm.in
@@ -88,7 +89,7 @@ macro( _cet_install_perllib_without_list   )
   FILE(GLOB prl_files [^.]*.pm )
   FILE(GLOB prl_files2 [^.]*.pm README )
   if( IPRL_EXCLUDES )
-    LIST( REMOVE_ITEM prl_files ${IPRL_EXCLUDES} )
+    _cet_exclude_from_list( prl_files EXCLUDES ${IPRL_EXCLUDES} LIST ${prl_files} )
   endif()
   if( prl_files )
     #message( STATUS "_cet_install_perllib_without_list: installing perl lib files ${prl_files} in ${perllib_install_dir}")
@@ -107,8 +108,8 @@ macro( _cet_install_perllib_without_list   )
       FILE(GLOB subdir_prl_files ${sub}/[^.]*.pm )
       #message( STATUS "found ${sub} files ${subdir_prl_files}")
       if( IPRL_EXCLUDES )
-        LIST( REMOVE_ITEM subdir_prl_files ${IPRL_EXCLUDES} )
-        LIST( REMOVE_ITEM subdir_prl_files2 ${IPRL_EXCLUDES} )
+        _cet_exclude_from_list( subdir_prl_files EXCLUDES ${IPRL_EXCLUDES} LIST ${subdir_prl_files} )
+        _cet_exclude_from_list( subdir_prl_files2 EXCLUDES ${IPRL_EXCLUDES} LIST ${subdir_prl_files2} )
       endif()
       if( subdir_prl_files )
         _cet_copy_perllib( LIST ${subdir_prl_files} SUBDIR ${sub} )
