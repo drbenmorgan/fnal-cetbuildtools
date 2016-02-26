@@ -88,7 +88,7 @@ if( ${found_product_match} LESS 0 )
   _cet_debug_message("find_ups_boost: Boost version and qualifier are ${BOOST_VERS} ${BOOST_QUAL}" )
   #message(STATUS "find_ups_boost debug: Boost base qualifier is ${BOOST_BASE_QUAL}" )
 
-  include_directories ( $ENV{BOOST_INC} )
+  include_directories ( SYSTEM $ENV{BOOST_INC} )
 
   # define the boost environment so we don't get system libraries
   set(BOOST_ROOT $ENV{BOOST_DIR} )
