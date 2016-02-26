@@ -11,7 +11,7 @@
 #  make install
 #  make package (tar file for ups)
 
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED (VERSION 3.3)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Modules)
 
