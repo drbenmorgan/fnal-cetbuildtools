@@ -18,7 +18,6 @@ find_ups_product( xerces_c v3_0_0 )
 
 # add include directory to include path if it exists
 include_directories ( $ENV{G4INCLUDE} )
-##include_directories ( $ENV{XERCES_C_INC} )
 
 # geant4 libraries
 find_library( XERCESC NAMES xerces-c PATHS $ENV{XERCESCROOT}/lib NO_DEFAULT_PATH  )
