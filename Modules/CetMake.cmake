@@ -75,7 +75,6 @@ include(CetParseArgs)
 include(InstallSource)
 
 macro( _cet_check_lib_directory )
-  # find $CETBUILDTOOLS_DIR/bin/report_libdir
   if( ${${product}_lib_dir} MATCHES "NONE" )
       message(FATAL_ERROR "Please specify a lib directory in product_deps")
   elseif( ${${product}_lib_dir} MATCHES "ERROR" )
