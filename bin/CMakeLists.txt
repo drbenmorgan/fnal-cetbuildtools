@@ -2,6 +2,7 @@
 install_scripts( LIST buildtool
   build_table
   build_version_file
+  cet_report
   cmake-graphviz-filt
   code-dep-graph
   increment-version
