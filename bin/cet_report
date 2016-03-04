@@ -48,6 +48,7 @@ sub do_help {
   print "\nCetbuildtools UPS table report tool\n\n";
   print "ARGUMENTS:\n";
   print "  <item>        UPS attribute to extract and print\n";
+  print "    available items: bindir fcldir fwdir gdmldir incdir libdir perllib \n";
   print "  <basedir>     Directory holding 'product_deps' table\n";
   print "\n";
   print "OPTIONS:\n";
