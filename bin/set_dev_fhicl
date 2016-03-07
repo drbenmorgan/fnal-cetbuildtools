@@ -1,5 +1,5 @@
 
-fcldir=`$CETBUILDTOOLS_DIR/bin/report_fcldir_base ${CETPKG_SOURCE}/ups`
+fcldir=`$CETBUILDTOOLS_DIR/bin/cet_report fcldir_base ${CETPKG_SOURCE}/ups`
 tnotnull FHICL_FILE_PATH || setenv FHICL_FILE_PATH '.'
 test "$fcldir" = "DEFAULT" && setenv fcldir 'fcl'
 test "$fcldir" = "NONE" && unset fcldir 

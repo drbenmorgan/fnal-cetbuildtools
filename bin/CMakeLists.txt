@@ -7,15 +7,6 @@ install_scripts( LIST buildtool
   code-dep-graph
   increment-version
   set_dev_products
-  report_bindir
-  report_incdir
-  report_libdir
-  report_fcldir
-  report_fcldir_base
-  report_fwdir
-  report_gdmldir
-  report_perllib
-  report_testdir
   report_product_info
   migrate-package
   )
