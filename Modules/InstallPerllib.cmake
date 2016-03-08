@@ -26,6 +26,7 @@
 #
 
 include(CetCurrentSubdir)
+include (CetExclude)
 
 # - ??
 macro(_cet_perl_plugin_version)
@@ -96,27 +97,30 @@ macro(_cet_install_perllib_without_list)
   if(IPRL_EXCLUDES)
     list(REMOVE_ITEM prl_files ${IPRL_EXCLUDES})
   endif()
+endmacro( _cet_perllib_config_setup )
 
-  if(prl_files)
-    _cet_copy_perllib(LIST ${prl_files})
-    _cet_perllib_config_setup(${prl_files})
-    install(FILES ${prl_files2} DESTINATION ${perllib_install_dir})
+macro( _cet_install_perllib_without_list   )
+  #message( STATUS "_cet_install_perllib_without_list: perl lib scripts will be installed in ${perllib_install_dir}" )
+  FILE(GLOB prl_files [^.]*.pm )
+  FILE(GLOB prl_files2 [^.]*.pm README )
+  if( IPRL_EXCLUDES )
+    _cet_exclude_from_list( prl_files EXCLUDES ${IPRL_EXCLUDES} LIST ${prl_files} )
+
   endif()
 
   # now check subdirectories
-  if(IPRL_SUBDIRS)
-    foreach(sub ${IPRL_SUBDIRS})
-      file(GLOB subdir_prl_files2 ${sub}/[^.]*.pm ${sub}/README)
-      file(GLOB subdir_prl_files ${sub}/[^.]*.pm)
+  if( IPRL_SUBDIRS )
+    foreach( sub ${IPRL_SUBDIRS} )
+      FILE(GLOB subdir_prl_files2
+                ${sub}/[^.]*.pm
+		${sub}/README
+		)
+      FILE(GLOB subdir_prl_files ${sub}/[^.]*.pm )
+      #message( STATUS "found ${sub} files ${subdir_prl_files}")
+      if( IPRL_EXCLUDES )
+        _cet_exclude_from_list( subdir_prl_files EXCLUDES ${IPRL_EXCLUDES} LIST ${subdir_prl_files} )
+        _cet_exclude_from_list( subdir_prl_files2 EXCLUDES ${IPRL_EXCLUDES} LIST ${subdir_prl_files2} )
 
-      if(IPRL_EXCLUDES)
-        list(REMOVE_ITEM subdir_prl_files ${IPRL_EXCLUDES})
-        list(REMOVE_ITEM subdir_prl_files2 ${IPRL_EXCLUDES})
-      endif()
-      if(subdir_prl_files)
-        _cet_copy_perllib(LIST ${subdir_prl_files} SUBDIR ${sub})
-        _cet_perllib_config_setup(${subdir_prl_files})
-        install(FILES ${subdir_prl_files2} DESTINATION ${perllib_install_dir}/${sub})
       endif()
     endforeach()
   endif()

@@ -13,9 +13,11 @@ INSTALL(FILES
   CetCopy.cmake
   CetCurrentSubdir.cmake
   CetGetProductInfo.cmake
+  CetExclude.cmake
   CetHaveQual.cmake
   CetMake.cmake
   CetParseArgs.cmake
+  CetPrepend.cmake
   CetRegexEscape.cmake
   CetRootCint.cmake
   CetTest.cmake

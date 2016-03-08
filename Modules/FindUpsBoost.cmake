@@ -70,12 +70,7 @@ macro(find_ups_boost)
     string(REGEX MATCH "[-][q]" has_qual "${BOOST_STRING}")
     string(REGEX MATCH "[-][j]" has_j "${BOOST_STRING}")
 
-    if(has_qual)
-      if(has_j)
-        string(REGEX REPLACE ".*([-][q]+ )(.*)[ *]([-][-j])" "\\2" BOOST_QUAL "${BOOST_STRING}" )
-      else()
-        string(REGEX REPLACE ".*([-][q]+ )(.*)" "\\2" BOOST_QUAL "${BOOST_STRING}")
-      endif()
+  include_directories ( SYSTEM $ENV{BOOST_INC} )
 
       string(REGEX REPLACE ":" ";" BOOST_QUAL_LIST "${BOOST_QUAL}")
       list(REMOVE_ITEM BOOST_QUAL_LIST debug opt prof)

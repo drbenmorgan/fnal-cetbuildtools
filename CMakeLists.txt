@@ -14,7 +14,6 @@
 #-----------------------------------------------------------------------
 # Modifications Copyright 2015 Ben Morgan <Ben.Morgan@warwick.ac.uk
 # Modifications Copyright 2015 University of Warwick
-
 # Basic CMake project setup (NONE project as we're not compiling anything)
 cmake_minimum_required(VERSION 2.8.12)
 project(cetbuildtools NONE)

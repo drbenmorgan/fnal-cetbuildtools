@@ -79,6 +79,7 @@
 include(CMakeParseArguments)
 include(CetCurrentSubdir)
 include (CetCopy)
+include (CetExclude)
 
 # - ??
 macro(_cet_check_inc_directory)
@@ -133,93 +134,63 @@ macro(_cet_install_generated_dictionary_code)
     endforeach()
   endif()
   set(cet_generated_code) # Clear to avoid causing problems in subdirectories.
-endmacro()
+endmacro( _cet_install_generated_dictionary_code )
 
-# - ??
-macro(_cet_install_without_list)
-  file(GLOB src_files
-    [^.]*.cc
-    [^.]*.c
-    [^.]*.cpp
-    [^.]*.C
-    [^.]*.cxx
-	  [^.]*.h
-    [^.]*.hh
-    [^.]*.H
-    [^.]*.hpp
-    [^.]*.icc
-	  [^.]*.xml
-    [^.]*.sh
-    [^.]*.py
-    [^.]*.pl
-    [^.]*.rb
-	  )
-
-  if(ISRC_EXCLUDES)
-    list(REMOVE_ITEM src_files ${ISRC_EXCLUDES})
+macro( _cet_install_without_list   )
+  #message( STATUS "source code will be installed in ${source_install_dir}" )
+  FILE(GLOB src_files
+	    [^.]*.cc [^.]*.c [^.]*.cpp [^.]*.C [^.]*.cxx
+	    [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc
+	    [^.]*.xml [^.]*.sh [^.]*.py [^.]*.pl [^.]*.rb
+	    )
+  if( ISRC_EXCLUDES )
+    _cet_exclude_from_list( src_files EXCLUDES ${ISRC_EXCLUDES} LIST ${src_files} )
   endif()
-
-  if(src_files)
-    install(FILES ${src_files} DESTINATION ${source_install_dir})
-  endif()
-
+  if( src_files )
+    INSTALL( FILES ${src_files}
+             DESTINATION ${source_install_dir} )
+  endif( src_files )
   # check for generated files
   _cet_check_build_directory()
   _cet_install_generated_dictionary_code()
 
   # now check subdirectories
-  if(ISRC_SUBDIRS)
-     foreach(sub ${ISRC_SUBDIRS})
-       file(GLOB subdir_src_files
-         ${sub}/[^.]*.cc
-         ${sub}/[^.]*.c
-         ${sub}/[^.]*.cpp
-         ${sub}/[^.]*.C
-         ${sub}/[^.]*.cxx
-         ${sub}/[^.]*.h
-         ${sub}/[^.]*.hh
-         ${sub}/[^.]*.H
-         ${sub}/[^.]*.hpp
-         ${sub}/[^.]*.icc
-         ${sub}/[^.]*.xml
-         ${sub}/[^.]*.sh
-         ${sub}/[^.]*.py
-         ${sub}/[^.]*.pl
-         ${sub}/[^.]*.rb
-         )
-
-       if(ISRC_EXCLUDES)
-         list(REMOVE_ITEM subdir_src_files ${ISRC_EXCLUDES})
-	     endif()
-
-       if(subdir_src_files)
-         install(FILES ${subdir_src_files} DESTINATION ${source_install_dir}/${sub})
-	     endif()
-     endforeach()
+  if( ISRC_SUBDIRS )
+     foreach( sub ${ISRC_SUBDIRS} )
+	FILE(GLOB subdir_src_files
+        	 ${sub}/[^.]*.cc ${sub}/[^.]*.c ${sub}/[^.]*.cpp ${sub}/[^.]*.C ${sub}/[^.]*.cxx
+        	 ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc
+        	 ${sub}/[^.]*.xml ${sub}/[^.]*.sh ${sub}/[^.]*.py ${sub}/[^.]*.pl ${sub}/[^.]*.rb )
+	if( ISRC_EXCLUDES )
+          _cet_exclude_from_list( subdir_src_files EXCLUDES ${ISRC_EXCLUDES} LIST ${subdir_src_files} )
+	endif()
+	if( subdir_src_files )
+          INSTALL( FILES ${subdir_src_files}
+                   DESTINATION ${source_install_dir}/${sub} )
+	endif( subdir_src_files )
+     endforeach(sub)
      #message( STATUS "also installing in subdirectories: ${ISRC_SUBDIRS}")
-  endif()
-endmacro()
+  endif( ISRC_SUBDIRS )
+endmacro( _cet_install_without_list )
 
-# - ??
-macro(_cet_install_from_list source_files)
-  install(FILES ${source_files} DESTINATION ${source_install_dir})
-endmacro()
+macro( _cet_install_from_list  source_files  )
+  #message( STATUS "_cet_install_from_list debug: source code list will be installed in ${source_install_dir}" )
+  #message( STATUS "_cet_install_from_list debug: install list is ${source_files}")
+  INSTALL( FILES ${source_files}
+           DESTINATION ${source_install_dir} )
+endmacro( _cet_install_from_list )
 
-# - ??
-macro(_cet_install_header_without_list)
-  file(GLOB headers [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc)
-  file(GLOB dict_headers classes.h)
-
-  if(dict_headers)
-    list(REMOVE_ITEM headers ${dict_headers})
-  endif()
-
+macro( _cet_install_header_without_list   )
+  #message( STATUS "headers will be installed in ${header_install_dir}" )
+  FILE(GLOB headers [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc )
+  FILE(GLOB dict_headers classes.h )
+  if( dict_headers )
+    #message(STATUS "install_headers debug: removing ${dict_headers} from header list")
+    # no special handling needed, since these filenames already have the full path
+    LIST(REMOVE_ITEM headers ${dict_headers} )
+  endif( dict_headers)
   if(IHDR_EXCLUDES)
-    list(REMOVE_ITEM headers ${IHDR_EXCLUDES})
-  endif()
-
-  if(headers)
-    install(FILES ${headers} DESTINATION ${header_install_dir})
+    _cet_exclude_from_list( headers EXCLUDES ${IHDR_EXCLUDES} LIST ${headers} )
   endif()
 
   # now check subdirectories
@@ -234,11 +205,7 @@ macro(_cet_install_header_without_list)
         )
 
       if(IHDR_EXCLUDES)
-        list(REMOVE_ITEM subdir_headers ${IHDR_EXCLUDES})
-      endif()
-
-      if(subdir_headers)
-        install(FILES ${subdir_headers} DESTINATION ${header_install_dir}/${sub})
+        _cet_exclude_from_list( subdir_headers EXCLUDES ${IHDR_EXCLUDES} LIST ${subdir_headers} )
       endif()
     endforeach()
   endif()
@@ -257,9 +224,8 @@ macro(_cet_install_script_without_list)
   else()
     file(GLOB scripts [^.]*.sh [^.]*.py [^.]*.pl [^.]*.rb)
   endif()
-
-  if(IS_EXCLUDES)
-    list(REMOVE_ITEM scripts ${IS_EXCLUDES})
+  if( IS_EXCLUDES )
+    _cet_exclude_from_list( scripts EXCLUDES ${IS_EXCLUDES} LIST ${scripts} )
   endif()
 
   if(scripts)
@@ -285,13 +251,8 @@ macro(_cet_install_script_without_list)
           ${sub}/[^.]*.rb
           )
       endif()
-
-      if(IS_EXCLUDES)
-        list(REMOVE_ITEM subdir_scripts ${IS_EXCLUDES})
-      endif()
-
-      if(subdir_scripts)
-        install(PROGRAMS ${subdir_scripts} DESTINATION ${script_install_dir})
+      if( IS_EXCLUDES )
+        _cet_exclude_from_list( subdir_scripts EXCLUDES ${IS_EXCLUDES} LIST ${subdir_scripts} )
       endif()
     endforeach()
   endif(IS_SUBDIRS)
@@ -308,27 +269,29 @@ macro(_cet_copy_fcl)
     set(fclbuildpath ${CETPKG_BUILD}/${fclpathname})
   endif()
   cet_copy(${ARGN} DESTINATION "${fclbuildpath}")
-endmacro()
+endmacro( _cet_copy_fcl )
 
-# - ??
-macro(_cet_install_fhicl_without_list)
-  file(GLOB fcl_files [^.]*.fcl)
-
-  if(IFCL_EXCLUDES)
-    list(REMOVE_ITEM fcl_files ${IFCL_EXCLUDES})
+macro( _cet_install_fhicl_without_list   )
+  #message( STATUS "fhicl scripts will be installed in ${fhicl_install_dir}" )
+  FILE(GLOB fcl_files [^.]*.fcl )
+  if( IFCL_EXCLUDES )
+    #message( STATUS "initial fhicl files ${fcl_files}")
+    _cet_exclude_from_list( fcl_files EXCLUDES ${IFCL_EXCLUDES} LIST ${fcl_files} )
+    #message( STATUS "install_fhicl: fhicl files after exlucde ${fcl_files}")
   endif()
-
-  if(fcl_files)
-    _cet_copy_fcl(${fcl_files})
-    install(FILES ${fcl_files} DESTINATION ${fhicl_install_dir})
-  endif()
-
+  if( fcl_files )
+    #message( STATUS "installing fhicl files ${fcl_files} in ${fhicl_install_dir}")
+    _cet_copy_fcl( ${fcl_files} )
+    INSTALL ( FILES ${fcl_files}
+              DESTINATION ${fhicl_install_dir} )
+  endif( fcl_files )
   # now check subdirectories
-  if(IFCL_SUBDIRS)
-    foreach(sub ${IFCL_SUBDIRS})
-      file(GLOB subdir_fcl_files ${sub}/[^.]*.fcl)
-      if(IFCL_EXCLUDES)
-        list(REMOVE_ITEM subdir_fcl_files ${IFCL_EXCLUDES})
+  if( IFCL_SUBDIRS )
+    foreach( sub ${IFCL_SUBDIRS} )
+      FILE(GLOB subdir_fcl_files
+                ${sub}/[^.]*.fcl )
+      if( IFCL_EXCLUDES )
+        _cet_exclude_from_list( subdir_fcl_files EXCLUDES ${IFCL_EXCLUDES} LIST ${subdir_fcl_files} )
       endif()
       if(subdir_fcl_files)
         _cet_copy_fcl(${subdir_fcl_files})
@@ -450,32 +413,34 @@ macro(_cet_copy_gdml)
   else()
     cet_copy(${CPGDML_LIST} DESTINATION "${gdmlbuildpath}")
   endif()
-endmacro()
+  #message(STATUS "_cet_copy_gdml: copying to ${gdmlbuildpath}")
+endmacro( _cet_copy_gdml )
 
-# - ??
-macro(_cet_install_gdml_without_list)
-  file(GLOB gdml_files [^.]*.gdml [^.]*.C [^.]*.xml [^.]*.xsd README)
-  if(IGDML_EXCLUDES)
-    list(REMOVE_ITEM gdml_files ${IGDML_EXCLUDES})
+macro( _cet_install_gdml_without_list   )
+  #message( STATUS "gdml scripts will be installed in ${gdml_install_dir}" )
+  FILE(GLOB gdml_files [^.]*.gdml [^.]*.C [^.]*.xml [^.]*.xsd README )
+  if( IGDML_EXCLUDES )
+    _cet_exclude_from_list( gdml_files EXCLUDES ${IGDML_EXCLUDES} LIST ${gdml_files} )
   endif()
-  if(gdml_files)
-    _cet_copy_gdml(LIST ${gdml_files})
-    install(FILES ${gdml_files} DESTINATION ${gdml_install_dir})
-  endif()
-
+  if( gdml_files )
+    #message( STATUS "installing gdml files ${gdml_files} in ${gdml_install_dir}")
+    _cet_copy_gdml( LIST ${gdml_files} )
+    INSTALL ( FILES ${gdml_files}
+              DESTINATION ${gdml_install_dir} )
+  endif( gdml_files )
   # now check subdirectories
-  if(IGDML_SUBDIRS)
-    foreach(sub ${IGDML_SUBDIRS})
-      file(GLOB subdir_gdml_files
-        ${sub}/[^.]*.gdml
-        ${sub}/[^.]*.C
-        ${sub}/[^.]*.xml
-        ${sub}/[^.]*.xsd
-        ${sub}/README
-        )
-
-      if(IGDML_EXCLUDES)
-        list(REMOVE_ITEM subdir_gdml_files ${IGDML_EXCLUDES})
+  if( IGDML_SUBDIRS )
+    foreach( sub ${IGDML_SUBDIRS} )
+      FILE(GLOB subdir_gdml_files
+                ${sub}/[^.]*.gdml
+		${sub}/[^.]*.C
+		${sub}/[^.]*.xml
+		${sub}/[^.]*.xsd
+		${sub}/README
+		)
+      #message( STATUS "found ${sub} files ${subdir_gdml_files}")
+      if( IGDML_EXCLUDES )
+        _cet_exclude_from_list( subdir_gdml_files EXCLUDES ${IGDML_EXCLUDES} LIST ${subdir_gdml_files} )
       endif()
       if(subdir_gdml_files)
         _cet_copy_gdml( LIST ${subdir_gdml_files} SUBDIR ${sub} )
