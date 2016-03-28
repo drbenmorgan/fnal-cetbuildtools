@@ -268,7 +268,6 @@ sub create_table_bottom {
   my $fw_directory = get_fw_directory( $pfile );
   my $gdml_directory = get_gdml_directory( $pfile );
   my $prl_directory = get_perllib( $pfile );
- 
 
   my $pvername = $product."_VERSION";
   print TBL "\n";
@@ -358,6 +357,15 @@ sub create_table_bottom {
   } else {
   print TBL "    # add $prl_directory directory to PERL5LIB\n";
   print TBL "    pathPrepend(PERL5LIB, $prl_directory )\n";
+  }
+  # CMake directory is determined by whether product is flavour qualified or not
+  # If flavour qualified, need to search in fq dir, otherwise in base product_dir
+  if( $have_fq ) {
+  print TBL "    # Prepend CMAKE_PREFIX_PATH for flavour qualified product\n";
+  print TBL "    pathPrepend(CMAKE_PREFIX_PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR})\n";
+  } else {
+  print TBL "    # Prepend CMAKE_PREFIX_PATH for null flavour product\n";
+  print TBL "    pathPrepend(CMAKE_PREFIX_PATH, \${UPS_PROD_DIR} )\n";
   }
   print TBL "\n";
   if( $have_fragment ) {
