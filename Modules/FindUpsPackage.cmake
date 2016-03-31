@@ -46,12 +46,18 @@ if(  ${PNAME_UC} STREQUAL ${PNAME} )
   #message(STATUS "_use_find_package: adjusting ${PNAME}")
   set( ${PNAME_UC}_VERSION ${${PNAME}_SAVE_VERSION})
 endif()
-# make sure the version numbers match
-if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
-  #message(STATUS "${PNAME} versions match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+# This bit of code presume that the cmake config files were built by cetbuildtools!
+# However, if this is a "third party" product, ${PNAME}_UPS_VERSION will NOT be defined.
+if( ${PNAME}_UPS_VERSION )
+  # make sure the version numbers match
+  if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
+    #message(STATUS "${PNAME} versions match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+  else()
+    message(STATUS "ERROR: There is an inconsistency between the ${PNAME} table and config files ")
+    message(FATAL_ERROR "${PNAME} versions DO NOT match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+  endif()
 else()
-  message(STATUS "ERROR: There is an inconsistency between the ${PNAME} table and config files ")
-  message(FATAL_ERROR "${PNAME} versions DO NOT match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+   _cet_debug_message("_use_find_package: ${PNAME}_UPS_VERSION is undefined, we presume it matches ${${PNAME_UC}_VERSION}")
 endif()
 
 endmacro( _use_find_package )
