@@ -12,6 +12,7 @@
 #   [fwdir       -              unspecified]
 #   [gdmldir     -              gdml]
 #   [perllib     -              perl5lib]
+#   [rootpath]
 #
 #   product		version
 #   dependent_product	dependent_product_version [distinguishing qualifier|-] [optional|only_for_build]
@@ -157,6 +158,7 @@ sub check_for_fragment {
 sub get_include_directory {
   my @params = @_;
   my $incdir = "default";
+  my $rootpath = "none";
   my $line;
   my @words;
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
@@ -179,12 +181,14 @@ sub get_include_directory {
 	    print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
 	    print "ERROR: using the default include directory path\n";
 	 }
+      } elsif( $words[0] eq "rootpath" ) {
+         $rootpath="true";
       }
     }
   }
   close(PIN);
   ##print "defining include directory $incdir\n";
-  return ($incdir);
+  return ($incdir, $rootpath);
 }
 
 sub get_bin_directory {

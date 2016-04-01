@@ -260,7 +260,7 @@ sub table_ld_library {
 
 sub create_table_bottom {
 
-  my $include_directory = get_include_directory( $pfile );
+  my ($include_directory, $root_path) = get_include_directory( $pfile );
   my $lib_directory = get_lib_directory( $pfile );
   my $fcl_directory = get_fcl_directory( $pfile );
   my $bin_directory = get_bin_directory( $pfile );
@@ -287,6 +287,9 @@ sub create_table_bottom {
   } elsif ( $include_directory eq "none" )   {
   } else {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, $include_directory) \n";
+  }
+  if( $root_path eq "true" ) {
+  print TBL "    envSet(ROOT_INCLUDE_PATH, \${UPS_PROD_NAME_UC}_INC) \n";
   }
   # need to setup dependencies BEFORE prepending to any paths
   print TBL "\n";
