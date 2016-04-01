@@ -13,14 +13,81 @@
 
 include(CheckUpsVersion)
 
-# - Internal find_package wrapper
-macro(_use_find_package PNAME PNAME_UC)
-  cmake_parse_arguments(UFP "" "" "" ${ARGN})
-  set(dotver "")
-  if(UFP_UNPARSED_ARGUMENTS)
-    list(GET UFP_UNPARSED_ARGUMENTS 0 PVER)
-    _get_dotver(${PVER})
+
+macro( _use_find_package PNAME PNAME_UC )
+
+cmake_parse_arguments( UFP "" "" "" ${ARGN} )
+#message ( STATUS "_use_find_package debug: unparsed arguments ${UFP_UNPARSED_ARGUMENTS}" )
+set( dotver "" )
+if( UFP_UNPARSED_ARGUMENTS )
+  list( GET UFP_UNPARSED_ARGUMENTS 0 PVER )
+  _get_dotver( ${PVER} )
+endif()
+#message ( STATUS "_use_find_package debug: called with ${PNAME_UC} ${PVER}" )
+#message(STATUS "_use_find_package: dotver is ${dotver}")
+set( ${PNAME}_SAVE_VERSION ${${PNAME_UC}_VERSION})
+
+# we use find package to check the version
+
+# define the cmake search path
+set( ${PNAME_UC}_SEARCH_PATH $ENV{${PNAME_UC}_FQ_DIR} )
+#message(STATUS "_use_find_package: looking for ${PNAME} ${dotver} in ${${PNAME_UC}_SEARCH_PATH}")
+
+if( NOT ${PNAME_UC}_SEARCH_PATH )
+  find_package( ${PNAME} ${dotver} PATHS $ENV{${PNAME_UC}_DIR} )
+else()
+  find_package( ${PNAME} ${dotver} PATHS $ENV{${PNAME_UC}_FQ_DIR} )
+endif()
+# make sure we found the product
+if( NOT ${${PNAME}_FOUND} )
+  message(FATAL_ERROR "ERROR: ${PNAME} was NOT found ")
+endif()
+set( ${PNAME}_DOT_VERSION ${${PNAME}_VERSION})
+if(  ${PNAME_UC} STREQUAL ${PNAME} )
+  #message(STATUS "_use_find_package: adjusting ${PNAME}")
+  set( ${PNAME_UC}_VERSION ${${PNAME}_SAVE_VERSION})
+endif()
+# This bit of code presume that the cmake config files were built by cetbuildtools!
+# However, if this is a "third party" product, ${PNAME}_UPS_VERSION will NOT be defined.
+if( ${PNAME}_UPS_VERSION )
+  # make sure the version numbers match
+  if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
+    #message(STATUS "${PNAME} versions match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+  else()
+    message(STATUS "ERROR: There is an inconsistency between the ${PNAME} table and config files ")
+    message(FATAL_ERROR "${PNAME} versions DO NOT match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
   endif()
+else()
+   _cet_debug_message("_use_find_package: ${PNAME}_UPS_VERSION is undefined, we presume it matches ${${PNAME_UC}_VERSION}")
+endif()
+
+endmacro( _use_find_package )
+
+macro( _use_find_package_noversion PNAME PNAME_UC )
+
+# we use find package to check the version
+# however, if we have some special build such as "nightly", we cannot compare version numbers
+
+# define the cmake search path
+set( ${PNAME_UC}_SEARCH_PATH $ENV{${PNAME_UC}_FQ_DIR} )
+if( NOT ${PNAME_UC}_SEARCH_PATH )
+  find_package( ${PNAME} PATHS $ENV{${PNAME_UC}_DIR} )
+else()
+  find_package( ${PNAME} PATHS $ENV{${PNAME_UC}_FQ_DIR} )
+endif()
+# make sure we found the product
+if( NOT ${${PNAME}_FOUND} )
+  message(FATAL_ERROR "ERROR: ${PNAME} was NOT found ")
+endif()
+# make sure the version numbers match
+if(  ${${PNAME_UC}_VERSION} MATCHES ${${PNAME}_UPS_VERSION})
+  #message(STATUS "_use_find_package_noversion: ${PNAME} versions match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+else()
+  message(STATUS "ERROR: _use_find_package_noversion: There is an inconsistency between the ${PNAME} table and config files ")
+  message(FATAL_ERROR "${PNAME} versions DO NOT match: ${${PNAME_UC}_VERSION} ${${PNAME}_UPS_VERSION} ")
+endif()
+
+endmacro( _use_find_package_noversion )
 
   set(${PNAME}_SAVE_VERSION ${${PNAME_UC}_VERSION})
 
