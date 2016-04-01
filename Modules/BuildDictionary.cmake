@@ -43,6 +43,7 @@ if (HAVE_ROOT6)
   set(BD_WANT_PCM TRUE)
   set( GENREFLEX_FLAGS
     --fail_on_warnings
+    --noIncludePath
     )
 else() # ROOT5
   set(BD_WANT_CAP_FILE TRUE)
