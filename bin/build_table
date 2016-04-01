@@ -289,7 +289,7 @@ sub create_table_bottom {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, $include_directory) \n";
   }
   if( $root_path eq "true" ) {
-  print TBL "    envSet(ROOT_INCLUDE_PATH, \${UPS_PROD_NAME_UC}_INC) \n";
+  print TBL "    envSet(ROOT_INCLUDE_PATH, \${\${UPS_PROD_NAME_UC}_INC}) \n";
   }
   # need to setup dependencies BEFORE prepending to any paths
   print TBL "\n";
