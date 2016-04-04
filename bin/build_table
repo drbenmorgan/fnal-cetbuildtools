@@ -363,8 +363,10 @@ sub create_table_bottom {
   if( $have_fq ) {
   print TBL "    # Prepend CMAKE_PREFIX_PATH for flavour qualified product\n";
   print TBL "    pathPrepend(CMAKE_PREFIX_PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR})\n";
-  print TBL "    # Prepend ROOT_INCLUDE_PATH for dictionaries\n";
-  print TBL "    pathPrepend(ROOT_INCLUDE_PATH, \${\${UPS_PROD_NAME_UC}_INC}) \n";
+    if ( $include_directory ne "none" )   {
+    print TBL "    # Prepend ROOT_INCLUDE_PATH for dictionaries\n";
+    print TBL "    pathPrepend(ROOT_INCLUDE_PATH, \${\${UPS_PROD_NAME_UC}_INC}) \n";
+    }
   } else {
   print TBL "    # Prepend CMAKE_PREFIX_PATH for null flavour product\n";
   print TBL "    pathPrepend(CMAKE_PREFIX_PATH, \${UPS_PROD_DIR} )\n";
