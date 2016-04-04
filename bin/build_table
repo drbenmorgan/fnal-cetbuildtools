@@ -260,7 +260,7 @@ sub table_ld_library {
 
 sub create_table_bottom {
 
-  my ($include_directory, $root_path) = get_include_directory( $pfile );
+  my $include_directory = get_include_directory( $pfile );
   my $lib_directory = get_lib_directory( $pfile );
   my $fcl_directory = get_fcl_directory( $pfile );
   my $bin_directory = get_bin_directory( $pfile );
@@ -287,9 +287,6 @@ sub create_table_bottom {
   } elsif ( $include_directory eq "none" )   {
   } else {
   print TBL "    envSet(\${UPS_PROD_NAME_UC}_INC, $include_directory) \n";
-  }
-  if( $root_path eq "true" ) {
-  print TBL "    pathPrepend(ROOT_INCLUDE_PATH, \${\${UPS_PROD_NAME_UC}_INC}) \n";
   }
   # need to setup dependencies BEFORE prepending to any paths
   print TBL "\n";
@@ -366,6 +363,8 @@ sub create_table_bottom {
   if( $have_fq ) {
   print TBL "    # Prepend CMAKE_PREFIX_PATH for flavour qualified product\n";
   print TBL "    pathPrepend(CMAKE_PREFIX_PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR})\n";
+  print TBL "    # Prepend ROOT_INCLUDE_PATH for dictionaries\n";
+  print TBL "    pathPrepend(ROOT_INCLUDE_PATH, \${\${UPS_PROD_NAME_UC}_INC}) \n";
   } else {
   print TBL "    # Prepend CMAKE_PREFIX_PATH for null flavour product\n";
   print TBL "    pathPrepend(CMAKE_PREFIX_PATH, \${UPS_PROD_DIR} )\n";
