@@ -17,7 +17,7 @@ function usage() {
   cat 1>&2<<EOF
 usage: $prog [--required-files <files>] --wd <test-working-dir> --datafiles <;-separated-datafiles> [--] <cmd> [<args>...]
 EOF
-  exit ${1:1}
+  exit ${1:-1}
 }
 
 declare -a datafiles
@@ -71,7 +71,7 @@ if [[ -z "$wd" ]]; then
   echo "Compulsory argument --wd missing." 1>&2
   usage 1
 elif [[ "$(realdir "$wd")" != "$(realdir)" ]]; then
-  echo "$prog must be executed from the working directory for the test invoking $1" 1>&2
+  echo "$prog must be executed from the working directory \"$(realdir "$wd")\" (currently \"$(realdir)\") for the test invoking $1" 1>&2
   usage 1
 fi
 
