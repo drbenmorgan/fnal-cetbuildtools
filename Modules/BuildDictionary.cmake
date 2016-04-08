@@ -80,7 +80,7 @@ function( _generate_dictionary dictname )
   #message(STATUS "_GENERATE_DICTIONARY: generate dictionary source code for ${dictname}")
   get_directory_property( genpath INCLUDE_DIRECTORIES )
   foreach( inc ${genpath} )
-      set( GENREFLEX_INCLUDES ${GENREFLEX_INCLUDES} -I ${inc} )
+      set( GENREFLEX_INCLUDES ${GENREFLEX_INCLUDES} -I${inc} )
   endforeach(inc)
   # add any local compile definitions
   get_directory_property(compile_defs COMPILE_DEFINITIONS)
@@ -121,8 +121,7 @@ function( _generate_dictionary dictname )
     ${SOURCE_OUTPUT} ${GD_ROOTMAP_OUTPUT} ${PCM_OUTPUT}
     COMMAND ${ROOT_GENREFLEX} ${CMAKE_CURRENT_SOURCE_DIR}/classes.h
     -s ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
-		-I ${CMAKE_SOURCE_DIR}
-		-I ${CMAKE_CURRENT_SOURCE_DIR}
+		-I${CMAKE_SOURCE_DIR}
 		${GENREFLEX_INCLUDES} ${GENREFLEX_FLAGS}
     -o ${dictname}_dict.cpp
     ${CLEANUP_COMMAND}
