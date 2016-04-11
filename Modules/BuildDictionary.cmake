@@ -7,7 +7,11 @@
 #                   [DICTIONARY_LIBRARIES <library list>]
 #                   [USE_PRODUCT_NAME]
 #                   [NO_INSTALL]
-#                   [DICT_FUNCTIONS])
+#                   [DICT_FUNCTIONS]
+#                   [NO_CHECK_CLASS_VERSION]
+#                   [REQUIRED_DICTIONARIES <dictionary_list>]
+#                   [UPDATE_IN_PLACE]
+#                 )
 #
 # * <dictionary_name> defaults to a name based on the current source
 # code subdirectory.
@@ -23,6 +27,10 @@
 #
 # * If DICT_NAME_VAR is specified, <var> will be set to contain the
 # dictionary name.
+#
+# * check_class_version() is run by default. Use NO_CHECK_CLASS_VERSION
+# to disable this behavior. REQUIRED_DICTIONARIES and UPDATE_IN_PLACE
+# are passed through to check_class_version.
 #
 # * Any other macros or functions in this file are for internal use
 # only.
@@ -140,7 +148,10 @@ endfunction( _generate_dictionary )
 function ( build_dictionary )
   #message(STATUS "BUILD_DICTIONARY: called with ${ARGC} arguments: ${ARGV}")
   set(build_dictionary_usage "USAGE: build_dictionary( [dictionary_name] [DICTIONARY_LIBRARIES <library list>] [COMPILE_FLAGS <flags>] [DICT_NAME_VAR <var>] [NO_INSTALL] )")
-  cmake_parse_arguments( BD "NOINSTALL;NO_INSTALL;DICT_FUNCTIONS;USE_PRODUCT_NAME" "DICT_NAME_VAR" "DICTIONARY_LIBRARIES;COMPILE_FLAGS" ${ARGN})
+  cmake_parse_arguments( BD
+    "NOINSTALL;NO_INSTALL;DICT_FUNCTIONS;USE_PRODUCT_NAME;NO_CHECK_CLASS_VERSION;NO_DEFAULT_LIBRARIES;UPDATE_IN_PLACE"
+    "DICT_NAME_VAR"
+    "DICTIONARY_LIBRARIES;COMPILE_FLAGS;REQUIRED_DICTIONARIES" ${ARGN})
   #message(STATUS "BUILD_DICTIONARY: unparsed arguments: ${BD_UNPARSED_ARGUMENTS}")
   #message(STATUS "BUILD_DICTIONARY: install flag is  ${BD_NO_INSTALL} ")
   #message(STATUS "BUILD_DICTIONARY: COMPILE_FLAGS: ${BD_COMPILE_FLAGS}")
@@ -239,4 +250,18 @@ function ( build_dictionary )
     add_custom_target(BuildDictionary_AllDicts)
   endif()
   add_dependencies(BuildDictionary_AllDicts ${dictname}_dict)
+  #message(STATUS "Calling check_class_version with args ${BD_ARGS}")
+  if (NOT BD_NO_CHECK_CLASS_VERSION)
+    if (BD_UPDATE_IN_PLACE OR BD_REQUIRED_DICTIONARIES)
+      message(WARNING "BuildDictionary: NO_CHECK_CLASS_VERSION is set: UPDATE_IN_PLACE and REQUIRED_DICTIONARIES are ignored.")
+    endif()
+  else ()
+    if(BD_UPDATE_IN_PLACE)
+      message(WARNING "BuildDictionary: UPDATE_IN_PLACE is ignored as we always invoke check_class_version this way.")
+    endif()
+    if (BD_REQUIRED_DICTIONARIES)
+      set(BD_CCV_ARGS ${BD_CCV_ARGS} REQUIRED_DICTIONARIES ${BD_REQUIRED_DICTIONARIES})
+    endif()
+    check_class_version(${BD_LIBRARIES} UPDATE_IN_PLACE ${BD_CCV_ARGS})
+  endif()
 endfunction ( build_dictionary )

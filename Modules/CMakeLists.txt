@@ -21,6 +21,7 @@ INSTALL(FILES
   CetRegexEscape.cmake
   CetRootCint.cmake
   CetTest.cmake
+  CheckClassVersion.cmake
   CheckUpsVersion.cmake
   EnsureOutOfSourceBuild.cmake
   FindCompilerVersion.cmake

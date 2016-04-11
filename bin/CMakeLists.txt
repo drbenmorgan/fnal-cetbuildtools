@@ -12,6 +12,7 @@ install_scripts( LIST buildtool
   )
 
 cet_script(filter-output cet_exec_test)
+cet_script(checkClassVersion)
 
 INSTALL ( FILES cet_test_functions.sh
   cmake_parse_deps.pm
