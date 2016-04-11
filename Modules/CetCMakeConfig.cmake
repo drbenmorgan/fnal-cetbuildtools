@@ -10,6 +10,28 @@ include(CMakePackageConfigHelpers)
 
 include(CetParseArgs)
 
+function(_config_package_config_file)
+  # Set variables (scope within this function only) with simpler names
+  # for use inside package config files as e.g. @PACKAGE_bin_dir@
+  foreach(path_type bin lib inc fcl gdml)
+    set(${path_type}_dir ${${product}_${path_type}_dir})
+  endforeach()
+  configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/product-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${product}Config.cmake
+	  INSTALL_DESTINATION ${distdir}
+    # Use known list of path vars for installation locations so these
+    # can be found relative to the location of the productConfig.cmake
+    # file
+    PATH_VARS
+    bin_dir
+    lib_dir
+    inc_dir
+    fcl_dir
+    gdml_dir
+    )
+endfunction()
+
 macro( cet_write_version_file _filename )
 
   cet_parse_args( CWV "VERSION;COMPATIBILITY" "" ${ARGN})
@@ -55,7 +77,7 @@ macro( cet_cmake_config  )
     ##message(STATUS "cet_cmake_config: set( ${${my_library}_UC}  \$ENV{${${product}_UC}_LIB}/lib${my_library}${CMAKE_SHARED_LIBRARY_SUFFIX} )" )
   endforeach(my_library)
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMANDS}")
-  
+
   # add include path to CONFIG_FIND_LIBRARY_COMMANDS
   ##message(STATUS "cet_cmake_config: ${product}_inc_dir is ${${product}_inc_dir}")
   if( NOT ${${product}_inc_dir} MATCHES "NONE" )
@@ -105,10 +127,7 @@ macro( cet_cmake_config  )
     message(STATUS "${${product}_UC}${${my_pm_name}_UC}  ${mypmdir}${my_pm} " )
   endforeach(my_pm)
 
-  configure_package_config_file( 
-             ${CMAKE_CURRENT_SOURCE_DIR}/product-config.cmake.in
-             ${CMAKE_CURRENT_BINARY_DIR}/${product}Config.cmake 
-	     INSTALL_DESTINATION ${distdir} )
+  _config_package_config_file()
 
   # allowed COMPATIBILITY values are:
   # AnyNewerVersion ExactVersion SameMajorVersion

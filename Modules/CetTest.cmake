@@ -199,6 +199,12 @@ SET(CET_TEST_ENV ""
   FORCE
   )
 
+# - Programs and Modules
+# Default comparator
+set(CET_RUNANDCOMPARE "${CMAKE_CURRENT_LIST_DIR}/RunAndCompare.cmake")
+# Test run wrapper
+set(CET_CET_EXEC_TEST "${cetbuildtools_BINDIR}/cet_exec_test")
+
 FUNCTION(_update_defined_test_groups)
   IF(ARGC)
     SET(TMP_LIST ${CET_DEFINED_TEST_GROUPS})
@@ -384,14 +390,9 @@ FUNCTION(cet_test CET_TARGET)
         SEPARATE_ARGUMENTS(FILTER_ARGS UNIX_COMMAND "${CET_OUTPUT_FILTER_ARGS}")
         SET(DEF_OUTPUT_FILTER_ARGS "-DOUTPUT_FILTER_ARGS=${FILTER_ARGS}")
       ENDIF()
-      IF (DEFINED ENV{CETBUILDTOOLS_DIR})
-        SET(COMPARE $ENV{CETBUILDTOOLS_DIR}/Modules/RunAndCompare.cmake)
-      ELSE() # Inside cetbuildtools itself.
-        SET(COMPARE ${PROJECT_SOURCE_DIR}/Modules/RunAndCompare.cmake)
-      ENDIF()
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-        COMMAND cet_exec_test --wd ${CET_TEST_WORKDIR}
+        COMMAND ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
         --required-files "${CET_REQUIRED_FILES}"
         --datafiles "${CET_DATAFILES}"
         --skip-return-code ${skip_return_code}
@@ -403,14 +404,14 @@ FUNCTION(cet_test CET_TARGET)
         ${DEF_TEST_ERR}
         -DTEST_OUT=${CET_TARGET}.out
         ${DEF_OUTPUT_FILTER} ${DEF_OUTPUT_FILTER_ARGS}
-        -P ${COMPARE}
+        -P ${CET_RUNANDCOMPARE}
         )
     ELSE(CET_REF)
       # Add the test.
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
         COMMAND
-        cet_exec_test --wd ${CET_TEST_WORKDIR}
+        ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
         --required-files "${CET_REQUIRED_FILES}"
         --datafiles "${CET_DATAFILES}"
         --skip-return-code ${skip_return_code}

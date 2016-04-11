@@ -4,7 +4,19 @@
 # cet_cmake_env( [arch] )
 # allow optional architecture declaration
 # noarch is recognized, others are used at your own discretion
-# 
+########################################################################
+
+####################################
+# This clause is needed *only* whilst clients of cetbuildtools try and
+# locate it via the envvar stanza before including this module Once
+# migration to standard find_package use is complete, this block should
+# be removed
+if(NOT cetbuildtools_BINDIR AND DEFINED ENV{CETBUILDTOOLS_DIR})
+    set(cetbuildtools_BINDIR "$ENV{CETBUILDTOOLS_DIR}/bin")
+endif()
+####################################
+message(STATUS "cetbuildtools_BINDIR = ${cetbuildtools_BINDIR}")
+
 
 # Dummy use of CET_TEST_GROUPS to quell warning.
 if (CET_TEST_GROUPS)
@@ -248,21 +260,8 @@ macro(cet_cmake_env)
   message(STATUS "cet dot version: ${cet_dot_version}" )
   # find $CETBUILDTOOLS_DIR/bin/cet_report
   set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-  if( ${product} MATCHES "cetbuildtools" )
-      # building cetbuildtools - use our copy
-      #message(STATUS "looking in ${PROJECT_SOURCE_DIR}/bin")
-      FIND_PROGRAM( CET_REPORT cet_report
-                    ${PROJECT_SOURCE_DIR}/bin  )
-  elseif( NOT CETBUILDTOOLS_DIR )
-      FIND_PROGRAM( CET_REPORT cet_report )
-  else()
-      FIND_PROGRAM( CET_REPORT cet_report
-                    ${CETBUILDTOOLS_DIR}/bin  )
-  endif ()
+  set(CET_REPORT ${cetbuildtools_BINDIR}/cet_report)
   message(STATUS "CET_REPORT: ${CET_REPORT}")
-  if( NOT CET_REPORT )
-      message(FATAL_ERROR "Can't find cet_report")
-  endif()
   #define flavorqual and flavorqual_dir
   set_flavor_qual( ${arch} )
   cet_set_lib_directory()
@@ -274,9 +273,12 @@ macro(cet_cmake_env)
   cet_set_perllib_directory()
   cet_set_test_directory()
 
-  set(CETPKG_BUILD $ENV{CETPKG_BUILD})
-  if(NOT CETPKG_BUILD)
-    message(FATAL_ERROR "Can't locate CETPKG_BUILD, required to build this package.")
+  if (ENV{CETPKB_BUILD})
+    set(CETPKG_BUILD $ENV{CETPKG_BUILD})
+  elseif (ENV{MRB_BUILDDIR})
+    set(CETPKG_BUILD $ENV{MRB_BUILDDIR})
+  else()
+    set(CETPKG_BUILD ${PROJECT_BINARY_DIR})
   endif()
 
   # add to the include path
@@ -294,11 +296,10 @@ macro(cet_check_gcc)
 endmacro(cet_check_gcc)
 
 macro( cet_set_lib_directory )
-  execute_process(COMMAND ${CET_REPORT} libdir
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
+  execute_process(COMMAND ${CET_REPORT} libdir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_LIB_DIR_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
   #message( STATUS "${CET_REPORT} libdir returned ${REPORT_LIB_DIR_MSG}")
   if( ${REPORT_LIB_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_lib_dir ${flavorqual_dir}/lib CACHE STRING "Package lib directory" FORCE )
@@ -315,11 +316,10 @@ macro( cet_set_lib_directory )
 endmacro( cet_set_lib_directory )
 
 macro( cet_set_bin_directory )
-  execute_process(COMMAND ${CET_REPORT} bindir
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
+  execute_process(COMMAND ${CET_REPORT} bindir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_BIN_DIR_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
   #message( STATUS "${CET_REPORT} bindir returned ${REPORT_BIN_DIR_MSG}")
   if( ${REPORT_BIN_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_bin_dir ${flavorqual_dir}/bin CACHE STRING "Package bin directory" FORCE )
@@ -336,11 +336,10 @@ macro( cet_set_bin_directory )
 endmacro( cet_set_bin_directory )
 
 macro( cet_set_fcl_directory )
-  execute_process(COMMAND ${CET_REPORT} fcldir
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_FCL_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
+  execute_process(COMMAND ${CET_REPORT} fcldir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_FCL_DIR_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
   #message( STATUS "${CET_REPORT} fcldir returned ${REPORT_FCL_DIR_MSG}")
   if( ${REPORT_FCL_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_fcl_dir ${product}/${version}/fcl CACHE STRING "Package fcl directory" FORCE )
@@ -357,11 +356,10 @@ macro( cet_set_fcl_directory )
 endmacro( cet_set_fcl_directory )
 
 macro( cet_set_fw_directory )
-  execute_process(COMMAND ${CET_REPORT} fwdir
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_FW_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
+  execute_process(COMMAND ${CET_REPORT} fwdir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_FW_DIR_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
   #message( STATUS "${CET_REPORT} fwdir returned ${REPORT_FW_DIR_MSG}")
    if( ${REPORT_FW_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_fw_dir "NONE" CACHE STRING "Package fw directory" FORCE )
@@ -378,11 +376,10 @@ macro( cet_set_fw_directory )
 endmacro( cet_set_fw_directory )
 
 macro( cet_set_gdml_directory )
-  execute_process(COMMAND ${CET_REPORT} gdmldir
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_GDML_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
+  execute_process(COMMAND ${CET_REPORT} gdmldir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_GDML_DIR_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
   #message( STATUS "${CET_REPORT} gdmldir returned ${REPORT_GDML_DIR_MSG}")
   if( ${REPORT_GDML_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_gdml_dir "NONE" CACHE STRING "Package gdml directory" FORCE )
@@ -400,11 +397,10 @@ endmacro( cet_set_gdml_directory )
 
 macro( cet_set_perllib_directory )
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${CET_REPORT} perllib
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_PERLLIB_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
+  execute_process(COMMAND ${CET_REPORT} perllib ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_PERLLIB_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
   #message( STATUS "${CET_REPORT} perllib returned ${REPORT_PERLLIB_MSG}")
   if( ${REPORT_PERLLIB_MSG} MATCHES "DEFAULT" )
      set( ${product}_perllib "NONE" CACHE STRING "Package perllib directory" FORCE )
@@ -424,11 +420,10 @@ macro( cet_set_perllib_directory )
 endmacro( cet_set_perllib_directory )
 
 macro( cet_set_inc_directory )
-  execute_process(COMMAND ${CET_REPORT} incdir
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_INC_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
+  execute_process(COMMAND ${CET_REPORT} incdir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_INC_DIR_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
   #message( STATUS "${CET_REPORT} incdir returned ${REPORT_INC_DIR_MSG}")
   if( ${REPORT_INC_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_inc_dir "${product}/${version}/include" CACHE STRING "Package include directory" FORCE )
@@ -447,11 +442,10 @@ endmacro( cet_set_inc_directory )
 macro( cet_set_test_directory )
   # The default is product_dir/test
   #message( STATUS "cet_make: cet_ups_dir is ${cet_ups_dir}")
-  execute_process(COMMAND ${CET_REPORT} testdir
-                          ${cet_ups_dir} 
-                  OUTPUT_VARIABLE REPORT_TEST_DIR_MSG
-		  OUTPUT_STRIP_TRAILING_WHITESPACE
-		  )
+  execute_process(COMMAND ${CET_REPORT} testdir ${cet_ups_dir}
+    OUTPUT_VARIABLE REPORT_TEST_DIR_MSG
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
   #message( STATUS "${CET_REPORT} testdir returned ${REPORT_TEST_DIR_MSG}")
   if( ${REPORT_TEST_DIR_MSG} MATCHES "DEFAULT" )
      set( ${product}_test_dir ${product}/${version}/test CACHE STRING "Package test directory" FORCE )
