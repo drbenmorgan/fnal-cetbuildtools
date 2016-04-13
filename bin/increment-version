@@ -217,7 +217,7 @@ sub update_one_client {
 }
 
 sub update_clients {
-  File::Find::find({wanted => \&wanted}, @{$options->{"client-dir"}})
+  File::Find::find({wanted => \&wanted, follow => 1}, @{$options->{"client-dir"}})
       if (defined $options->{"client-dir"} and scalar keys %bumped_versions);
 }
 
