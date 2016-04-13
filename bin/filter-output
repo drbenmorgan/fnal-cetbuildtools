@@ -24,7 +24,7 @@ while (<>) {
   s&\d+-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{4}(?:\s+(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?(?:\s+(?:[-+]\d+|[A-Z]+))?)?)?&<date-time>&g;
   ########################################################################
   # filter absolute paths for modules and services.
-  s&/.*/(\w*_(module|service|source).cc)&<path>/${1}&g;
+  s&/.*/(\w*_(plugin|module|service|source).cc)&<path>/${1}&g;
   ########################################################################
   # Messagefacility messages.
   s&^(\%MSG.*?:\s+).*?(<date-time>)&${1}${2}&; # OS X does not currently print application.
