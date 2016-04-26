@@ -138,7 +138,7 @@ def main():
     ROOT.gROOT.SetBatch()
     # ROOT 5 only.
     if (0 == string.find(os.environ['ROOT_VERSION'], "v5", 0, 2)):
-        if (ROOT.gSystem.Load("libCintex") > 0):
+        if (ROOT.gSystem.Load("libCintex") >= 0):
             ROOT.Cintex.Enable()
         else:
             raise RuntimeError("Failed to load ROOT's Cintex library")
