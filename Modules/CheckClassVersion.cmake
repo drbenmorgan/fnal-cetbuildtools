@@ -17,18 +17,6 @@ IF(NOT CCV_ENABLED)
     )
 ENDIF()
 
-FUNCTION(_check_prereqs VAR)
-  check_ups_version(cetbuildtools $ENV{CETBUILDTOOLS_VERSION} v4_17_00 PRODUCT_MATCHES_VAR HAVE_BD_ALLDICTS)
-  SET(${VAR} ${HAVE_BD_ALLDICTS} PARENT_SCOPE)
-  IF (NOT HAVE_BD_ALLDICTS)
-    IF (HAVE_ROOT6)
-      message(FATAL_ERROR "check_class_version: proper operation with ROOT6 requires cetbuildtools >= 4.17.00")
-    ELSE (HAVE_ROOT6) # ROOT5
-      message(WARNING "check_class_version: use of cetbuildtools >= 4.17.00 is recommended with ROOT5")
-    ENDIF (HAVE_ROOT6)
-  ENDIF (NOT HAVE_BD_ALLDICTS)
-ENDFUNCTION()
-
 MACRO(check_class_version)
   CET_PARSE_ARGS(CCV
     "LIBRARIES;REQUIRED_DICTIONARIES"
@@ -46,7 +34,6 @@ MACRO(check_class_version)
     MESSAGE(FATAL_ERROR "CHECK_CLASS_VERSION must be called after BUILD_DICTIONARY.")
   ENDIF()
   IF(CCV_ENABLED)
-    _check_prereqs(HAVE_BD_ALLDICTS)
     # Add the check to the end of the dictionary building step.
     add_custom_command(OUTPUT ${dictname}_dict_checked
       COMMAND checkClassVersion ${CCV_EXTRA_ARGS}
@@ -58,11 +45,9 @@ MACRO(check_class_version)
       )
     add_custom_target(checkClassVersion_${dictname} ALL
       DEPENDS ${dictname}_dict_checked)
-    IF (HAVE_BD_ALLDICTS)
-      # All checkClassVersion invocations must wait until after *all*
-      # dictionaries have been built.
-      add_dependencies(checkClassVersion_${dictname} BuildDictionary_AllDicts)
-    ENDIF()
+    # All checkClassVersion invocations must wait until after *all*
+    # dictionaries have been built.
+    add_dependencies(checkClassVersion_${dictname} BuildDictionary_AllDicts)
     if (CCV_REQUIRED_DICTIONARIES)
       add_dependencies(${dictname}_dict ${CCV_REQUIRED_DICTIONARIES})
     endif()
