@@ -72,6 +72,7 @@
 cmake_policy(VERSION 3.0.1) # We've made this work for 3.0.1.
 
 include(CetParseArgs)
+include(CetPackagePath)
 include(InstallSource)
 
 macro( _cet_check_lib_directory )
@@ -257,11 +258,7 @@ macro( cet_make )
   #message(STATUS "cet_make debug: known files ${cet_file_list}")
 
   # calculate base name
-  if( PACKAGE_TOP_DIRECTORY )
-    STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-  else()
-    STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-  endif()
+  cet_package_path(CURRENT_SUBDIR)
   STRING( REGEX REPLACE "/" "_" cet_make_name "${CURRENT_SUBDIR}" )
   #message(STATUS "cet_make debug:  calculated library name is  ${cet_make_name} for ${product}")
   if (CM_USE_PRODUCT_NAME)

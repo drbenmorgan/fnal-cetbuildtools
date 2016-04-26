@@ -106,7 +106,11 @@ check_ups_version(root ${ROOT_VERSION} v5_28_00d PRODUCT_OLDER_VAR GENREFLEX_CLE
 #message(STATUS "genreflex cleanup status: ${GENREFLEX_CLEANUP}")
 
 # define rootcint executable
-_set_and_check_prog(ROOTCINT ${ROOTSYS}/bin/rootcint)
+if (HAVE_ROOT6)
+  _set_and_check_prog(ROOTCLING ${ROOTSYS}/bin/rootcling)
+else() # ROOT5
+  _set_and_check_prog(ROOTCINT ${ROOTSYS}/bin/rootcint)
+endif()
 
 # define some useful library lists
 set(ROOT_BASIC_LIB_LIST ${ROOT_CORE}
