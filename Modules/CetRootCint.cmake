@@ -79,7 +79,7 @@ function(cet_rootcint rc_output_name)
       )
     # Header line fixing only necessary until ROOT fixes their path stripping bug.
     set(RC_EXTRA
-      COMMAND perl -wapi.bak -e "s&\\.dylib\\.so&.dylib&g$<SEMICOLON> s&^(header\\s+)(.*)$&\${1}${curdir}/\${2}&" "${RC_RMF}"
+      COMMAND perl -wapi.bak -e "s&\\.dylib\\.so&.dylib&g$<SEMICOLON> s&^(header\\s+)([^/]+)$&\${1}${curdir}/\${2}&" "${RC_RMF}"
       COMMAND rm -f "${RC_RMF}.bak")
   endif()
   foreach( dir ${inc_dirs} )
