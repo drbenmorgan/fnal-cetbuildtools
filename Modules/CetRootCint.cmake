@@ -14,9 +14,11 @@ endif()
 
 if (HAVE_ROOT6)
   set(RC_PROG ${ROOTCLING})
+  set(RC_DICT_TYPE "ROOT Cling")
   set(RC_FLAGS)
 else() # ROOT5
   set(RC_PROG ${ROOTCINT})
+  set(RC_DICT_TYPE "ROOT CINT")
   set(RC_FLAGS
     -c # Generate code for interactive interpreter use.
     -p # Use compiler's preprocessor.
@@ -73,10 +75,10 @@ function(cet_rootcint rc_output_name)
       -s ${RC_OUTPUT_LIBRARY}
       -rmf ${RC_RMF}
       )
-    # Only necessary until ROOT fixes their path stripping bug.
+    # Header line fixing only necessary until ROOT fixes their path stripping bug.
     set(RC_EXTRA
-      COMMAND perl -wapi.bak -e "s&^(header\\s+)(.*)$&\${1}${curdir}/\${2}&" "${RC_RMF}"
-      BYPRODUCTS ${RC_RMF}.bak)
+      COMMAND perl -wapi.bak -e "s&\\.dylib\\.so&.dylib&g$<SEMICOLON> s&^(header\\s+)(.*)$&\${1}${curdir}/\${2}&" "${RC_RMF}"
+      COMMAND rm -f "${RC_RMF}.bak")
   endif()
   foreach( dir ${inc_dirs} )
     set( CINT_INCS -I${dir} ${CINT_INCS} )
@@ -94,6 +96,7 @@ function(cet_rootcint rc_output_name)
     DEPENDS ${CINT_DEPENDS} LinkDef.h
     IMPLICIT_DEPENDS ${CINT_DEPENDS} LinkDef.h
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating ${RC_DICT_TYPE} dictionary files in ${curdir}"
     VERBATIM
     )
 
