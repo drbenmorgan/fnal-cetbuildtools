@@ -213,7 +213,7 @@ function ( build_dictionary )
   if (BD_WANT_ROOTMAP)
     add_custom_command(TARGET ${dictname}_dict POST_BUILD
       COMMAND perl -wapi.bak -e s&\\.dylib\\.so&.dylib&g ${ROOTMAP_OUTPUT}
-      BYPRODUCTS ${ROOTMAP_OUTPUT}.bak
+      COMMAND rm -f ${ROOTMAP_OUTPUT}.bak
       COMMENT Fixing shared library reference in ${ROOTMAP_OUTPUT}
       VERBATIM
       )
