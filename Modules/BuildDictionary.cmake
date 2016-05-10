@@ -51,8 +51,12 @@ if (HAVE_ROOT6)
   set(BD_WANT_PCM TRUE)
   set( GENREFLEX_FLAGS
     --fail_on_warnings
-    --noIncludePath
     )
+  if (ROOT6_HAS_NOINCLUDEPATHS)
+    list(APPEND GENREFLEX_FLAGS
+      --noIncludePaths
+      )
+  endif()
 else() # ROOT5
   set(BD_WANT_CAP_FILE TRUE)
   set( GENREFLEX_FLAGS
@@ -210,7 +214,8 @@ function ( build_dictionary )
     _generate_dictionary( ${dictname} PCM_OUTPUT_VAR PCM_OUTPUT)
   endif()
   add_library(${dictname}_dict SHARED ${CMAKE_CURRENT_BINARY_DIR}/${dictname}_dict.cpp )
-  if (BD_WANT_ROOTMAP)
+  if (BD_WANT_ROOTMAP AND NOT ROOT6_HAS_NOINCLUDEPATH)
+    # Header line and OS X lib name fixing only necessary for older ROOT6.
     add_custom_command(TARGET ${dictname}_dict POST_BUILD
       COMMAND perl -wapi.bak -e s&\\.dylib\\.so&.dylib&g ${ROOTMAP_OUTPUT}
       COMMAND rm -f ${ROOTMAP_OUTPUT}.bak

@@ -15,7 +15,11 @@ endif()
 if (HAVE_ROOT6)
   set(RC_PROG ${ROOTCLING})
   set(RC_DICT_TYPE "ROOT Cling")
-  set(RC_FLAGS)
+  if (ROOT6_HAS_NOINCLUDEPATHS)
+    set(RC_FLAGS -noIncludePaths)
+  else()
+    set(RC_FLAGS)
+  endif()
 else() # ROOT5
   set(RC_PROG ${ROOTCINT})
   set(RC_DICT_TYPE "ROOT CINT")
@@ -48,7 +52,6 @@ function(cet_rootcint rc_output_name)
   ##message(STATUS "cet_rootcint debug: cet_rootcint called with ${rc_output_name}")
   ##get_filename_component(pkgname ${CMAKE_CURRENT_SOURCE_DIR} NAME )
   ##message(STATUS "cet_rootcint debug: pkgname is ${pkgname} - ${PACKAGE} - ${package}")
-  set( SRT_FLAGS  )
 
   # generate the list of headers to be parsed by cint
   cet_package_path(curdir)
@@ -77,10 +80,12 @@ function(cet_rootcint rc_output_name)
       -rml ${RC_RML}
       -rmf ${RC_RMF}
       )
-    # Header line fixing only necessary until ROOT fixes their path stripping bug.
-    set(RC_EXTRA
-      COMMAND perl -wapi.bak -e "s&\\.dylib\\.so&.dylib&g$<SEMICOLON> s&^(header\\s+)([^/]+)$&\${1}${curdir}/\${2}&" "${RC_RMF}"
-      COMMAND rm -f "${RC_RMF}.bak")
+    if (NOT ROOT6_HAS_NOINCLUDEPATH)
+      # Header line and OS X lib name fixing only necessary for older ROOT6.
+      set(RC_EXTRA
+        COMMAND perl -wapi.bak -e "s&\\.dylib\\.so&.dylib&g$<SEMICOLON> s&^(header\\s+)([^/]+)$&\${1}${curdir}/\${2}&" "${RC_RMF}"
+        COMMAND rm -f "${RC_RMF}.bak")
+    endif()
   endif()
   foreach( dir ${inc_dirs} )
     set( CINT_INCS -I${dir} ${CINT_INCS} )
