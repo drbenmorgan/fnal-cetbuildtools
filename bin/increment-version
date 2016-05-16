@@ -111,10 +111,11 @@ sub inc_version {
   my ($stem, $cetpackage, $version, @v, $new_version);
   while (<IN>) {
     ($stem, $cetpackage, $version, @v) =
-      (m&^(\s*parent\s+(\S+)\s+v)((\d+)_(\d+)(?:_(\d+)(?:p(\d+))?)?(.*))$&)
+      (m&^(\s*parent\s+(\S+)\s+v)((\d+)_(\d+)(?:_(\d+)(?:(_?(?:pre|rc|p|alpha|a|beta|b)?\d+))?)?(.*))$&)
         unless $cetpackage;
     do {print OUT; next;} unless scalar @v;
     my $tail = pop @v;
+    $tail =~ s&^\S*&&; # Remove super-micro version.
     if ($options->{mode} eq "M") {
       ++$v[0];
       defined $v[1] and $v[1] = 0;
@@ -125,10 +126,20 @@ sub inc_version {
       defined $v[2] and $v[2] = 0;
       undef $v[3];
     } elsif ($options->{mode} eq "u") {
-      ++$v[2];
+      if (defined $v[2]) {
+        ++$v[2];
+      } else {
+        $v[2] = 1;
+      }
       undef $v[3];
     } elsif ($options->{mode} eq "p") {
-      ++$v[3];
+      if (defined $v[3]) {
+        my ($x, $ver) = ($v[3] =~ m&^(\D*)(\d*)$&);
+        ++$ver if defined $ver;
+        $v[3] = sprintf("%s%02d", $x || "", $ver || 1);
+      } else {
+        $v[3] = "_01";
+      }
     }
     if ($wanted_version) {
       $new_version = $wanted_version;
@@ -137,7 +148,7 @@ sub inc_version {
       $new_version = $v[0];
       defined $v[1] and $new_version .= sprintf("_%02d", $v[1]);
       defined $v[2] and $new_version .= sprintf("_%02d", $v[2]);
-      defined $v[3] and $new_version .= sprintf("p%02d", $v[3]);
+      defined $v[3] and $new_version .= $v[3];
     }
     report "$cetpackage v$version -> v$new_version.";
     print OUT "$stem$new_version", $tail || "", "\n";
