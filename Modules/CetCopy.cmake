@@ -42,6 +42,8 @@
 # custom command.
 ########################################################################
 include (CMakeParseArguments)
+get_filename_component(abs_build "$ENV{CETPKG_BUILD}" REALPATH)
+string(LENGTH "${abs_build}" abs_build_len)
 function (cet_copy)
   cmake_parse_arguments(CETC "PROGRAMS;NAME_AS_TARGET"
     "DESTINATION;NAME;WORKING_DIRECTORY"
@@ -55,15 +57,19 @@ function (cet_copy)
   endif()
   foreach (source ${CETC_UNPARSED_ARGUMENTS})
     if (CETC_NAME)
-      set(dest_path "${CETC_DESTINATION}/${CETC_NAME}")
+      get_filename_component(dest_path "${CETC_DESTINATION}/${CETC_NAME}" REALPATH)
     else()
       get_filename_component(source_base "${source}" NAME)
-      set(dest_path "${CETC_DESTINATION}/${source_base}")
+      get_filename_component(dest_path "${CETC_DESTINATION}/${source_base}" REALPATH)
     endif()
     if (CETC_NAME_AS_TARGET)
       get_filename_component(target ${dest_path} NAME)
     else()
-      string(REPLACE "/" "+" target "${dest_path}")
+      string(FIND "${dest_path}" "${abs_build}" abs_build_found)
+      if (abs_build_found EQUAL 0)
+        string(SUBSTRING "${dest_path}" ${abs_build_len} -1 dest_path_target)
+      endif()
+      string(REPLACE "/" "+" target "${dest_path_target}")
     endif()
     add_custom_command(OUTPUT "${dest_path}"
       WORKING_DIRECTORY "${CETC_WORKING_DIRECTORY}"
