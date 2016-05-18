@@ -42,7 +42,7 @@
 # custom command.
 ########################################################################
 include (CMakeParseArguments)
-get_filename_component(abs_build "$ENV{CETPKG_BUILD}" REALPATH)
+get_filename_component(abs_build "$ENV{CETPKG_BUILD}" REALPATH CACHE)
 string(LENGTH "${abs_build}" abs_build_len)
 function (cet_copy)
   cmake_parse_arguments(CETC "PROGRAMS;NAME_AS_TARGET"
@@ -52,15 +52,16 @@ function (cet_copy)
   if (NOT CETC_DESTINATION)
     message(FATAL_ERROR "Missing required option argument DESTINATION")
   endif()
+  get_filename_component(real_dest "${CETC_DESTINATION}" REALPATH)
   if (NOT CETC_WORKING_DIRECTORY)
     set(CETC_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   endif()
   foreach (source ${CETC_UNPARSED_ARGUMENTS})
     if (CETC_NAME)
-      get_filename_component(dest_path "${CETC_DESTINATION}/${CETC_NAME}" REALPATH)
+      set(dest_path "${real_dest}/${CETC_NAME}")
     else()
       get_filename_component(source_base "${source}" NAME)
-      get_filename_component(dest_path "${CETC_DESTINATION}/${source_base}" REALPATH)
+      set(dest_path "${real_dest}/${source_base}")
     endif()
     if (CETC_NAME_AS_TARGET)
       get_filename_component(target ${dest_path} NAME)
@@ -72,8 +73,8 @@ function (cet_copy)
       string(REPLACE "/" "+" target "${dest_path_target}")
     endif()
     add_custom_command(OUTPUT "${dest_path}"
-      WORKING_DIRECTORY "${CETC_WORKING_DIRECTORY}"
-      COMMAND ${CMAKE_COMMAND} -E make_directory "${CETC_DESTINATION}"
+      WORKING_DIRECTORY "${real_dest}"
+      COMMAND ${CMAKE_COMMAND} -E make_directory "${real_dest}"
       COMMAND ${CMAKE_COMMAND} -E copy "${source}" "${dest_path}"
       COMMENT "Copying ${source} to ${dest_path}"
       DEPENDS "${source}" ${CETC_DEPENDENCIES}
