@@ -73,7 +73,7 @@ function (cet_copy)
       string(REPLACE "/" "+" target "${dest_path_target}")
     endif()
     add_custom_command(OUTPUT "${dest_path}"
-      WORKING_DIRECTORY "${real_dest}"
+      WORKING_DIRECTORY "${CETC_WORKING_DIRECTORY}"
       COMMAND ${CMAKE_COMMAND} -E make_directory "${real_dest}"
       COMMAND ${CMAKE_COMMAND} -E copy "${source}" "${dest_path}"
       COMMENT "Copying ${source} to ${dest_path}"
