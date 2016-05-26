@@ -74,9 +74,12 @@
 #   representing a reference for the error stream; otherwise, standard
 #   error will be ignored.
 #
-#  If REF is specified, then OUTPUT_FILTER and OUTPUT_FILTER_ARGS may
-#   also be specified. OUTPUT_FILTER must be a program which expects an
-#   input filename as argument and puts the filtered output on STDOUT.
+#  If REF is specified, then EITHER (OUTPUT_FILTER and optionally
+#   OUTPUT_FILTER_ARGS) OR OUTPUT_FILTERS may also be
+#   specified. OUTPUT_FILTER must be a program which expects input on
+#   STDIN and puts the filtered output on STDOUT. OUTPUT_FILTERS should
+#   be a list of filters, quoted if neccessary to include
+#   arguments.
 #
 # REQUIRED_FILES
 #   These files are required to be present before the test will be
@@ -191,7 +194,6 @@ SET(CET_TEST_GROUPS "NONE"
   CACHE STRING "List of optional test groups to be configured."
   )
 
-
 STRING(TOUPPER "${CET_TEST_GROUPS}" CET_TEST_GROUPS_UC)
 
 SET(CET_TEST_ENV ""
@@ -266,9 +268,12 @@ FUNCTION(cet_test CET_TARGET)
   CMAKE_PARSE_ARGUMENTS (CET
     "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE"
     "OUTPUT_FILTER;TEST_EXEC"
-    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
+    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTERS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
     )
+  IF (CET_OUTPUT_FILTERS AND CET_OUTPUT_FILTER_ARGS)
+    MESSAGE(FATAL_ERROR "OUTPUT_FILTERS is incompatible with FILTER_ARGS:\nEither use the singular OUTPUT_FILTER or use double-quoted strings in OUTPUT_FILTERS\nE.g. OUTPUT_FILTERS \"filter1 -x -y\" \"filter2 -y -z\"")
+  ENDIF()
   # Set up to handle a per-test work directory for parallel testing.
   SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
   file(MAKE_DIRECTORY "${CET_TEST_WORKDIR}")
@@ -385,10 +390,13 @@ FUNCTION(cet_test CET_TARGET)
       SEPARATE_ARGUMENTS(TEST_ARGS UNIX_COMMAND "${CET_TEST_ARGS}")
       IF(CET_OUTPUT_FILTER)
         SET(DEF_OUTPUT_FILTER "-DOUTPUT_FILTER=${CET_OUTPUT_FILTER}")
-      ENDIF()
-      IF(CET_OUTPUT_FILTER_ARGS)
-        SEPARATE_ARGUMENTS(FILTER_ARGS UNIX_COMMAND "${CET_OUTPUT_FILTER_ARGS}")
-        SET(DEF_OUTPUT_FILTER_ARGS "-DOUTPUT_FILTER_ARGS=${FILTER_ARGS}")
+        IF(CET_OUTPUT_FILTER_ARGS)
+          SEPARATE_ARGUMENTS(FILTER_ARGS UNIX_COMMAND "${CET_OUTPUT_FILTER_ARGS}")
+          SET(DEF_OUTPUT_FILTER_ARGS "-DOUTPUT_FILTER_ARGS=${FILTER_ARGS}")
+        ENDIF()
+      ELSEIF(CET_OUTPUT_FILTERS)
+        STRING(REPLACE ";" "::" DEF_OUTPUT_FILTERS "${CET_OUTPUT_FILTERS}")
+        SET(DEF_OUTPUT_FILTERS "-DOUTPUT_FILTERS=${DEF_OUTPUT_FILTERS}")
       ENDIF()
       ADD_TEST(NAME ${CET_TARGET}
         ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
@@ -403,7 +411,7 @@ FUNCTION(cet_test CET_TARGET)
         ${DEF_ERROR_REF}
         ${DEF_TEST_ERR}
         -DTEST_OUT=${CET_TARGET}.out
-        ${DEF_OUTPUT_FILTER} ${DEF_OUTPUT_FILTER_ARGS}
+        ${DEF_OUTPUT_FILTER} ${DEF_OUTPUT_FILTER_ARGS} ${DEF_OUTPUT_FILTERS}
         -P ${CET_RUNANDCOMPARE}
         )
     ELSE(CET_REF)

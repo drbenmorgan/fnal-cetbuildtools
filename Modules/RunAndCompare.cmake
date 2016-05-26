@@ -26,12 +26,20 @@
 #   Filter program: must be able to take input by filename and output on STDOUT.
 # OUTPUT_FILTER_ARGS
 #   Filter program arguments.
+# OUTPUT_FILTERS
+#   List describing a of filters with arguments, quoted as appropriate
+#   (mutually-exclusive with OUTPUT_FILTER and OUTPUT_FILTER_ARGS). Use
+#   DEFAULT to specify the default filter somewhere in the chain.
 ########################################################################
+
+# Defaults
+set(DEFAULT_FILTER filter-output)
 
 # Utility function.
 function(filter_and_compare FILE REF)
   set(filtered_file "${FILE}-filtered")
-  execute_process(COMMAND ${OUTPUT_FILTER} ${OUTPUT_FILTER_ARGS} "${FILE}"
+  execute_process(${COMMANDS}
+    INPUT_FILE "${FILE}"
     OUTPUT_FILE "${filtered_file}"
     RESULT_VARIABLE FILTER_FAILED
     )
@@ -78,8 +86,23 @@ if (TEST_REF_ERR)
   set(TEST_REF_ERR_CMD "ERROR_FILE")
 endif()
 
-if (NOT OUTPUT_FILTER)
-  set(OUTPUT_FILTER filter-output)
+set(COMMANDS)
+if (OUTPUT_FILTERS)
+  string(REPLACE "::" ";" output_filters_fixed "${OUTPUT_FILTERS}")
+  foreach (filter ${output_filters_fixed})
+    separate_arguments(args UNIX_COMMAND "${filter}")
+    list(GET args 0 default_check)
+    if (default_check STREQUAL "DEFAULT")
+      list(REMOVE_AT args 0)
+      list(INSERT args 0 ${DEFAULT_FILTER})
+    endif()
+    list(APPEND COMMANDS COMMAND ${args})
+  endforeach()
+else()
+  if (NOT OUTPUT_FILTER)
+    set(OUTPUT_FILTER ${DEFAULT_FILTER})
+  endif()
+  list(APPEND COMMANDS COMMAND ${OUTPUT_FILTER} ${OUTPUT_FILTER_ARGS})
 endif()
 
 # Run the test command and save the output.
