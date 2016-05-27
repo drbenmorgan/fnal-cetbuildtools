@@ -29,11 +29,14 @@
 # OUTPUT_FILTERS
 #   List describing a of filters with arguments, quoted as appropriate
 #   (mutually-exclusive with OUTPUT_FILTER and OUTPUT_FILTER_ARGS). Use
-#   DEFAULT to specify the default filter somewhere in the chain.
+#   DEFAULT to specify the default filter(s) somewhere in the chain.
 ########################################################################
-
 # Defaults
-set(DEFAULT_FILTER filter-output)
+set(DEFAULT_FILTERS filter-output)
+
+if (DEFINED ART_COMPAT)
+  list(INSERT DEFAULT_FILTERS 0 "filter-output-art-compat")
+endif()
 
 # Utility function.
 function(filter_and_compare FILE REF)
@@ -41,11 +44,13 @@ function(filter_and_compare FILE REF)
   execute_process(${COMMANDS}
     INPUT_FILE "${FILE}"
     OUTPUT_FILE "${filtered_file}"
+    OUTPUT_VARIABLE OUTPUT
+    ERROR_VARIABLE OUTPUT
     RESULT_VARIABLE FILTER_FAILED
     )
 
   if (FILTER_FAILED)
-    message(FATAL_ERROR "Production of filtered output from ${FILE} failed.")
+    message(FATAL_ERROR "Production of filtered output from ${FILE} failed with result ${FILTER_FAILED}")
   endif()
 
   execute_process(COMMAND diff -u "${REF}" "${filtered_file}"
@@ -87,22 +92,28 @@ if (TEST_REF_ERR)
 endif()
 
 set(COMMANDS)
+if (NOT OUTPUT_FILTER AND NOT OUTPUT_FILTERS)
+  set(OUTPUT_FILTERS ${DEFAULT_FILTERS})
+endif()
+if (NOT OUTPUT_FILTERS)
+  set(OUTPUT_FILTERS "${OUTPUT_FILTER} ${OUTPUT_FILTER_ARGS}")
+endif()
 if (OUTPUT_FILTERS)
-  string(REPLACE "::" ";" output_filters_fixed "${OUTPUT_FILTERS}")
-  foreach (filter ${output_filters_fixed})
-    separate_arguments(args UNIX_COMMAND "${filter}")
-    list(GET args 0 default_check)
-    if (default_check STREQUAL "DEFAULT")
-      list(REMOVE_AT args 0)
-      list(INSERT args 0 ${DEFAULT_FILTER})
+  string(REPLACE "::" ";" OUTPUT_FILTERS "${OUTPUT_FILTERS}")
+  list(FIND OUTPUT_FILTERS "DEFAULT" found_default)
+  if (found_default GREATER -1)
+    list(REMOVE_AT OUTPUT_FILTERS ${found_default})
+    list(LENGTH OUTPUT_FILTERS of_length)
+    if (of_length EQUAL ${found_default})
+      list(APPEND OUTPUT_FILTERS ${DEFAULT_FILTERS})
+    else()
+      list(INSERT OUTPUT_FILTERS ${found_default} ${DEFAULT_FILTERS})
     endif()
+  endif()
+  foreach (filter ${OUTPUT_FILTERS})
+    separate_arguments(args UNIX_COMMAND "${filter}")
     list(APPEND COMMANDS COMMAND ${args})
   endforeach()
-else()
-  if (NOT OUTPUT_FILTER)
-    set(OUTPUT_FILTER ${DEFAULT_FILTER})
-  endif()
-  list(APPEND COMMANDS COMMAND ${OUTPUT_FILTER} ${OUTPUT_FILTER_ARGS})
 endif()
 
 # Run the test command and save the output.

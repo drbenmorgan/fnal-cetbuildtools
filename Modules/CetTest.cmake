@@ -74,12 +74,18 @@
 #   representing a reference for the error stream; otherwise, standard
 #   error will be ignored.
 #
-#  If REF is specified, then EITHER (OUTPUT_FILTER and optionally
-#   OUTPUT_FILTER_ARGS) OR OUTPUT_FILTERS may also be
-#   specified. OUTPUT_FILTER must be a program which expects input on
-#   STDIN and puts the filtered output on STDOUT. OUTPUT_FILTERS should
-#   be a list of filters, quoted if neccessary to include
-#   arguments.
+#  If REF is specified, then OUTPUT_FILTERS may also be specified
+#   (OUTPUT_FILTER and optionally OUTPUT_FILTER_ARGS will be accepted in
+#   the alternative for historical reasons). OUTPUT_FILTER must be a
+#   program which expects input on STDIN and puts the filtered output on
+#   STDOUT. OUTPUT_FILTERS should be a list of filters expecting input
+#   on STDIN and putting output on STDOUT. If DEFAULT is specified as a
+#   filter, it will be replaced at that point in the list of filters by
+#   appropriate defaults. Examples:
+#
+#     OUTPUT_FILTERS "filterA -x -y \"arg with spaces\"" filterB
+#
+#     OUTPUT_FILTERS filterA DEFAULT filterB
 #
 # REQUIRED_FILES
 #   These files are required to be present before the test will be
@@ -184,6 +190,17 @@ include(FindUpsBoost)
 include(CetMake)
 # May need to escape a string to avoid misinterpretation as regex
 include(CetRegexEscape)
+
+# Compatibility with older packages.
+include(CheckUpsVersion)
+
+if (DEFINED ENV{ART_VERSION})
+  check_ups_version(art $ENV{ART_VERSION} v2_01_00RC1 PRODUCT_OLDER_VAR CT_NEED_ART_COMPAT)
+  if (CT_NEED_ART_COMPAT)
+    message(STATUS "$ENV{ART_VERSION} is OLDER than v2_01_00RC1: using -DART_COMPAT=1 for REF tests.")
+    set(DEFINE_ART_COMPAT -DART_COMPAT=1)
+  endif()
+endif()
 
 # If Boost has been specified but the library hasn't, load the library.
 IF((NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND BOOST_VERS)
@@ -412,6 +429,7 @@ FUNCTION(cet_test CET_TARGET)
         ${DEFINE_TEST_ERR}
         -DTEST_OUT=${CET_TARGET}.out
         ${DEFINE_OUTPUT_FILTER} ${DEFINE_OUTPUT_FILTER_ARGS} ${DEFINE_OUTPUT_FILTERS}
+        ${DEFINE_ART_COMPAT}
         -P ${CET_RUNANDCOMPARE}
         )
     ELSE(CET_REF)
