@@ -34,7 +34,38 @@
 #
 # * At least one of PRODUCT_OLDER_VAR or PRODUCT_MATCHES_VAR must be
 # supplied.
+#
+# * Version precedence is as follows (a strict superset of the "old"
+#   ROOT versioning system):
+#
+#   * v1_0_0 is SAME as v1_0_0_0.
+#
+#   * v1_0_0 is NEWER than v1_0_0pre.
+#
+#   * v1_0_0pre is SAME as v1_0_0rc.
+#
+#   * v1_0_0pre0 is SAME as v1_0_0pre.
+#
+#   * v1_0_0alphaN is SAME as v1_0_0_alphaN.
+#
+#   * v1_0_0alphaN is OLDER than v1_0_0betaM.
+#
+#   * v1_0_0betaN is OLDER than v1_0_0rcM.
+#
+#   * v1_0_0patch is SAME is v1_0_0p0.
+#
+#   * v1_0_0a is NEWER than v1_0_0pN.
+#
+#   * v1_0_0p[<letters>] is NEWER than v1_0_0q[<letters>].
+#
+#   * v1_0_0q[<letters>] is NEWER than v1_0_0p[<letters>].
+#
+#   * <non-numeric-version> is NEWER than <any-numeric-version>.
+#
+#   * <non-numeric-version> is SAME as <non-numeric-version>.
+#
 ########################################################################
+cmake_policy(VERSION 3.3.2)
 
 include(CMakeParseArguments)
 
@@ -46,63 +77,61 @@ macro(_get_dotver myversion )
 endmacro(_get_dotver myversion )
 
 #internal macro
-macro(_parse_version version )
+function(_parse_version version )
    # standard case
    # convert vx_y_z to x.y.z
    # special cases
    # convert va_b_c_d to a.b.c.d
    # convert vx_y to x.y
    
-   # replace all underscores with dots
-   _get_dotver( ${version} )
-   ##message( STATUS "_parse_version: ${version} becomes ${dotver}" )
-   string(REGEX MATCHALL "_" nfound ${version} )
-   ##message( STATUS "_parse_version: matchall returns ${nfound}" )
-   list(LENGTH nfound nfound)
-   ##message( STATUS "_parse_version: nfound is now ${nfound} " )
-   if( ${nfound} EQUAL 3 )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\1" major "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\2" minor "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\3" patch "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\4" micro "${version}" )
-   elseif( ${nfound} EQUAL 2 )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\1" major "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\2" minor "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)" "\\3" patch "${version}" )
-      set( micro "0")
-   elseif( ${nfound} EQUAL 1 )
-      STRING( REGEX REPLACE "v(.*)_(.*)" "\\1" major "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)" "\\2" minor "${version}" )
-      set( patch "0")
-      set( micro "0")
-   elseif( ${nfound} EQUAL 0 )
-      STRING( REGEX REPLACE "v(.*)" "\\1" major "${version}" )
-      set( minor "0")
-      set( patch "0")
-      set( micro "0")
+   string(REGEX MATCH "^v([0-9]*)(_([0-9]*)(_([0-9]*)(.*))?)?" smatch ${version})
+#   message(STATUS "CMAKE_MATCH_COUNT = ${CMAKE_MATCH_COUNT}")
+   if (CMAKE_MATCH_COUNT GREATER 4)
+     set(basicdotver ${CMAKE_MATCH_1} ${CMAKE_MATCH_3} ${CMAKE_MATCH_5})
+     set(extra ${CMAKE_MATCH_6})
+   elseif(CMAKE_MATCH_COUNT GREATER 2)
+     set(basicdotver ${CMAKE_MATCH_1} ${CMAKE_MATCH_3} 0)
+   elseif(CMAKE_MATCH_COUNT EQUAL 1)
+     set(basicdotver ${CMAKE_MATCH_1} 0 0)
    else()
-      message( STATUS "_parse_version found extra underscores in ${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\1" major "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\2" minor "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\3" patch "${version}" )
-      STRING( REGEX REPLACE "v(.*)_(.*)_(.*)_(.*)" "\\4" micro "${version}" )
+     set(basicdotver 0 0 0)
    endif()
-   ##message( STATUS "_parse_version: major ${major} " )
-   ##message( STATUS "_parse_version: minor ${minor} " )
-   ##message( STATUS "_parse_version: patch ${patch} " )
-   ##message( STATUS "_parse_version: micro ${micro}" )
-   string(TOUPPER  ${patch} PATCH_UC )
-   STRING(REGEX MATCH [A-Z] has_alpha ${PATCH_UC})
-   if( has_alpha )
-      #message( STATUS "deal with alphabetical character in patch version ${patch}" )
-      STRING(REGEX REPLACE "(.*)([A-Z])" "\\1" patch  ${PATCH_UC})
-      STRING(REGEX REPLACE "(.*)([A-Z])" "\\2" patchchar  ${PATCH_UC})
-   else( has_alpha )
-      set( patchchar " ")
-   endif( has_alpha )
-   set( basicdotver ${major}.${minor}.${patch} )
-   #message( STATUS "_parse_version: ${version} becomes ${dotver} ${basicdotver}" )
-endmacro(_parse_version)
+   string(REPLACE ";" "."  basicdotver "${basicdotver}")
+#   message(STATUS "version: ${version}; basicdotver: ${basicdotver}; extra: ${extra}")
+   if (extra)
+     string(TOUPPER "${extra}" EXTRA)
+     string(REGEX MATCH "^_?([A-Z]+)?([0-9]+)?" smatch "${EXTRA}")
+     if (CMAKE_MATCH_COUNT)
+       set(patchchars ${CMAKE_MATCH_1})
+       set(micro ${CMAKE_MATCH_2})
+     endif()
+   endif()
+#   message(STATUS "version: ${version}; basicdotver: ${basicdotver}; extra: ${extra}; patchchars: ${patchchars}; micro: ${micro}")
+   if (NOT patchchars)
+     set(patchtype 0)
+     set(patchchars "")
+   elseif ((patchchars STREQUAL "PATCH") OR (patchchars STREQUAL "P" AND DEFINED micro))
+     set(patchtype 1)
+   elseif(patchchars STREQUAL "RC" OR patchchars STREQUAL "PRE")
+     set(patchchars "RC")
+     set(patchtype -1)
+   elseif(patchchars STREQUAL "BETA")
+     set(patchtype -2)
+   elseif(patchchars STREQUAL "ALPHA")
+     set(patchtype -3)
+   else()
+     set(patchtype 2)
+   endif()
+   if (NOT micro)
+     set(micro 0)
+   endif()
+#   message(STATUS "version: ${version}; basicdotver: ${basicdotver}; extra: ${extra}; patchtype: ${patchtype}; patchchars: ${patchchars}; micro: ${micro}")
+   # Expose variables to parent scope.
+   foreach(var basicdotver patchtype patchchars micro)
+     string(TOUPPER ${var} var_uc)
+     set(${var_uc} ${${var}} PARENT_SCOPE)
+   endforeach()
+endfunction(_parse_version)
 
 macro( _check_version product version  )
   cmake_parse_arguments( CVP "" "" "" ${ARGN} )
@@ -116,118 +145,46 @@ macro( _check_version product version  )
   #message( STATUS "${product} ${THISVER} meets minimum required version ${MINVER}")
 endmacro( _check_version product version minimum )
  
-macro( _compare_root_micro microversion micromin )
-   # root release old numbering:
-   # 5.28.00.rc1 (release candidate)
-   # 5.28.00 (release)
-   # 5.28.00.p01 (fermi patch release)
-   # 5.28.00a (patch release)
-   # root release new numbering:
-   # 5.30.00.rc1 (release candidate)
-   # 5.30.00 (release)
-   # 5.30.00.p01 (fermi patch release)
-   # 5.30.01 (patch release)
-   # 5.30.01.p01 (fermi patch release)
-   ##message(STATUS "_compare_root_micro: check ${microversion} against ${micromin}")   
-   string(TOUPPER  ${microversion} VERUC )
-   STRING(REGEX MATCH [R][C] rcver ${VERUC})
-   if( rcver )
-      STRING(REGEX REPLACE "[R][C](.*)" "\\1" rcvnum  ${VERUC})
-      ##message(STATUS "_compare_root_micro: version is release candidate ${microversion} ${rcvnum}")
-   endif( rcver )
-   STRING(REGEX MATCH [P] fermipatch ${VERUC})
-   if( fermipatch )
-      STRING(REGEX REPLACE "[P](.*)" "\\1" pvnum  ${VERUC})
-      ##message(STATUS "_compare_root_micro: version is fermi patch ${microversion} ${pvnum}")
-   endif( fermipatch )
-   string(TOUPPER  ${micromin} MINUC )
-   STRING(REGEX MATCH [R][C] rcmin ${MINUC})
-   if( rcmin )
-      STRING(REGEX REPLACE "[R][C](.*)" "\\1" rcminnum  ${MINUC})
-   endif( rcmin )
-   STRING(REGEX MATCH [P] fermipatchmin ${MINUC})
-   if( fermipatchmin )
-      STRING(REGEX REPLACE "[P](.*)" "\\1" pminnum  ${MINUC})
-   endif( fermipatchmin )
-   
-   # is the minimum microversion a fermi patch?
-   # when comparing microversions, a fermi patch should trump everything else
-   if( fermipatchmin )
-      ##message(STATUS "_compare_root_micro: minimum is fermi patch ${micromin} ${pminnum}")
-      if( fermipatch )
-         if(  ${pvnum} LESS ${pminnum} )
-            set( product_version_less TRUE )
-	 endif()
-      else()
-        set( product_version_less TRUE )
-      endif()
-   endif( fermipatchmin )
-   # is the minimum microversion a release candidate?
-   # when comparing microversions, everything else is better than a release candidate
-   if( rcmin )
-      ##message(STATUS "_compare_root_micro: minimum is release candidate ${micromin} ${rcminnum}")
-      if( rcver )
-         if(  ${rcvnum} LESS ${rcminnum} )
-            set( product_version_less TRUE )
-	 endif()
-      endif()
-   endif( rcmin )
-endmacro( _compare_root_micro microversion micromin )
-
 function( check_ups_version product version minimum )
   cmake_parse_arguments(CV "" "PRODUCT_OLDER_VAR;PRODUCT_MATCHES_VAR" "" ${ARGN})
   if ((NOT CV_PRODUCT_OLDER_VAR) AND (NOT CV_PRODUCT_MATCHES_VAR))
     message(FATAL_ERROR "check_ups_version requires at least one of PRODUCT_OLDER_VAR or PRODUCT_MATCHES_VAR")
   endif()
   _parse_version( ${minimum}  )
-  set( MINVER ${dotver} )
-  set( MINCVER ${basicdotver} )
-  set( MINMAJOR ${major} )
-  set( MINMINOR ${minor} )
-  set( MINPATCH ${patch} )
-  set( MINCHAR ${patchchar} )
-  set( MINMICRO ${micro} )
+  set( MINCVER ${BASICDOTVER} )
+  set( MINPATCHTYPE ${PATCHTYPE} )
+  set( MINCHAR ${PATCHCHARS} )
+  set( MINMICRO ${MICRO} )
   _parse_version( ${version}  )
-  set( THISVER ${dotver} )
-  set( THISCVER ${basicdotver} )
-  set( THISMAJOR ${major} )
-  set( THISMINOR ${minor} )
-  set( THISPATCH ${patch} )
-  set( THISCHAR ${patchchar} )
-  set( THISMICRO ${micro} )
-  ##message(STATUS "check_ups_version: ${product} minimum version is ${MINVER} ${MINMAJOR} ${MINMINOR} ${MINPATCH} ${MINCHAR} ${MINMICRO} from ${minimum} " )
-  ##message(STATUS "check_ups_version: ${product} version is ${THISVER} ${THISMAJOR} ${THISMINOR} ${THISPATCH} ${THISCHAR} ${THISMICRO} from ${version} " )
+  set( THISCVER ${BASICDOTVER} )
+  set( THISPATCHTYPE ${PATCHTYPE} )
+  set( THISCHAR ${PATCHCHARS} )
+  set( THISMICRO ${MICRO} )
   # initialize product_older
   set( product_older FALSE )
-  if( ${product} MATCHES "ROOT" )
-    if( ${THISCVER} VERSION_LESS ${MINCVER} )
+  if(${THISCVER} VERSION_LESS ${MINCVER} )
+    set( product_older TRUE )
+  elseif(${THISCVER} VERSION_EQUAL ${MINCVER})
+    # Need to look at patchtype.
+    if (${THISPATCHTYPE} LESS ${MINPATCHTYPE})
+      set(product_older TRUE)
+    elseif(${THISPATCHTYPE} EQUAL 2 AND
+        ${MINPATCHTYPE} EQUAL 2 AND
+        "${THISCHAR}" STRLESS "${MINCHAR}")
 	    set( product_older TRUE )
-    elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	      AND ${THISCHAR} STRLESS ${MINCHAR} )
-	    set( product_older TRUE )
-    elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	      AND ${THISCHAR} STREQUAL ${MINCHAR} )
-	    # root micro versions require special handling
-	    #message(STATUS "root versions match so far, compare  ${THISMICRO} to ${MINMICRO}")
-	    _compare_root_micro( ${THISMICRO} ${MINMICRO} )
-    endif()
-  else()
-    if( ${THISCVER} VERSION_LESS ${MINCVER} )
-      set( product_older TRUE )
-    elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	      AND ${THISCHAR} STRLESS ${MINCHAR} )
-	    set( product_older TRUE )
-    elseif( ${THISCVER} VERSION_EQUAL ${MINCVER}
-	      AND ${THISCHAR} STREQUAL ${MINCHAR} 
-	      AND ${THISMICRO} LESS ${MINMICRO} )
+    elseif(${THISPATCHTYPE} EQUAL ${MINPATCHTYPE} AND
+	      "${THISCHAR}" STREQUAL "${MINCHAR}" AND
+	      ${THISMICRO} LESS ${MINMICRO})
 	    set( product_older TRUE )
     endif()
   endif()
   # check for special cases such as "nightly"
-  STRING(REGEX MATCH "([0-9]+)" isnumeric "${version}")
-  if( NOT isnumeric )
-    ##message(STATUS "check_ups_version: ${product} ${version} is not numeric")
+  if (NOT version MATCHES "[0-9]+")
+#    message(STATUS "check_ups_version: ${product} ${version} is not numeric, therefore it matches all\nminimum versions")
     set( product_older FALSE )
+  elseif (NOT minimum MATCHES "[0-9]+")
+#    message(STATUS "check_ups_version: ${product} minimum version ${minimum} is not numeric, therefore it is older\nthan all numeric versions.")
+    set( product_older TRUE )
   endif()
   if (CV_PRODUCT_OLDER_VAR)
     set(${CV_PRODUCT_OLDER_VAR} ${product_older} PARENT_SCOPE)
@@ -239,7 +196,7 @@ function( check_ups_version product version minimum )
       set(${CV_PRODUCT_MATCHES_VAR} TRUE PARENT_SCOPE)
     endif()
   endif()
-  ##message( STATUS "check_ups_version: ${product} ${THISVER} check if greater returns ${product_older}")
+  #message( STATUS "check_ups_version: ${product} ${THISVER} check if greater returns ${product_older}")
 endfunction( check_ups_version product version minimum )
 
 # For backward compatibility.
