@@ -10,6 +10,7 @@
 #                   [DICT_FUNCTIONS]
 #                   [NO_CHECK_CLASS_VERSION]
 #                   [REQUIRED_DICTIONARIES <dictionary_list>]
+#                   [RECURSIVE|NO_RECURSIVE]
 #                   [UPDATE_IN_PLACE]
 #                 )
 #
@@ -29,8 +30,8 @@
 # dictionary name.
 #
 # * check_class_version() is run by default. Use NO_CHECK_CLASS_VERSION
-# to disable this behavior. REQUIRED_DICTIONARIES and UPDATE_IN_PLACE
-# are passed through to check_class_version.
+# to disable this behavior. REQUIRED_DICTIONARIES, UPDATE_IN_PLACE and
+# {NO_,}RECURSIVE are passed through to check_class_version.
 #
 # * Any other macros or functions in this file are for internal use
 # only.
@@ -38,6 +39,7 @@
 ########################################################################
 include(CMakeParseArguments)
 include(CetCurrentSubdir)
+include(CheckClassVersion)
 
 # make sure ROOT_VERSION has been defined
 if( NOT ROOT_VERSION )
@@ -153,7 +155,7 @@ function ( build_dictionary )
   #message(STATUS "BUILD_DICTIONARY: called with ${ARGC} arguments: ${ARGV}")
   set(build_dictionary_usage "USAGE: build_dictionary( [dictionary_name] [DICTIONARY_LIBRARIES <library list>] [COMPILE_FLAGS <flags>] [DICT_NAME_VAR <var>] [NO_INSTALL] )")
   cmake_parse_arguments( BD
-    "NOINSTALL;NO_INSTALL;DICT_FUNCTIONS;USE_PRODUCT_NAME;NO_CHECK_CLASS_VERSION;NO_DEFAULT_LIBRARIES;UPDATE_IN_PLACE"
+    "NOINSTALL;NO_INSTALL;DICT_FUNCTIONS;USE_PRODUCT_NAME;NO_CHECK_CLASS_VERSION;NO_DEFAULT_LIBRARIES;UPDATE_IN_PLACE;RECURSIVE;NO_RECURSIVE"
     "DICT_NAME_VAR"
     "DICTIONARY_LIBRARIES;COMPILE_FLAGS;REQUIRED_DICTIONARIES" ${ARGN})
   #message(STATUS "BUILD_DICTIONARY: unparsed arguments: ${BD_UNPARSED_ARGUMENTS}")
@@ -261,7 +263,7 @@ function ( build_dictionary )
   add_dependencies(BuildDictionary_AllDicts ${dictname}_dict)
   #message(STATUS "Calling check_class_version with args ${BD_ARGS}")
   if (BD_NO_CHECK_CLASS_VERSION)
-    if (BD_UPDATE_IN_PLACE OR BD_REQUIRED_DICTIONARIES)
+    if (BD_UPDATE_IN_PLACE OR BD_REQUIRED_DICTIONARIES OR RECURSIVE OR NO_RECURSIVE)
       message(WARNING "BuildDictionary: NO_CHECK_CLASS_VERSION is set: UPDATE_IN_PLACE and REQUIRED_DICTIONARIES are ignored.")
     endif()
   else ()
@@ -270,6 +272,11 @@ function ( build_dictionary )
     endif()
     if (BD_REQUIRED_DICTIONARIES)
       set(BD_CCV_ARGS ${BD_CCV_ARGS} REQUIRED_DICTIONARIES ${BD_REQUIRED_DICTIONARIES})
+    endif()
+    if (BD_RECURSIVE)
+      set(BD_CCV_ARGS ${BD_CCV_ARGS} RECURSIVE)
+    elsif (BD_NO_RECURSIVE)
+      set(BD_CCV_ARGS ${BD_CCV_ARGS} NO_RECURSIVE)
     endif()
     check_class_version(${BD_LIBRARIES} UPDATE_IN_PLACE ${BD_CCV_ARGS})
   endif()
