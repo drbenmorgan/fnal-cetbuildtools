@@ -197,7 +197,7 @@ def main():
     oparser.add_option("-x", "--xml_file", dest="xmlfile", default="./classes_def.xml", help="the classes_def.xml file to read")
     oparser.add_option("-g", "--generate_new", dest="generate", action="store_true", default=False, help="instead of issuing errors, generate a new classes_def.xml file.")
     oparser.add_option("-G", "--generate-in-place", dest="generate_in_place", action="store_true", default=False, help="Update the classes_def.xml file in place.")
-    oparser.add_option("--no-recursive", dest="want_dictChecker", action="store_false", default=True, help="Disable recursive dictionary checks.")
+    oparser.add_option("--no-recursive", dest="want_dictChecker", action="store_false", default=False, help="Disable recursive dictionary checks.")
     oparser.add_option("--recursive", dest="want_dictChecker", action="store_true", help="Enable recursive dictionary checks.")
     oparser.add_option("-t", "--timestamp", dest="timestamp", help="Touch specified file on success.")
     (options, args) = oparser.parse_args()
