@@ -69,8 +69,10 @@ function (cet_copy)
       string(FIND "${dest_path}" "${abs_build}" abs_build_found)
       if (abs_build_found EQUAL 0)
         string(SUBSTRING "${dest_path}" ${abs_build_len} -1 dest_path_target)
+        string(REPLACE "/" "+" target "${dest_path_target}")
+      else()
+        string(REPLACE "/" "+" target "${dest_path}")
       endif()
-      string(REPLACE "/" "+" target "${dest_path_target}")
     endif()
     add_custom_command(OUTPUT "${dest_path}"
       WORKING_DIRECTORY "${CETC_WORKING_DIRECTORY}"
