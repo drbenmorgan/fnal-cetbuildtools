@@ -194,8 +194,8 @@ include(CetRegexEscape)
 # Compatibility with older packages.
 include(CheckUpsVersion)
 
-if (DEFINED ART_VERSION)
-  check_ups_version(art ${ART_VERSION} v2_01_00RC1 PRODUCT_OLDER_VAR CT_NEED_ART_COMPAT)
+if (DEFINED ENV{ART_VERSION})
+  check_ups_version(art $ENV{ART_VERSION} v2_01_00RC1 PRODUCT_OLDER_VAR CT_NEED_ART_COMPAT)
 elseif (DEFINED ENV{CETPKG_SOURCE})
   if ((EXISTS $ENV{CETPKG_SOURCE}/art/tools/migration AND NOT EXISTS $ENV{CETPKG_SOURCE}/art/tools/filter-timeTracker-output) OR
       (EXISTS $ENV{CETPKG_SOURCE}/tools/migration AND NOT EXISTS $ENV{CETPKG_SOURCE}/tools/filter-timeTracker-output))
