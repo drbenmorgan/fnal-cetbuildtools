@@ -198,6 +198,7 @@ macro( cet_make )
     *_plugin.cc
     *_service.cc
     *_source.cc
+    *_tool.cc
     *_dict.cpp
     *_map.cpp
     )
@@ -211,6 +212,7 @@ macro( cet_make )
        ${sub}/*_module.cc
        ${sub}/*_plugin.cc
        ${sub}/*_service.cc
+       ${sub}/*_source.cc
        ${sub}/*_source.cc
        ${sub}/*_dict.cpp
        ${sub}/*_map.cpp
