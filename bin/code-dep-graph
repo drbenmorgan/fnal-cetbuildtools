@@ -95,14 +95,14 @@ function package_name() {
   local rec_output=$(echo "${pfile}" | perl -wne '
 chomp;
 my $count = 0;
-my ($stem, $plugin_ext) = m&^(?:.*/+)?(.*)_(generator|module|service|source)\.(?:cc)(\.in)?$&;
+my ($stem, $plugin_ext) = m&^(?:.*/+)?(.*)_(generator|module|service|source|tool)\.(?:cc)(\.in)?$&;
 if (${stem}) {
   print "${stem} ${plugin_ext}\n";
   exit;
 }
 s&\b(?:interface|inc|include)/&src/&;
 s&\.(?:h|H|hh|hpp|hxx)(?:\.in)?$&& and not -f "${_}.cxx" or exit; # Expensive -- only for headers.
-foreach my $plugin_ext qw(generator module service source) {
+foreach my $plugin_ext qw(generator module service source tool) {
   # print STDERR "INFO: looking for ${_}_${plugin_ext}.cc or ${_}_${plugin_ext}.cc.in in ",`pwd`;
   if (-f "${_}_${plugin_ext}.cc" or -f "${_}_${plugin_ext}.cc.in") {
     ($stem) = m&^(?:.*/+)?(.*)$&;
@@ -168,7 +168,7 @@ function find_int_packages() {
     ( cd $path
       echo $path >>  "${TMP}.int_packages.tmp"
       echo $path
-      for file in `ack --noenv $a_arg -g '_(generator|module|service|source)\.cc(?:\.in)?$' </dev/null 2>/dev/null`; do
+      for file in `ack --noenv $a_arg -g '_(generator|module|service|source|tool)\.cc(?:\.in)?$' </dev/null 2>/dev/null`; do
         package_name "${path}" "${file}" >> "${TMP}.int_packages.tmp"
       done
     )
