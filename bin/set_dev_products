@@ -24,6 +24,7 @@ my $compiler_table =
    cc => { CC => "cc", CXX => "c++", FC => $default_fc },
    gcc => { CC => "gcc", CXX => "g++", FC => "gfortran" },
    icc => { CC => "icc", CXX => "icpc", FC => "ifort" },
+   clang => { CC => "clang", CXX => "clang++", FC => "gfortran" },
   };
   
 if( $#ARGV < 2 ) {
@@ -320,7 +321,9 @@ close($set_dev_products::SETUP_CMDS);
 
 if (!$compiler) {
   my @quals = split /:/, $qual;
-  if (grep /^(e|gcc)\d+$/, @quals) {
+  if (grep /^e13$/, @quals) {
+    $compiler = "clang";
+  } elsif (grep /^(e|gcc)\d+$/, @quals) {
     $compiler = "gcc";
   } else {
     $compiler = "cc"; # Native.
