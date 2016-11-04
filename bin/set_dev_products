@@ -368,7 +368,7 @@ print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
 # setup only_for_build products first
 if ( $only_for_build_cmds ) { print $set_dev_products::TSET $only_for_build_cmds; }
 # Now write the remaining setup commands.
-print $set_dev_products::TSET $setup_cmds;
+if ( $setup_cmds ) { print $set_dev_products::TSET $setup_cmds; }
 
 close($set_dev_products::TSET);
 print "$tmpfl\n";
