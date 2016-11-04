@@ -62,6 +62,7 @@ our (@EXPORT, @setup_list);
 	       get_python_path 
 	       get_product_list 
 	       get_qualifier_list 
+	       get_qualifier_matrix 
 	       compare_qual 
 	       match_qual 
 	       sort_qual 
@@ -70,6 +71,7 @@ our (@EXPORT, @setup_list);
 	       cetpkg_info_file 
 	       print_setup_noqual 
 	       print_setup_qual 
+               set_print_command
 	       check_cetbuildtools_version 
 	       check_for_old_product_deps
 	       check_for_old_setup_files
@@ -596,6 +598,106 @@ sub get_qualifier_list {
   return ($qlen, @qlist);
 }
 
+sub get_qualifier_matrix {
+  my @params = @_;
+  my $efl = $params[1];
+  my $irow=0;
+  my $get_quals="false";
+  my $i;
+  my $line;
+  my @words;
+  my $qlen = 0;
+  my @qlist;
+  my %qhash = ();
+  open(QIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<QIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      ##print "get_qualifier_matrix: $line\n";
+      @words=split(/\s+/,$line);
+      if( $words[0] eq "end_qualifier_list" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "end_product_list" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "parent" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "no_fq_dir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "incdir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "fcldir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "gdmldir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "perllib" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "fwdir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "libdir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "bindir" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "defaultqual" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "only_for_build" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "define_pythonpath" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "product" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "table_fragment_end" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "table_fragment_begin" ) {
+         $get_quals="false";
+      } elsif( $words[0] eq "qualifier" ) {
+         $get_quals="true";
+         ##print "get_qualifier_matrix qualifiers: $line\n";
+	 $qlen = $#words;
+	 for $i ( 0 .. $#words ) {
+	      if( $words[$i] eq "notes" ) {
+		 $qlen = $i - 1;
+	      }
+	 }
+	 if( $irow != 0 ) {
+            print $efl "echo ERROR: qualifier definition row must come before qualifier list\n";
+            print $efl "return 2\n";
+	    exit 2;
+	 }
+	 ##print "get_qualifier_matrix: there are $qlen product entries out of $#words\n";
+	 for $i ( 0 .. $qlen ) {
+	   $qlist[$i] = $words[$i];
+	 }
+	 $irow++;
+      } elsif( $get_quals eq "true" ) {
+	 ##print "get_qualifier_matrix: $params[0] qualifier $words[0] $#words\n";
+	 if( ! $qlen ) {
+            print $efl "echo ERROR: qualifier definition row must come before qualifier list\n";
+            print $efl "return 3\n";
+	    exit 3;
+	 }
+	 if ( $#words < $qlen ) {
+            print $efl "echo ERROR: only $#words qualifiers for $words[0] - need $qlen\n";
+            print $efl "return 4\n";
+	    exit 4;
+	 }
+	 for $i ( 1 .. $qlen ) {
+	   $qhash{$qlist[$i]}->{sort_qual( $words[0] )} = sort_qual( $words[$i] );
+	 }
+	 $irow++;
+      } else {
+        ##print "get_qualifier_matrix: ignoring $line\n";
+      }
+    }
+  }
+  close(QIN);
+  ##print "found $irow qualifier rows\n";
+  return ($qlen, %qhash);
+}
+
 # compare_qual is obsolete
 sub compare_qual {
   my @params = @_;
@@ -756,6 +858,27 @@ sub print_setup_qual {
 	#print TSET "setup -B $qlist[0][$j] $phash{$qlist[0][$j]} -q $ql \n";
   }
   return 0;
+}
+
+# set_print_command( $plist[$i][0], $plist[$i][1], $plist[$i][3], product_qual, $set_dev_products::SETUP_CMDS);
+sub set_print_command {
+  my @params = @_;
+  #my $efl = $params[4];
+  my $pql = $params[3];
+	if ( $pql eq "-" ) {
+	} elsif ( $pql eq "-nq-" ) {
+          print_setup_noqual( $params[0], $params[1], $params[2], $set_dev_products::SETUP_CMDS );
+	} elsif ( $pql eq "-b-" ) {
+          print_setup_noqual( $params[0], $params[1], $params[2], $set_dev_products::SETUP_CMDS );
+	} else {
+          my @qwords = split(/:/,$pql);
+          my $ql="+".$qwords[0];
+	  my $j;
+          foreach $j ( 1 .. $#qwords ) {
+            $ql = $ql.":+".$qwords[$j];
+          }
+          print_setup_qual( $params[0], $params[1], $ql, $params[2], $set_dev_products::SETUP_CMDS );
+	}
 }
 
 sub check_for_old_product_deps {

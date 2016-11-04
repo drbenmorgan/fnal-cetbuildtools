@@ -203,16 +203,8 @@ if ( check_for_old_noarch_setup_file( $sfile ) ) {
     exit 0;
 }
 
+
 my ($product, $version, $default_ver, $default_qual, $have_fq) = get_parent_info( $pfile );
-
-my $tmpfl = $builddir."/".$product."-".$version;
-open($set_dev_products::TSET, "> $tmpfl") or die "Couldn't open $tmpfl";
-
-my ($plen, $plist_ref, $dqlen, $dqlist_ref) = get_product_list( $pfile );
-my @plist=@$plist_ref;
-my @dqlist=@$dqlist_ref;
-my ($ndeps, @qlist) = get_qualifier_list( $pfile, $set_dev_products::TSET );
-
 if ( $qual ) {
   $qual = $qual.":".$dop;
   $qdir = $qdir."-".$dop;
@@ -246,80 +238,21 @@ if ( $qual ) {
 }
 #print DIAG "set_dev_products debug info: qual $qual\n";
 
-# Temporary variable connected as a filehandle.
-open( $set_dev_products::SETUP_CMDS, ">", \$setup_cmds) or
-  die "Could not open memory stream to variable.";
+my $tmpfl = $builddir."/".$product."-".$version;
+open($set_dev_products::TSET, "> $tmpfl") or die "Couldn't open $tmpfl";
 
-# are there products without listed qualifiers?
-foreach $i ( 0 .. $plen ) {
-  my $p_has_qual = 0;
-  if( $ndeps ) {
-  foreach $j ( 1 .. $ndeps ) {
-    if( $plist[$i][0] eq $qlist[0][$j] ) {
-        ++$p_has_qual;
-    }
-  }
-  }
-  if ( $p_has_qual == 0 ) {
-    print_setup_noqual( $plist[$i][0], $plist[$i][1], $plist[$i][3], $set_dev_products::SETUP_CMDS );
-  }
-}
-# now loop over the qualifier list
-my $match = 0;
+my ($plen, $plist_ref, $dqlen, $dqlist_ref) = get_product_list( $pfile );
+my @plist=@$plist_ref;
+my @dqlist=@$dqlist_ref;
+my ($ndeps, %qhash) = get_qualifier_matrix( $pfile, $set_dev_products::TSET );
+
+# check for compiler 
 my $compiler;
-foreach $i ( 1 .. $#qlist ) {
-  if ( $qlist[$i][0] eq $qual ) {
-    $match++;
-    foreach $j ( 1 .. $ndeps ) {
-      if ($qlist[0][$j] eq "compiler") { # Compiler suite keyword
-        if ($qlist[$i][$j]) {
-          if ($qlist[$i][$j] eq '-') {
-            undef $compiler;
-          } else {
-            $compiler = $qlist[$i][$j];
-          }
-          next;
-        }
-      }
-      my $piter = -1;
-      foreach $k ( 0 .. $plen ) {
-        if( $plist[$k][0] eq $qlist[0][$j] ) { 
-          if ( $plist[$k][2] ) {
-            if ( match_qual( $plist[$k][2], $qlist[$i][0] ) ) {
-              $piter=$k;
-            }
-          } else {
-            $piter=$k;
-          }
-        }
-      }
-      if ( $piter < 0 ) {
-        print DIAG "ERORR: failed to match $qlist[0][$j] in product list \n";
-      }
-      if ( $qlist[$i][$j] eq "-" ) {
-      } elsif ( $qlist[$i][$j] eq "-nq-" ) {
-        print_setup_noqual( $plist[$piter][0], $plist[$piter][1], $plist[$piter][3], $set_dev_products::SETUP_CMDS );
-        #print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] \n";
-      } elsif ( $qlist[$i][$j] eq "-b-" ) {
-        print_setup_noqual( $plist[$piter][0], $plist[$piter][1], $plist[$piter][3], $set_dev_products::SETUP_CMDS );
-        #print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] \n";
-      } else {
-        my @qwords = split(/:/,$qlist[$i][$j]);
-        my $ql="+".$qwords[0];
-        foreach $j ( 1 .. $#qwords ) {
-          $ql = $ql.":+".$qwords[$j];
-        }
-        print_setup_qual( $plist[$piter][0], $plist[$piter][1], $ql, $plist[$piter][3], $set_dev_products::SETUP_CMDS );
-        #print $set_dev_products::SETUP_CMDS "setup -B $plist[$piter][0] $plist[$piter][1] -q $ql \n";
-      }
-    }
-    last;
-  }
-}
-
-close($set_dev_products::SETUP_CMDS);
-
-if (!$compiler) {
+if (( $qhash{"compiler"}->{$qual} ) && ( $qhash{"compiler"}->{$qual} ne '-')) {
+  ##print DIAG "set_dev_products debug info: compiler entry for $qual is $qhash{compiler}->{$qual}\n";
+  $compiler = $qhash{"compiler"}->{$qual};
+} else {
+  ##print DIAG "set_dev_products debug info: use default compiler\n";
   my @quals = split /:/, $qual;
   if (grep /^e13$/, @quals) {
     $compiler = "clang";
@@ -329,14 +262,58 @@ if (!$compiler) {
     $compiler = "cc"; # Native.
   }
 }
+##print DIAG "set_dev_products debug info: compiler $compiler\n";
 
-# find the only_for_build products
+# now look up products in the hash
+
+# Temporary variable connected as a filehandle.
+open( $set_dev_products::SETUP_CMDS, ">", \$setup_cmds) or
+  die "Could not open memory stream to variable.";
+
+my $product_qual;
 my $onlyForBuild="";
 foreach $i ( 0 .. $plen ) {
-  if (( $plist[$i][3] ) && ( $plist[$i][3] eq "only_for_build" )) {
-    $onlyForBuild=$plist[$i][0].";".$onlyForBuild;
-  }
+   # only for build?
+   if (( $plist[$i][3] ) && ( $plist[$i][3] eq "only_for_build" )) {
+     $onlyForBuild=$plist[$i][0].";".$onlyForBuild;
+   } elsif ( $qhash{$plist[$i][0]}->{$qual} ) {
+      $product_qual = $qhash{$plist[$i][0]}->{$qual};
+      ##print DIAG "set_dev_products debug info: checking product $plist[$i][0] $plist[$i][1] $product_qual\n";
+      # need to check qualifier
+      if ( $plist[$i][2] ) {
+           ##print DIAG "set_dev_products debug info: checking $plist[$i][0] for match to $qual\n";
+           if ( match_qual( $plist[$i][2], $qual ) ) {
+	     print DIAG "product $plist[$i][0] $plist[$i][1] $plist[$i][2] matches $qual\n";
+             set_print_command( $plist[$i][0], $plist[$i][1], $plist[$i][3], $product_qual, $set_dev_products::SETUP_CMDS);
+	   }
+      } else {
+         ##print DIAG "set_dev_products debug info: product $plist[$i][0] $plist[$i][1] matches $qual\n";
+         set_print_command( $plist[$i][0], $plist[$i][1], $plist[$i][3], $product_qual, $set_dev_products::SETUP_CMDS);
+      }
+   } else {
+     ##print DIAG "set_dev_products debug info: no match for $plist[$i][0] $plist[$i][1] $qual\n";
+     my $errfl6 = "problem_report6";
+     open(ERR6, "> $errfl6") or die "Couldn't open $errfl6";
+     print ERR6 "\n";
+     print ERR6 "unsetenv_ CETPKG_NAME\n";
+     print ERR6 "unsetenv_ CETPKG_VERSION\n";
+     print ERR6 "unsetenv_ CETPKG_QUAL\n";
+     print ERR6 "unsetenv_ CETPKG_TYPE\n";
+     print ERR6 "unsetenv_ CETPKG_CC\n";
+     print ERR6 "unsetenv_ CETPKG_CXX\n";
+     print ERR6 "unsetenv_ CETPKG_FC\n";
+     print ERR6 "echo \"ERROR: \"\n";
+     print ERR6 "echo \"ERROR: no match for $plist[$i][0] $plist[$i][1] $qual in product matrix\"\n";
+     print ERR6 "echo \"ERROR: please check \$CETPKG_SOURCE/ups/product_deps\"\n";
+     print ERR6 "echo \"ERROR: \"\n";
+     print ERR6 "return 1\n";
+     close(ERR6);
+     print "$errfl6\n";
+     exit 0;
+   }
 }
+
+close($set_dev_products::SETUP_CMDS);
 
 my $cetfl = cetpkg_info_file($product,
                           $version,
@@ -387,26 +364,8 @@ foreach $i ( 0 .. $plen ) {
 # Now write the setup commands.
 print $set_dev_products::TSET $setup_cmds;
 
-# allow for the case where there are no dependencies
-# a bit more complicated since only_for_build products are now in the dependency list
-if ( $match == 0 ) {
-   if( $num_for_table < 0 ) {
-     #print "this package has no dependencies\n";
-   } else {
-     print $set_dev_products::TSET "\n";
-     print $set_dev_products::TSET "echo \"ERROR: failed to find any dependent products for $product $version -q $qual\"\n";
-     print $set_dev_products::TSET "echo \"       The following qualifier combinations are recognized:\"\n";
-     foreach $i ( 1 .. $#qlist ) {
-	 print $set_dev_products::TSET "echo \"         $qlist[$i][0] \"\n";
-     }
-     print $set_dev_products::TSET "return 1\n";
-     print $set_dev_products::TSET "\n";
-   }
-}
-
 close($set_dev_products::TSET);
 print "$tmpfl\n";
 close(DIAG);
 
 exit 0;
-
