@@ -366,7 +366,7 @@ print $set_dev_products::TSET "setup -B cetpkgsupport \n";
 print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
 
 # setup only_for_build products first
-print $set_dev_products::TSET $only_for_build_cmds;
+if ( $only_for_build_cmds ) { print $set_dev_products::TSET $only_for_build_cmds; }
 # Now write the remaining setup commands.
 print $set_dev_products::TSET $setup_cmds;
 
