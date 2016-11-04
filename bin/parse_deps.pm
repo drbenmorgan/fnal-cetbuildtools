@@ -863,13 +863,13 @@ sub print_setup_qual {
 # set_print_command( $plist[$i][0], $plist[$i][1], $plist[$i][3], product_qual, $set_dev_products::SETUP_CMDS);
 sub set_print_command {
   my @params = @_;
-  #my $efl = $params[4];
+  my $efl = $params[4];
   my $pql = $params[3];
 	if ( $pql eq "-" ) {
 	} elsif ( $pql eq "-nq-" ) {
-          print_setup_noqual( $params[0], $params[1], $params[2], $set_dev_products::SETUP_CMDS );
+          print_setup_noqual( $params[0], $params[1], $params[2], $efl );
 	} elsif ( $pql eq "-b-" ) {
-          print_setup_noqual( $params[0], $params[1], $params[2], $set_dev_products::SETUP_CMDS );
+          print_setup_noqual( $params[0], $params[1], $params[2], $efl );
 	} else {
           my @qwords = split(/:/,$pql);
           my $ql="+".$qwords[0];
@@ -877,7 +877,7 @@ sub set_print_command {
           foreach $j ( 1 .. $#qwords ) {
             $ql = $ql.":+".$qwords[$j];
           }
-          print_setup_qual( $params[0], $params[1], $ql, $params[2], $set_dev_products::SETUP_CMDS );
+          print_setup_qual( $params[0], $params[1], $ql, $params[2], $efl );
 	}
 }
 

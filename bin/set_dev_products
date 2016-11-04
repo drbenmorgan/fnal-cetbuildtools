@@ -59,6 +59,7 @@ my $type = "";
 my $qdir = "";
 my $inputdir;
 my $setup_cmds;
+my $only_for_build_cmds;
 my $input_qual = "";
 
 for $i ( 2 .. $#ARGV ) {
@@ -268,14 +269,28 @@ if (( $qhash{"compiler"}->{$qual} ) && ( $qhash{"compiler"}->{$qual} ne '-')) {
 
 # Temporary variable connected as a filehandle.
 open( $set_dev_products::SETUP_CMDS, ">", \$setup_cmds) or
-  die "Could not open memory stream to variable.";
+  die "Could not open memory stream to variable SETUP_CMDS.";
+
+# Second temporary variable connected as a filehandle.
+open( $set_dev_products::ONLY_CMDS, ">", \$only_for_build_cmds) or
+  die "Could not open memory stream to variable ONLY_CMDS.";
 
 my $product_qual;
 my $onlyForBuild="";
 foreach $i ( 0 .. $plen ) {
-   # only for build?
    if (( $plist[$i][3] ) && ( $plist[$i][3] eq "only_for_build" )) {
+     # only for build?
      $onlyForBuild=$plist[$i][0].";".$onlyForBuild;
+     ##print DIAG "set_dev_products debug info: add $plist[$i][0] to only for build list $onlyForBuild\n";
+     # add this product to the setup list if it is NOT cetbuildtools
+     if ( $plist[$i][0] eq "cetbuildtools" ) {
+     } else {
+       if ( $qhash{$plist[$i][0]}->{$qual} ) {
+            set_print_command( $plist[$i][0], $plist[$i][1], $plist[$i][3], $qhash{$plist[$i][0]}->{$qual}, $set_dev_products::ONLY_CMDS);
+       } else {
+           set_print_command( $plist[$i][0], $plist[$i][1], $plist[$i][3], "-nq-", $set_dev_products::ONLY_CMDS);
+       }
+     }
    } elsif ( $qhash{$plist[$i][0]}->{$qual} ) {
       $product_qual = $qhash{$plist[$i][0]}->{$qual};
       ##print DIAG "set_dev_products debug info: checking product $plist[$i][0] $plist[$i][1] $product_qual\n";
@@ -283,7 +298,7 @@ foreach $i ( 0 .. $plen ) {
       if ( $plist[$i][2] ) {
            ##print DIAG "set_dev_products debug info: checking $plist[$i][0] for match to $qual\n";
            if ( match_qual( $plist[$i][2], $qual ) ) {
-	     print DIAG "product $plist[$i][0] $plist[$i][1] $plist[$i][2] matches $qual\n";
+	     ##print DIAG "set_dev_products debug info: product $plist[$i][0] $plist[$i][1] $plist[$i][2] matches $qual\n";
              set_print_command( $plist[$i][0], $plist[$i][1], $plist[$i][3], $product_qual, $set_dev_products::SETUP_CMDS);
 	   }
       } else {
@@ -314,6 +329,8 @@ foreach $i ( 0 .. $plen ) {
 }
 
 close($set_dev_products::SETUP_CMDS);
+
+close($set_dev_products::ONLY_CMDS);
 
 my $cetfl = cetpkg_info_file($product,
                           $version,
@@ -347,21 +364,10 @@ if ( $noarch ) {
 }
 print $set_dev_products::TSET "setup -B cetpkgsupport \n";
 print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
-my $num_for_table=-1;
-foreach $i ( 0 .. $plen ) {
-  if (( $plist[$i][3] ) && ( $plist[$i][3] eq "only_for_build" )) {
-    if( $plist[$i][0] eq "cetbuildtools" ) {
-    } else {
-      print $set_dev_products::TSET "setup -B $plist[$i][0] $plist[$i][1]\n";
-      print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
-      ##print $set_dev_products::TSET " echo \$setup_fail \n";
-    }
-  } else {
-    ++$num_for_table;
-  }
-}
 
-# Now write the setup commands.
+# setup only_for_build products first
+print $set_dev_products::TSET $only_for_build_cmds;
+# Now write the remaining setup commands.
 print $set_dev_products::TSET $setup_cmds;
 
 close($set_dev_products::TSET);
