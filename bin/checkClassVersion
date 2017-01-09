@@ -47,19 +47,52 @@ class XmlParser(object):
         nxml = ''
         q1 = 0
         q2 = 0
+        cfinder = 0 # How many characters of <!-- have we found?
+        cendfinder = 0 # How many characters of --> have we found,
+                       # assuming we're inside a comment?
         for c in rxml:
-            if   (q1 or q2) and (c == '<'):
-                nxml += '&lt;'
-            elif (q1 or q2) and (c == '>'):
-                nxml += '&gt;'
-            #elif (q1 or q2) and (c == '&'):
-            #    nxml += '&amp;'
-            else:
+            # We take special pains to avoid dealing with anything
+            # inside an XML comment (<!-- ... -->). Note that the XML
+            # standard requires that there be no double hyphen within a
+            # comment, so we don't have to be congnizant of that special
+            # case.
+            if (cfinder < 4):
+                if (q1 or q2) and (c == '<'):
+                    nxml += '&lt;'
+                elif (q1 or q2) and (c == '>'):
+                    nxml += '&gt;'
+                else:
+                    nxml += c
+                    if (c == '<') and (cfinder == 0):
+                        cfinder = 1
+                        continue
+                if c == '"':
+                    q1 = not q1
+                if c == "'":
+                    q2 = not q2
+
+            if (cfinder == 1):
+                if (c == '!'):
+                    cfinder += 1
+                else:
+                    cfinder = 0
+            elif (cfinder > 1) and (cfinder < 4):
+                if (c == '-'):
+                    cfinder += 1
+                else:
+                    cfinder = 0
+            elif (cfinder == 4):
+                if (cendfinder < 2):
+                    if (c == '-'):
+                        cendfinder += 1
+                    else:
+                        cendfinder = 0
+                else:
+                    if (c == '>'):
+                        cfinder = 0
+                    cendfinder = 0
                 nxml += c
-            if c == '"':
-                q1 = not q1
-            if c == "'":
-                q2 = not q2
+
         try:
             p.Parse(nxml)
         except xml.parsers.expat.ExpatError, e:
