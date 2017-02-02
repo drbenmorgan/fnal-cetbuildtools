@@ -3,14 +3,14 @@
 #   Install source code for debugging purposes.
 #   Default extensions:
 #      .cc .c .cpp .C .cxx
-#      .h .hh .H .hpp .icc
+#      .h .hh .H .hpp .icc .tcc
 #      .xml
 #     .sh .py .pl .rb
 #
 # install_headers()
 #   Install headers for inclusion by other packages.
 #   Default extensions:
-#      .h .hh .H .hpp .icc
+#      .h .hh .H .hpp .icc .tcc
 #
 # install_scripts()
 #   Install scripts in the package binary directory.
@@ -101,6 +101,7 @@ macro( _cet_check_build_directory )
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.H
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.hpp
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.icc
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.tcc
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.xml
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.sh
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.py
@@ -113,6 +114,7 @@ macro( _cet_check_build_directory )
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.H
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.hpp
 	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.icc
+	    ${CMAKE_CURRENT_BINARY_DIR}/[^.]*.tcc
 	    )
   if( build_directory_files )
     #message( STATUS "_cet_check_build_directory: installing ${build_directory_files} in ${source_install_dir}")
@@ -141,7 +143,7 @@ macro( _cet_install_without_list   )
   #message( STATUS "source code will be installed in ${source_install_dir}" )
   FILE(GLOB src_files
 	    [^.]*.cc [^.]*.c [^.]*.cpp [^.]*.C [^.]*.cxx
-	    [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc
+	    [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc [^.]*.tcc
 	    [^.]*.xml [^.]*.sh [^.]*.py [^.]*.pl [^.]*.rb
 	    )
   if( ISRC_EXCLUDES )
@@ -159,7 +161,7 @@ macro( _cet_install_without_list   )
      foreach( sub ${ISRC_SUBDIRS} )
 	FILE(GLOB subdir_src_files
         	 ${sub}/[^.]*.cc ${sub}/[^.]*.c ${sub}/[^.]*.cpp ${sub}/[^.]*.C ${sub}/[^.]*.cxx
-        	 ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc
+        	 ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc ${sub}/[^.]*.tcc
         	 ${sub}/[^.]*.xml ${sub}/[^.]*.sh ${sub}/[^.]*.py ${sub}/[^.]*.pl ${sub}/[^.]*.rb )
 	if( ISRC_EXCLUDES )
           _cet_exclude_from_list( subdir_src_files EXCLUDES ${ISRC_EXCLUDES} LIST ${subdir_src_files} )
@@ -182,7 +184,7 @@ endmacro( _cet_install_from_list )
 
 macro( _cet_install_header_without_list   )
   #message( STATUS "headers will be installed in ${header_install_dir}" )
-  FILE(GLOB headers [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc )
+  FILE(GLOB headers [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc [^.]*.tcc )
   FILE(GLOB dict_headers classes.h )
   if( dict_headers )
     #message(STATUS "install_headers debug: removing ${dict_headers} from header list")
@@ -201,7 +203,7 @@ macro( _cet_install_header_without_list   )
   if( IHDR_SUBDIRS )
     foreach( sub ${IHDR_SUBDIRS} )
       FILE(GLOB subdir_headers
-                ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc  )
+                ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc ${sub}/[^.]*.tcc )
       if(IHDR_EXCLUDES)
         _cet_exclude_from_list( subdir_headers EXCLUDES ${IHDR_EXCLUDES} LIST ${subdir_headers} )
       endif()
