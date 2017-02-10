@@ -445,7 +445,11 @@ function cmd() {
   shift $(( OPTIND - 1 ))
   OPTIND=1
   (( ${do_verbose:-0} )) && writeStuff "CWD: $(pwd -P)\nCOMMAND: $*${desc+\nDESCRIPTION: ${desc}}"
+  SECONDS=0
   "$@"
+  local status=$?
+  (( ${do_verbose:-0} )) && writeStuff "$(printf "TIME ELAPSED: %d:%02d\n" $((${SECONDS} / 60)) $((${SECONDS} % 60)))"
+  return ${status}
 }
 
 function error() {
