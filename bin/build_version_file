@@ -5,9 +5,7 @@ use strict;
 use warnings;
 
 use POSIX;
-use File::Basename;
-
-package build_version_file;
+use File::Basename qw(dirname);
 
 if( $#ARGV < 4 ) {
     print "\n";
