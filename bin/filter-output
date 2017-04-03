@@ -35,5 +35,8 @@ while (<>) {
   # Variable-length separators.
   s&([-=\.*~/]){15,}&<separator (${1})>&g;
   ########################################################################
+  # Platform specification (generic, and UPS-style).
+  s&(?:Darwin|Linux)(?:64bit)?(?:\+[-\d\+]*)?&<platform>&g;
+  ########################################################################
   print;
 }
