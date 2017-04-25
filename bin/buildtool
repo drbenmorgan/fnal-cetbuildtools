@@ -262,7 +262,7 @@ MISC. OPTIONS.
 -j #
 
   Specify the level of parallelism for stages for which it is
-  appropriate.
+  appropriate (overrides CETPKG_J if specified).
 
 -l
 --log[=<log-file>]
@@ -926,14 +926,14 @@ if [[ -z "$CETPKG_SOURCE" ]] || \
   exit 1
 fi
 
+if (( ${clean:-0} )) && [[ -n "${MRB_BUILDDIR}" ]]; then
+  echo "ERROR: MRB environment detected. Use mrb z; mrb setenv instead of buildtool (or mrb b) --clean" 1>&2
+  exit 1
+fi
+
 # Upcase test groups.
 [[ -n "$test_groups" ]] && \
   test_groups=$(echo "$test_groups" | tr '[a-z]' '[A-Z]')
-
-if (( ${clean:-0} && ${short_circuit:-0} )); then
-    echo "ERROR: specifying clean and short-circuit options together is not meaningful." 1>&2
-    exit 1
-fi
 
 # Set test_groups variable based on set options.
 cmake_defs="${cmake_defs}-DCET_TEST_GROUPS=${test_groups} "
@@ -991,6 +991,9 @@ if (( ${clean:-0} )); then
   fi
   popd >/dev/null || cd "$CETPKG_BUILD" # 2>&1
   trap 2
+  if (( ${short_circuit:-0} )); then
+    exit 0
+  fi
 else # Check consistency.
   # product_deps is read and acted upon during source of
   # setup_for_development. If it's changed since then, we have a
