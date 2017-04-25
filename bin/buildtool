@@ -49,7 +49,7 @@ Misc options: [-D<CMake-definition>]+ [-I|--install-prefix <install-location>]
               [-g|--graphviz=<dot-file> [--gfilt <gfilt-opt>[,<gfilt-opt>]+]]
               [[--generator <generator>]]
               [-j #] [-l|--log[=<log-file>]|--log-file[=<log-file>]]
-              [-q|--quiet] [--tee]
+              [-q|--quiet] [-s|--subdir] [--tee]
               [--test-groups|--groups <group>[<;|,><group>]+]
               [-v|--verbose]
 
@@ -202,8 +202,11 @@ MISC. OPTIONS.
 
 --force-top
 
-  Force build and test stages (if applicable) to take place in the
-  CETPKG_BUILD area (default is to build / test in current directory).
+  Force build and test stages (if applicable) to take place in the top
+  level \${CETPKG_BUILD} area (default is to build / test in current
+  directory). Note that the configuration stage *always* takes place in
+  \${CETPKG_BUILD}. --force-top is implied for the ninja generator at
+  build stage, and is incompatible with --subdir.
 
 -g <dot-file>
 --graphviz <dot-file>
@@ -281,6 +284,16 @@ MISC. OPTIONS.
   Suppress all non-error output to the screen (but see --tee below). A
   log file will still be written as normal if so specified.
 
+-s <subdir>
+--subdir <subdir>
+
+  Build (or test) only targets in and under <subdir>, which will be
+  interpreted relative to \${CETPKG_BUILD}. If the make generator is
+  selected, the make is executed from inside the specified directory. If
+  the ninja generator is selected, the appropriate list of targets is
+  specified to ninja in addition to any targets specified on the command
+  line by the user. Incompatible with --force-top.
+
 --tee
 
   Write to a log file (either as specified by --log or the default), but
@@ -316,9 +329,9 @@ The need for the -I option may be obviated by defining CETPKG_INSTALL;
 the need for the explicit parallelism may be similarly voided by
 defining (eg) CETPKG_J=16.
 
-To build a particular target only (eg):
+To build a particular target only (e.g. for make):
 
-  cd art/Framework/IO/Root; buildtool -- RootOutput_source.o
+  buildtool --subdir art/Framework/IO/Root -- RootOutput_source.o
 
 To build and test only:
 
@@ -505,7 +518,9 @@ function maybe_force_top_and_announce() {
       fi
       announce_stage " in $(real_dir .) per ${reason}"
     else
-      announce_stage " in $(real_dir .) (--force-top to override)"
+      local msg
+      [[ -n "${subdir}" ]] || msg=" (--force-top to override)"
+      announce_stage " in $(real_dir .)${msg}"
     fi
   else
     announce_stage
@@ -575,6 +590,7 @@ function reorder_quals() {
 
 # Main work
 function do_work() {
+  local real_subdir
   if log_no_tee; then
     report "INFO: Redirecting output to $log"
     exec 3>&1 4>&2 >"$log" 2>&1
@@ -642,14 +658,41 @@ function do_work() {
 
   if (( ${do_build:-0} == 1 || ( ${do_build:-0} > 1 && ! ${short_circuit:-0} ) )); then
     stage=build
+    if [[ -n "${subdir}" ]]; then
+      real_subdir=$(real_dir "${CETPKG_BUILD}/${subdir}")
+      if (( $? )); then
+        echo "ERROR: Unable to verify validity of specified subdirectory: ${subdir}." 1>&2
+        exit 1
+      fi
+      if [[ "${generator}" != ninja ]]; then
+        cd "${real_subdir}" || \
+          { echo "ERROR: unable to cd to specified subdirectory: ${subdir}." 1>&2
+          exit 1; }
+      fi
+    fi
     maybe_force_top_and_announce
     check_curdir_in_build_tree
-    cmd -d "Execute build. " time ${generator} ${jarg} "$@"
+    if [[ -n "${subdir}" ]] && [[ "${generator}" == ninja ]]; then
+      local target=${subdir:+${subdir}/all}
+    fi
+    cmd -d "Execute build. " time ${generator} ${jarg} "$@" ${target}
     check_status
   fi
 
   if (( ${do_test:-0} )); then
     stage=test
+    if [[ -n "${subdir}" ]] && [[ -z "${real_subdir}" ]]; then
+      real_subdir=$(real_dir "${CETPKG_BUILD}/${subdir}")
+      if (( $? )); then
+        echo "ERROR: Unable to verify validity of specified subdirectory: ${subdir}." 1>&2
+        exit 1
+      fi
+    fi
+    if [[ -n "${real_subdir}" ]]; then
+      cd "${real_subdir}" || \
+        { echo "ERROR: unable to cd to specified subdirectory: ${subdir}." 1>&2
+        exit 1; }
+    fi
     maybe_force_top_and_announce
     check_curdir_in_build_tree
     # Trap and tee *only* stderr from ctest. Yes, this is fiddly.
@@ -701,7 +744,7 @@ if (( $? != 4 )); then
   exit 1
 fi
 
-TEMP=`getopt -n "$prog" --long all,cmake-debug,cmake-only,cmake-trace,install-prefix:,build,clean,clean-logs,deleted-header:,deleted-headers:,force-top,generator:,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,tee,test,test-all,test-groups:,release,verbose -o +ACD:I:RTbcfg:hij:lpqtv -- "${@}"`
+TEMP=`getopt -n "$prog" --long all,cmake-debug,cmake-only,cmake-trace,install-prefix:,build,clean,clean-logs,deleted-header:,deleted-headers:,force-top,generator:,graphviz:,gfilt::,groups:,help,info,install,log::,log-file::,package,quiet,sc,short-circuit,subdir:,tee,test,test-all,test-groups:,release,verbose -o +ACD:I:RTbcfg:hij:lpqs:tv -- "${@}"`
 
 if (( $? )); then
   usage 1
@@ -842,7 +885,12 @@ while true; do
       (( quiet = 1 ))
       shift
       ;;
-     --short-circuit|--sc)
+    -s|--subdir)
+      subdir="${2}"
+      shift
+      shift
+      ;;
+    --short-circuit|--sc)
       (( short_circuit = 1 ))
       shift
       ;;
@@ -929,6 +977,11 @@ fi
 if (( ${clean:-0} )) && [[ -n "${MRB_BUILDDIR}" ]]; then
   echo "ERROR: MRB environment detected. Use mrb z; mrb setenv instead of buildtool (or mrb b) --clean" 1>&2
   exit 1
+fi
+
+if (( ${force_top:-0} )) && [[ -n "${subdir}" ]]; then
+    echo "ERROR: specifying --force-top and --subdir together is not meaningful." 1>&2
+    exit 1
 fi
 
 # Upcase test groups.
