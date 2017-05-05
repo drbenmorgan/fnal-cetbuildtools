@@ -36,7 +36,7 @@ function( cet_install_files )
   else()
     set(this_install_dir "${product}/${version}/${IFG_DIRNAME}" )
   endif()
-  message( STATUS "cet_install_files: files will be installed in ${this_install_dir}" )
+  _cet_debug_message( "cet_install_files: files will be installed in ${this_install_dir}" )
 
   # copy to build directory
   set( mrb_build_dir $ENV{MRB_BUILDDIR} )

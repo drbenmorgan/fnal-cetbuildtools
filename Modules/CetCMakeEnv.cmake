@@ -234,6 +234,7 @@ macro(cet_cmake_env)
   include(SetCompilerFlags)
   include(SetFlavorQual)
   include(InstallSource)
+  include(InstallLicense)
   include(InstallFiles)
   include(InstallPerllib)
   include(CetCMakeUtils)
@@ -294,6 +295,8 @@ macro(cet_cmake_env)
   set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/lib)
   # make sure all executables are in one directory
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+  # install license and readme if found
+  install_license()
   
 endmacro(cet_cmake_env)
 
@@ -468,10 +471,12 @@ macro( cet_set_test_directory )
 endmacro( cet_set_test_directory )
 
 macro(_cet_debug_message)
+  if( ${CMAKE_BUILD_TYPE} )
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
     if( ${BTYPE_UC} MATCHES "DEBUG" )
       message( STATUS "${ARGN}")
     endif()
+  endif( ${CMAKE_BUILD_TYPE} )
 endmacro(_cet_debug_message)
 
 macro( set_install_root )

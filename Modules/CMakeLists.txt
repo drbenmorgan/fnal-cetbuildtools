@@ -31,6 +31,7 @@ INSTALL(FILES
   FindUpsPackage.cmake
   FindUpsRoot.cmake
   InstallFiles.cmake
+  InstallLicense.cmake
   InstallPerllib.cmake
   InstallPython.cmake
   InstallSource.cmake
