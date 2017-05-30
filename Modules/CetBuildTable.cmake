@@ -4,7 +4,10 @@
 #
 
 macro( cet_build_table )
-   set(BUILD_TABLE_NAME "${cetbuildtools_BINDIR}/build_table")
+   find_program(BUILD_TABLE_NAME build_table "${cetbuildtools_BINDIR}")
+   if ( NOT BUILD_TABLE_NAME )
+     MESSAGE(FATAL_ERROR "cet_version_file: could not find build_table in ${cetbuildtools_BINDIR}")
+   endif ( NOT BUILD_TABLE_NAME )
 
    cet_base_flags()
    # make a temporary file with the variables
@@ -32,7 +35,10 @@ endmacro( cet_build_table )
 
 
 macro( cet_version_file )
-   set(BUILD_VERSION_FILE_NAME "${cetbuildtools_BINDIR}/build_version_file")
+   find_program(BUILD_VERSION_FILE_NAME build_version_file "${cetbuildtools_BINDIR}")
+   if ( NOT BUILD_VERSION_FILE_NAME )
+     MESSAGE(FATAL_ERROR "cet_version_file: could not find build_version_file in ${cetbuildtools_BINDIR}")
+   endif ( NOT BUILD_VERSION_FILE_NAME )
 
    if ( ${qualifier} MATCHES "-nq-" )
      set( VQUAL "" )
