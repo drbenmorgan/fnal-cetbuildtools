@@ -1,23 +1,25 @@
-set( CETBUILDTOOLS_DIR $ENV{CETBUILDTOOLS_DIR} )
-if( NOT CETBUILDTOOLS_DIR )
-  #message(STATUS "_get_cetpkg_info: looking in path")
-  find_program(GET_PRODUCT_INFO report_product_info $ENV{PATH})
-else()
-  set( GET_PRODUCT_INFO "${CETBUILDTOOLS_DIR}/bin/report_product_info" )
-endif ()
-#message(STATUS "GET_PRODUCT_INFO: ${GET_PRODUCT_INFO}")
-if( NOT GET_PRODUCT_INFO )
-  message(FATAL_ERROR "CetGetProductInfo.cmake: Can't find report_product_info")
-endif()
+# start by finding  report_product_info
+find_program(GET_PRODUCT_INFO report_product_info "${cetbuildtools_BINDIR}")
+if ( NOT GET_PRODUCT_INFO )
+  MESSAGE(FATAL_ERROR "CetGetProductInfo.cmake: could not find report_product_info in ${cetbuildtools_BINDIR}")
+endif ( NOT GET_PRODUCT_INFO )
 
 function(cet_get_product_info_item ITEM OUTPUT_VAR)
+  if (NOT PROJECT_BINARY_DIR)
+    message(FATAL_ERROR "cet_get_product_info_item: PROJECT_BINARY_DIR is not defined")
+  endif()
   execute_process(COMMAND ${GET_PRODUCT_INFO}
-    ${CMAKE_CURRENT_BINARY_DIR}
+    ${PROJECT_BINARY_DIR}
     ${ITEM}
     OUTPUT_VARIABLE output
     OUTPUT_STRIP_TRAILING_WHITESPACE
     RESULT_VARIABLE ec
+    ERROR_VARIABLE report_product_info_error
+    ERROR_STRIP_TRAILING_WHITESPACE
     )
+  if( report_product_info_error )
+    message(FATAL_ERROR "cet_get_product_info_item: ${report_product_info_error}")
+  endif()
   set(${OUTPUT_VAR} ${output} PARENT_SCOPE)
   if(ARGV2)
     set(${ARGV2} ${ec} PARENT_SCOPE)
