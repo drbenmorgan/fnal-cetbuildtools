@@ -53,7 +53,7 @@ close(PIN);
 if (exists $info->{$info_type}) {
   print "$info->{$info_type}\n";
 } elsif ($info_type eq "all") {
-  print map { sprintf("CETPKG_%s='%s'\n", uc $_, $info->{$_}) } sort keys %$info;
+  print map { sprintf("CETPKG_%s='%s'\n", uc $_, ($info->{$_}||"")) } sort keys %$info;
 } else {
   printf STDERR " Could not find CETPKG_%s in $report\n", ${info_type};
   exit(1);
