@@ -28,6 +28,7 @@ add_subdirectory(Modules)
 add_subdirectory(bin)
 add_subdirectory(ups)
 add_subdirectory(example)
+add_subdirectory(src)
 add_subdirectory(test)
 
 # packaging utility

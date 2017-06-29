@@ -16,6 +16,28 @@
 #   Do not build the target -- copy in from the source dir (ideal for
 #   e.g. scripts).
 #
+# USE_CATCH_MAIN
+#
+#   This test will use the Catch test framework
+#   (https://github.com/philsquared/Catch). The specified target will be
+#   built from a precompiled main program to run tests described in the
+#   files specified by SOURCES.
+#
+#   N.B.: if you wish to use the ParseAndAddCatchTests() facility
+#   contributed to the Catch system, you should specify NO_AUTO to avoid
+#   generating a, "standard" test. Note also that you may have your own
+#   test executables using Catch without using USE_CATCH_MAIN. However,
+#   be aware that the compilation of a Catch main is quite expensive,
+#   and any tests that *do* use this option will all share the same
+#   compiled main.
+#
+#   Note also that client packages are responsible for making sure Catch
+#   is available, such as with:
+#
+#     catch		<version>		-nq-	only_for_build
+#
+#   in product_deps.
+#
 ####################################
 # Other options:
 #
@@ -215,9 +237,10 @@ include(FindUpsBoost)
 include(CetMake)
 # May need to escape a string to avoid misinterpretation as regex
 include(CetRegexEscape)
-
 # Compatibility with older packages.
 include(CheckUpsVersion)
+
+find_file(CET_CATCH_MAIN_SOURCE cet_catch_main.cpp PATH_SUFFIXES src)
 
 if (DEFINED ENV{ART_VERSION})
   check_ups_version(art $ENV{ART_VERSION} v2_01_00RC1 PRODUCT_OLDER_VAR CT_NEED_ART_COMPAT)
@@ -313,7 +336,7 @@ FUNCTION(cet_test CET_TARGET)
       "target name with the HANDBUILT and TEST_EXEC options instead.")
   ENDIF()
   CMAKE_PARSE_ARGUMENTS (CET
-    "HANDBUILT;PREBUILT;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE"
+    "HANDBUILT;PREBUILT;USE_CATCH_MAIN;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE"
     "OUTPUT_FILTER;TEST_EXEC"
     "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTERS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
@@ -348,23 +371,44 @@ FUNCTION(cet_test CET_TARGET)
     endforeach()
     set(CET_DATAFILES ${datafiles_tmp})
   endif(DEFINED CET_DATAFILES)
-  IF(CET_HANDBUILT AND CET_PREBUILT)
-    # CET_HANDBUILT and CET_PREBUILT are mutually exclusive.
-    MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot have both CET_HANDBUILT "
-      "and CET_PREBUILT options set.")
+  IF((CET_HANDBUILT AND CET_PREBUILT) OR
+      (CET_HANDBUILT AND CET_USE_CATCH_MAIN) OR
+      (CET_PREBUILT AND CET_USE_CATCH_MAIN))
+    # CET_HANDBUILT, CET_PREBUILT and CET_USE_CATCH_MAIN are mutually exclusive.
+    MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} must have only one of the"
+      " CET_HANDBUILT, CET_PREBUILT, or CET_USE_CATCH_MAIN options set.")
   ELSEIF(CET_PREBUILT) # eg scripts.
     IF (NOT CET_INSTALL_BIN)
       SET(CET_NO_INSTALL "NO_INSTALL")
     ENDIF()
     cet_script(${CET_TARGET} ${CET_NO_INSTALL} DEPENDENCIES ${CET_DEPENDENCIES})
-  ELSEIF(NOT CET_HANDBUILT) # Normal build.
-# Too noisy for now!
-#    MESSAGE(WARNING "Building the test executable with cet_test is deprecated: use cet_make_exec(NO_INSTALL) or art_make_exec(NO_INSTALL) and cet_test(HANDBUILT) instead.")
+  ELSEIF(NOT CET_HANDBUILT) # Normal build, possibly with CET_USE_CATCH_MAIN set.
     # Build the executable.
     IF(NOT CET_SOURCES) # Useful default.
       SET(CET_SOURCES ${CET_TARGET}.cc)
     ENDIF()
+    IF(CET_USE_CATCH_MAIN)
+      IF(NOT TARGET cet_catch_main) # Make sure we only build one!
+        IF (NOT CET_CATCH_MAIN_SOURCE)
+          MESSAGE(FATAL_ERROR "cet_test() INTERNAL ERROR: unable to find cet_catch_main.cpp required by USE_CATCH_MAIN")
+        ENDIF()
+        ADD_LIBRARY(cet_catch_main STATIC EXCLUDE_FROM_ALL ${CET_CATCH_MAIN_SOURCE})
+        SET_PROPERTY(TARGET cet_catch_main PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+        IF (DEFINED ENV{CATCH_INC})
+          TARGET_INCLUDE_DIRECTORIES(cet_catch_main PUBLIC $ENV{CATCH_INC})
+        ENDIF()
+        # Strip (x10 shrinkage on Linux with GCC 6.3.0)!
+        ADD_CUSTOM_COMMAND(TARGET cet_catch_main POST_BUILD
+          COMMAND strip -S $<TARGET_FILE:cet_catch_main>
+          COMMENT "Stripping Catch main library"
+          )
+      ENDIF()
+    ENDIF()
     ADD_EXECUTABLE(${CET_TARGET} ${CET_SOURCES})
+    IF (CET_USE_CATCH_MAIN AND DEFINED ENV{CATCH_INC})
+      TARGET_INCLUDE_DIRECTORIES(${CET_TARGET} PUBLIC $ENV{CATCH_INC})
+      TARGET_LINK_LIBRARIES(${CET_TARGET} cet_catch_main)
+    ENDIF()
     IF(CET_USE_BOOST_UNIT)
       # Make sure we have the correct library available.
       IF (NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
