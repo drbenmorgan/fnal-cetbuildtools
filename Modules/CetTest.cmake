@@ -5,64 +5,72 @@
 # Usage: cet_test(target [<options>] [<args>])
 #
 ####################################
-# Options:
+# Target category options (specify at most one):
 #
 # HANDBUILT
-#   Do not build the target -- it will be provided. This option is
-#    mutually exclusive with the PREBUILT option.
+#
+#   Do not build the target -- it will be provided.
 #
 # PREBUILT
-#   Do not build the target -- pick it up from the source dir (eg
-#    scripts).  This option is mutually exclusive with the HANDBUILT
-#    option and simply calls the cet_script() function with appropriate
-#    options.
 #
-# NO_AUTO
-#   Do not add the target to the auto test list.
+#   Do not build the target -- copy in from the source dir (ideal for
+#   e.g. scripts).
 #
-# USE_BOOST_UNIT
-#   This test uses the Boost Unit Test Framework.
+####################################
+# Other options:
+#
+# CONFIGURATIONS <config>+
+#
+#   Configurations (Debug, etc, etc) under which the test shall be
+#   executed.
+#
+# DATAFILES <datafile>+
+#
+#   Input and/or references files to be copied to the test area in the
+#   build tree for use by the test. If there is no path, or a relative
+#   path, the file is assumed to be in or under
+#   ${CMAKE_CURRENT_SOURCE_DIR}.
+#
+# DEPENDENCIES <dep>+
+#
+#   List of top-level dependencies to consider for a PREBUILT
+#   target. Top-level implies a target (not file) created with
+#   ADD_EXECUTABLE, ADD_LIBRARY or ADD_CUSTOM_TARGET.
 #
 # INSTALL_BIN
+#
 #   Install this test's script / exec in the product's binary directory
 #   (ignored for HANDBUILT).
 #
 # INSTALL_EXAMPLE
-#   Install this test and all its data files into the examples area of the
-#    product.
+#
+#   Install this test and all its data files into the examples area of
+#   the product.
 #
 # INSTALL_SOURCE
+#
 #   Install this test's source in the source area of the product.
 #
-####################################
-# Args
+# LIBRARIES <lib>+
 #
-# CONFIGURATIONS
-#
-#   Configurations (Debug, etc, etc) under which the test shall be executed.
-#
-# DATAFILES
-#   Input and/or references files to be copied to the test area in the
-#    build tree for use by the test. If there is no path, or a relative
-#    path, the file is assumed to be in or under
-#    ${CMAKE_CURRENT_SOURCE_DIR}.
-#
-# DEPENDENCIES
-#   List of top-level dependencies to consider for a PREBUILT
-#    target. Top-level implies a target (not file) created with ADD_EXECUTABLE,
-#    ADD_LIBRARY or ADD_CUSTOM_TARGET.
-#
-# LIBRARIES
 #   Extra libraries with which to link this target.
 #
-# OPTIONAL_GROUPS
-#   Assign this test to one or more named optional groups. If the CMake
-#    list variable CET_TEST_GROUPS is set (e.g. with -D on the CMake
-#    command line) and there is overlap between the two lists, execute
-#    the test. The CET_TEST_GROUPS cache variable may additionally
-#    contain the optional values ALL or NONE.
+# NO_AUTO
 #
-# REF
+#   Do not add the target to the auto test list. N.B. all options
+#   related to the declaration of tests and setting of properties
+#   thereof will be ignored.
+#
+# OPTIONAL_GROUPS <group>+
+#
+#   Assign this test to one or more named optional groups. If the CMake
+#   list variable CET_TEST_GROUPS is set (e.g. with -D on the CMake
+#   command line) and there is overlap between the two lists, execute
+#   the test. The CET_TEST_GROUPS cache variable may additionally
+#   contain the optional values ALL or NONE.
+#
+# REF <ref-file>
+#
 #  The standard output of the test will be captured and compared against
 #   the specified reference file. It is an error to specify this
 #   argument and either the PASS_REGULAR_EXPRESSION or
@@ -74,7 +82,7 @@
 #   representing a reference for the error stream; otherwise, standard
 #   error will be ignored.
 #
-#  If REF is specified, then OUTPUT_FILTERS may also be specified
+#   If REF is specified, then OUTPUT_FILTERS may also be specified
 #   (OUTPUT_FILTER and optionally OUTPUT_FILTER_ARGS will be accepted in
 #   the alternative for historical reasons). OUTPUT_FILTER must be a
 #   program which expects input on STDIN and puts the filtered output on
@@ -87,39 +95,52 @@
 #
 #     OUTPUT_FILTERS filterA DEFAULT filterB
 #
-# REQUIRED_FILES
+# REQUIRED_FILES <file>+
+#
 #   These files are required to be present before the test will be
 #   executed. If any are missing, ctest will record NOT RUN for this
 #   test.
 #
-# SOURCES
+# SOURCES <source>+
+#
 #   Sources to use to build the target (default is ${target}.cc).
 #
-# TEST_ARGS
+# TEST_ARGS <arg>+
+#
 #   Any arguments to the test to be run.
 #
-# TEST_EXEC
-#   The exec to run (if not the target). The HANDBUILT option must
-#    be specified in conjunction with this option.
+# TEST_EXEC <exec>
 #
-# TEST_PROPERTIES
+#   The exec to run (if not the target). The HANDBUILT option must be
+#   specified in conjunction with this option.
+#
+# TEST_PROPERTIES <PROP val>+
+#
 #   Properties to be added to the test. See documentation of the cmake
-#    command, "set_tests_properties."
+#   command, "set_tests_properties."
+#
+# USE_BOOST_UNIT
+#
+#   This test uses the Boost Unit Test Framework.
 #
 ####################################
-# Cache variables
+# Cached variables.
+#
+# CET_CATCH_CMAKE_PATH
+#   Path by which to find the ParseAndAddCatchTests.cmake file
+#   from the catch system, required if TEST_PER_CATCH_CASE is specified.
 #
 # CET_TEST_GROUPS
 #   Test group names specified using the OPTIONAL_GROUPS list option are
-#    compared against this list to determine whether to configure the
-#    test. Default value is the special value "NONE," meaning no
-#    optional tests are to be configured. Optionally CET_TEST_GROUPS may
-#    contain the special value "ALL." Specify multiple values separated
-#    by ";" (escape or protect with quotes) or "," See explanation of
-#    the OPTIONAL_GROUPS variable above for more details.
+#   compared against this list to determine whether to configure the
+#   test. Default value is the special value "NONE," meaning no optional
+#   tests are to be configured. Optionally CET_TEST_GROUPS may contain
+#   the special value "ALL." Specify multiple values separated by ";"
+#   (escape or protect with quotes) or "," See explanation of the
+#   OPTIONAL_GROUPS variable above for more details.
 #
 # CET_DEFINED_TEST_GROUPS
-#  Any test group names CMake sees will be added to this list.
+#   Any test group names CMake sees will be added to this list.
 #
 ####################################
 # Notes:
@@ -138,6 +159,8 @@
 # * If you intend to set the property SKIP_RETURN_CODE, you should use
 #   CET_TEST_PROPERTIES to set it rather than add_tests_properties(), as
 #   cet_test() needs to take account of your preference.
+########################################################################
+
 ########################################################################
 # cet_test_env: set environment for all tests here specified.
 #
@@ -161,6 +184,8 @@
 #   subdirectories unless include(CetTest) or cet_test_env(CLEAR ...) is
 #   invoked in that directory.
 #
+########################################################################
+
 ########################################################################
 # cet_test_assertion: require assertion failure on given condition
 #
