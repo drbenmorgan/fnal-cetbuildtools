@@ -74,6 +74,7 @@ function (cet_copy)
         string(REPLACE "/" "+" target "${dest_path}")
       endif()
     endif()
+    string(REGEX REPLACE "[: ]" "+" target "${target}")
     add_custom_command(OUTPUT "${dest_path}"
       WORKING_DIRECTORY "${CETC_WORKING_DIRECTORY}"
       COMMAND ${CMAKE_COMMAND} -E make_directory "${real_dest}"
