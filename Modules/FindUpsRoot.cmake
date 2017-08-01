@@ -121,6 +121,7 @@ set(ROOT_BASIC_LIB_LIST ${ROOT_CORE}
                         ${ROOT_CINT} 
                         ${ROOT_RIO}
                         ${ROOT_NET}
+                        ${ROOT_IMT}
                         ${ROOT_HIST} 
                         ${ROOT_GRAF}
                         ${ROOT_GRAF3D}
