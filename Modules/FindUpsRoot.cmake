@@ -93,11 +93,9 @@ check_ups_version(root ${ROOT_VERSION} v6_00_00
   PRODUCT_MATCHES_VAR HAVE_ROOT6
   )
 
-# Uncomment below after filling in the ROOT version where it starts
-# working.
-#check_ups_version(root ${ROOT_VERSION} v6_??_??
-#  PRODUCT_MATCHES_VAR ROOT6_HAS_NOINCLUDEPATHS
-#  )
+check_ups_version(root ${ROOT_VERSION} v6_10_04
+  PRODUCT_MATCHES_VAR ROOT6_HAS_NOINCLUDEPATHS
+  )
 
 include_directories ( ${ROOTSYS}/include )
 
