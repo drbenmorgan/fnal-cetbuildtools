@@ -246,7 +246,7 @@ my ($plen, $plist_ref, $dqlen, $dqlist_ref) = get_product_list( $pfile );
 my @plist=@$plist_ref;
 my @dqlist=@$dqlist_ref;
 my ($ndeps, %qhash) = get_qualifier_matrix( $pfile, $set_dev_products::TSET );
-my ($fwlen, $fwlist_ref) = get_setfw_list( $pfile );
+my ($fwlen, $fwlist_ref, $fwdir_ref) = get_setfw_list( $pfile );
 my @fwlist=@$fwlist_ref;
 
 # check for compiler 

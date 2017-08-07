@@ -399,6 +399,7 @@ sub get_setfw_list {
   my @params = @_;
   my $setfwdir = "NONE";
   my @fwlist;
+  my @fwdirs;
   my $fwiter=-1;
   my $line;
   open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
@@ -412,23 +413,30 @@ sub get_setfw_list {
          ++$fwiter;
          if( $words[1] eq "-" ) {
 	     $setfwdir = "NONE";
+             $fwdirs[$fwiter]="NONE";
 	 } else { 
             if( ! $words[2] ) { 
                if( $words[1] eq "product_dir" ) {
 		  $setfwdir = "";
+		  $fwdirs[$fwiter]=$words[1];
                } elsif( $words[1] eq "fq_dir" ) {
 		  $setfwdir = "";
+		  $fwdirs[$fwiter]=$words[1];
 	       } else {
 		  $setfwdir = "ERROR";
+		  $fwdirs[$fwiter]="ERROR";
 	       }
 	    } else {
 	       my $fwsubdir = $words[2];
                if( $words[1] eq "product_dir" ) {
 		  $setfwdir = "/$fwsubdir";
+		  $fwdirs[$fwiter]=$words[1];
                } elsif( $words[1] eq "fq_dir" ) {
+		  $fwdirs[$fwiter]=$words[1];
 		  $setfwdir = "/$fwsubdir";
 	       } else {
 		  $setfwdir = "ERROR";
+		  $fwdirs[$fwiter]="ERROR";
 	       }
 	    }
 	 }
@@ -437,7 +445,7 @@ sub get_setfw_list {
     }
   }
   close(PIN);
-  return ($fwiter, \@fwlist);
+  return ($fwiter, \@fwlist, \@fwdirs);
 }
 
 sub get_python_path {

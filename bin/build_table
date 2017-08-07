@@ -268,6 +268,9 @@ sub create_table_bottom {
   my $fw_directory = get_fw_directory( $pfile );
   my $gdml_directory = get_gdml_directory( $pfile );
   my $prl_directory = get_perllib( $pfile );
+  my ($fwlen, $fwlist_ref, $fwdir_ref) = get_setfw_list( $pfile );
+  my @fwlist=@$fwlist_ref;
+  my @fwdirs=@$fwdir_ref;
 
   my $pvername = $product."_VERSION";
   print TBL "\n";
@@ -347,6 +350,13 @@ sub create_table_bottom {
   } else {
   print TBL "    # add $gdml_directory directory to FW_SEARCH_PATH\n";
   print TBL "    pathPrepend(FW_SEARCH_PATH, $gdml_directory )\n";
+  }
+  foreach $i ( 0 .. $fwlen ) {
+    if( $fwdirs[$i]  eq  "product_dir" ) {
+      print TBL "    pathPrepend(FW_SEARCH_PATH, \${UPS_PROD_DIR}$fwlist[$i] )\n";
+    } elsif( $fwdirs[$i]  eq  "fq_dir" ) {
+      print TBL "    pathPrepend(FW_SEARCH_PATH, \${\${UPS_PROD_NAME_UC}_FQ_DIR}$fwlist[$i] )\n";
+    }
   }
   if( $prl_directory eq "default" ) {
   print TBL "    # add the perllib directory to PERL5LIB\n";

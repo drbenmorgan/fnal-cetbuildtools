@@ -26,10 +26,10 @@ if( $#ARGV >= 0 ) {
 
 my $pfile=$inputdir."/product_deps";
 
-my ($plen, $plist_ref) = get_cmake_setfw_list( $pfile );
-my @plist=@$plist_ref;
-foreach $i ( 0 .. $plen ) {
-  print "FW_SEARCH_PATH $plist[$i]\n";   
+my ($fwlen, $fwlist_ref) = get_cmake_setfw_list( $pfile );
+my @fwlist=@$fwlist_ref;
+foreach $i ( 0 .. $fwlen ) {
+  print "FW_SEARCH_PATH $fwlist[$i]\n";   
 }
 
 exit 0;
