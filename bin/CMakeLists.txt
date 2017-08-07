@@ -8,6 +8,7 @@ install_scripts( LIST buildtool
   increment-version
   set_dev_products
   report_product_info
+  report_setfw
   migrate-package
   )
 
