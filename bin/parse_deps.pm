@@ -57,6 +57,7 @@ our (@EXPORT, @setup_list);
 	       get_lib_directory 
 	       get_fcl_directory 
 	       get_fw_directory 
+	       get_setfw_list
 	       get_gdml_directory 
 	       get_perllib 
 	       get_python_path 
@@ -391,6 +392,52 @@ sub get_perllib {
   close(PIN);
   ##print "defining executable directory $prldir\n";
   return ($prldir);
+}
+
+# This list is meant to point to the source code directory
+sub get_setfw_list {
+  my @params = @_;
+  my $setfwdir = "NONE";
+  my @fwlist;
+  my $fwiter=-1;
+  my $line;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      my @words = split(/\s+/,$line);
+      if( $words[0] eq "set_fwdir" ) {
+         ++$fwiter;
+         if( $words[1] eq "-" ) {
+	     $setfwdir = "NONE";
+	 } else { 
+            if( ! $words[2] ) { 
+               if( $words[1] eq "product_dir" ) {
+		  $setfwdir = "";
+               } elsif( $words[1] eq "fq_dir" ) {
+		  $setfwdir = "";
+	       } else {
+		  $setfwdir = "ERROR";
+	       }
+	    } else {
+	       my $fwsubdir = $words[2];
+               if( $words[1] eq "product_dir" ) {
+		  $setfwdir = "/$fwsubdir";
+               } elsif( $words[1] eq "fq_dir" ) {
+		  $setfwdir = "/$fwsubdir";
+	       } else {
+		  $setfwdir = "ERROR";
+	       }
+	    }
+	 }
+	 $fwlist[$fwiter]=$setfwdir;
+      }
+    }
+  }
+  close(PIN);
+  return ($fwiter, \@fwlist);
 }
 
 sub get_python_path {

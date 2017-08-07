@@ -246,6 +246,8 @@ my ($plen, $plist_ref, $dqlen, $dqlist_ref) = get_product_list( $pfile );
 my @plist=@$plist_ref;
 my @dqlist=@$dqlist_ref;
 my ($ndeps, %qhash) = get_qualifier_matrix( $pfile, $set_dev_products::TSET );
+my ($fwlen, $fwlist_ref) = get_setfw_list( $pfile );
+my @fwlist=@$fwlist_ref;
 
 # check for compiler 
 my $compiler;
@@ -364,6 +366,14 @@ if ( $noarch ) {
 }
 print $set_dev_products::TSET "setup -B cetpkgsupport \n";
 print $set_dev_products::TSET "test \"\$?\" = 0 || set_ setup_fail=\"true\"\n";
+
+foreach $i ( 0 .. $fwlen ) {
+  if( $fwlist[$i]  eq  "ERROR" ) {
+    print DIAG "set_dev_products: error in set_fwdir entry\n";
+  } else {
+    print $set_dev_products::TSET "setenv FW_SEARCH_PATH \${CETPKG_SOURCE}$fwlist[$i]:\${FW_SEARCH_PATH}\n";   
+  }
+}
 
 # setup only_for_build products first
 if ( $only_for_build_cmds ) { print $set_dev_products::TSET $only_for_build_cmds; }
