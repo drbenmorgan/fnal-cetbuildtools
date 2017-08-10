@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
 parent xxx	v1_00_00
-defaultqual	e5
+defaultqual	e14
 
 # These optional lines define the installed directories where headers,
 # libraries, and executables will be found.
@@ -9,7 +9,7 @@ defaultqual	e5
 #
 # Format: directory_type directory_path directory_name
 #
-# The only recognized values of the first field are fcldir, gdmldir, incdir, libdir, and bindir
+# The only recognized values of the first field are listed under Defaults
 # The only recognized values of the second field are product_dir, fq_dir, and -
 # The third field is not constrained.
 #
@@ -20,6 +20,7 @@ defaultqual	e5
 # bindir  fq_dir       bin
 # gdmldir -  
 # fwdir -  
+# set_fwdir -
 #
 # If a particular directory_type is not specified that item will not be
 # defined in the UPS table file.
@@ -34,27 +35,24 @@ bindir	fq_dir		bin
 # list all products here
 # the 4th field may be either optional or only_for_build
 product		version
-gcc		v4_8_2
-art		v1_09_00
+art		v2_08_02
+gcc		v6_3_0
 someprod	vx_yy_zz
 anotherprod	va_bb_cc
 cetbuildtools	@version@	-	only_for_build	
 end_product_list
  
-# e5  - with gcc 4.8.2 and -std=c++11 
-# e5 also implies cmake v2_8_12_2,which is pulled in by cetbuildtools
-# e4  - with gcc 4.8.1 and -std=c++11
-# e5  - with gcc 4.7.1 and -std=c++11
+# e14  - with gcc 6.3.0 and -std=c++14 
 # -nq- here means there is no qualifier
-# a - here means the dependent product is not required by the parent and will not be setup
+# a single dash here means the dependent product is not required by the parent and will not be setup
 qualifier	art		someprod	anotherprod	gcc	notes
-e5:debug	e5:debug	e5:debug	-		-nq-	-std=c++11
-e5:opt		e5:opt		e5:opt	        -		-nq-	-std=c++11
-e5:prof		e5:prof		e5:prof	        -		-nq-	-std=c++11
-mu2e:e5:debug	mu2e:e5:debug	e5:debug	gcc482		-nq-	-std=c++11
-mu2e:e5:prof	mu2e:e5:prof	e5:prof		gcc482		-nq-	-std=c++11
-nu:e5:debug	nu:e5:debug	e5:debug	gcc482		-nq-	-std=c++11
-nu:e5:prof	nu:e5:prof	e5:prof		gcc482		-nq-	-std=c++11
+e14:debug	e14:debug	e14:debug	-		-nq-	-std=c++14
+e14:opt		e14:opt		e14:opt	        -		-nq-	-std=c++14
+e14:prof	e14:prof	e14:prof        -		-nq-	-std=c++14
+mu2e:e14:debug	mu2e:e14:debug	e14:debug	gcc630		-nq-	-std=c++14
+mu2e:e14:prof	mu2e:e14:prof	e14:prof	gcc630		-nq-	-std=c++14
+nu:e14:debug	nu:e14:debug	e14:debug	gcc630		-nq-	-std=c++14
+nu:e14:prof	nu:e14:prof	e14:prof	gcc630		-nq-	-std=c++14
 end_qualifier_list
 
 table_fragment_begin
