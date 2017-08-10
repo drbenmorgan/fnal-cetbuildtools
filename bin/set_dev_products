@@ -371,7 +371,7 @@ foreach $i ( 0 .. $fwlen ) {
   if( $fwlist[$i]  eq  "ERROR" ) {
     print DIAG "set_dev_products: error in set_fwdir entry\n";
   } else {
-    print $set_dev_products::TSET "setenv FW_SEARCH_PATH \${CETPKG_SOURCE}$fwlist[$i]:\${FW_SEARCH_PATH}\n";   
+    print $set_dev_products::TSET "setenv FW_SEARCH_PATH \${CETPKG_SOURCE}$fwlist[$i]:\${FW_SEARCH_PATH}\n";
   }
 }
 
