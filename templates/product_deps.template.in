@@ -38,7 +38,7 @@ product         version
 art             v2_08_02
 someprod        vx_yy_zz
 anotherprod     va_bb_cc
-noqualprod
+noqualprod	vh_ii_jj
 cetbuildtools   @version@  -  only_for_build
 end_product_list
  
