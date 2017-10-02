@@ -47,7 +47,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
        endif ()
    else()
        FIND_PROGRAM( CET_UPS ups ${UPS_DIR}/bin  )
-       execute_process(COMMAND ${CET_UPS} flavor 
+       execute_process(COMMAND ${CET_UPS} flavor -4
                        OUTPUT_VARIABLE UPSFLAVOR
 		       OUTPUT_STRIP_TRAILING_WHITESPACE
 		       )
