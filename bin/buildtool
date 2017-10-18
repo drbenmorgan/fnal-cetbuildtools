@@ -726,7 +726,7 @@ function do_work() {
   if [[ -n "$targets" ]]; then
     stage="install / package"
     announce_stage
-    ( cd "$CETPKG_BUILD" && cmd -d "Install / test." ${generator} $jarg $targets )
+    ( cd "$CETPKG_BUILD" && cmd -d "Install / package." ${generator} $jarg $targets )
     check_status
   fi
 }
