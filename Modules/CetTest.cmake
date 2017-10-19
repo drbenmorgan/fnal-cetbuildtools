@@ -91,6 +91,32 @@
 #   the test. The CET_TEST_GROUPS cache variable may additionally
 #   contain the optional values ALL or NONE.
 #
+# PARG_<label> <opt>[=] <args>+
+#
+#   Specify a permuted argument (multiple permitted with different
+#   <label>). This allows the creation of multiple tests with arguments
+#   from a set of permutations.
+#
+#   Labels must be unique, valid CMake identifiers. Duplicated labels
+#   will cause an error.
+#
+#   If multiple PARG_XXX arguments are specified, then they are combined
+#   linearly, with shorter permutation lists being repeated cyclically.
+#
+#   If the '=' is specified, then the argument lists for successive test
+#   iterations will get <opt>=v1, <opt>=v2, etc., otherwise it will be
+#   <opt> v1, <opt> v2, ...
+#
+#   Target names will have _<num> appended, where num is zero-padded to
+#   give the same number of digits for each target within the set.
+#
+#   Permuted arguments will be placed before any specifed TEST_ARGS in
+#   the order the PARG_<label> arguments were specified to cet_test().
+#
+#   There is no support for non-option argument toggling as yet, but
+#   addition of such support should be straightforward should the use
+#   case arise.
+#
 # REF <ref-file>
 #
 #  The standard output of the test will be captured and compared against
@@ -186,6 +212,7 @@
 # * If you intend to set the property SKIP_RETURN_CODE, you should use
 #   CET_TEST_PROPERTIES to set it rather than add_tests_properties(), as
 #   cet_test() needs to take account of your preference.
+#
 ########################################################################
 
 ########################################################################
@@ -230,7 +257,7 @@
 #   cet_test() or add_test() -- require at least one.
 #
 ########################################################################
-cmake_policy(VERSION 3.0.1) # We've made this work for 3.0.1.
+cmake_policy(VERSION 3.9.2) # We've made this work for 3.9.2.
 
 # Need argument parser.
 include(CMakeParseArguments)
@@ -319,6 +346,140 @@ FUNCTION(_check_want_test CET_OPTIONAL_GROUPS CET_WANT_TEST)
   ENDIF()
 ENDFUNCTION()
 
+function(_cet_process_pargs NTEST_VAR)
+  set(NTESTS 1)
+  foreach (label ${ARGN})
+    list(LENGTH CETP_PARG_${label} ${label}_length)
+    math(EXPR ${label}_length "${${label}_length} - 1")
+    if (NOT ${label}_length)
+      message(FATAL_ERROR "For test ${TEST_TARGET_NAME}: Permuted options are not yet supported.")
+    endif()
+    if (${label}_length GREATER NTESTS)
+      set(NTESTS ${${label}_length})
+    endif()
+    list(GET CETP_PARG_${label} 0 ${label}_arg)
+    set(${label}_arg ${${label}_arg} PARENT_SCOPE)
+    list(REMOVE_AT CETP_PARG_${label} 0)
+    set(CETP_PARG_${label} ${CETP_PARG_${label}} PARENT_SCOPE)
+    set(${label}_length ${${label}_length} PARENT_SCOPE)
+  endforeach()
+  foreach (label ${ARGN})
+    if (${label}_length LESS NTESTS)
+      # Need to pad
+      math(EXPR nextra "${NTESTS} - ${${label}_length}")
+      set(nind 0)
+      while (nextra)
+        math(EXPR lind "${nind} % ${${label}_length}")
+        list(GET CETP_PARG_${label} ${lind} item)
+        list(APPEND CETP_PARG_${label} ${item})
+        math(EXPR nextra "${nextra} - 1")
+        math(EXPR nind "${nind} + 1")
+      endwhile()
+      set(CETP_PARG_${label} ${CETP_PARG_${label}} PARENT_SCOPE)
+    endif()
+  endforeach()
+  set(${NTEST_VAR} ${NTESTS} PARENT_SCOPE)
+endfunction()
+
+function(_cet_print_pargs)
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" BTYPE_UC)
+  if (NOT BTYPE_UC STREQUAL "DEBUG")
+    return()
+  endif()
+  list(LENGTH ARGN nlabels)
+  if (NOT nlabels)
+    return()
+  endif()
+  message(STATUS "Test ${TEST_TARGET_NAME}: found ${nlabels} labels for permuted test arguments")
+  foreach (label ${ARGN})
+    message(STATUS "  Label: ${label}, arg: ${${label}_arg}, # vals: ${${label}_length}, vals: ${CETP_PARG_${label}}")
+  endforeach()
+  message(STATUS "  Calculated ${NTESTS} tests")
+endfunction()
+
+function(_cet_test_pargs VAR)
+  foreach (label ${parg_labels})
+    list(GET CETP_PARG_${label} ${tid} arg)
+    if (${label}_arg MATCHES "=\$")
+      list(APPEND test_args "${${label}_arg}${arg}")
+    else()
+      list(APPEND test_args ${${label}_arg} ${arg})
+    endif()
+  endforeach()
+  set(${VAR} ${test_args} ${ARGN} PARENT_SCOPE)
+endfunction()
+
+function(_cet_add_test_detail TNAME)
+  _cet_test_pargs(test_args ${ARGN})
+  add_test(NAME "${TNAME}"
+    ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
+    COMMAND
+    ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
+    --required-files "${CET_REQUIRED_FILES}"
+    --datafiles "${CET_DATAFILES}"
+    --skip-return-code ${skip_return_code}
+    ${CET_TEST_EXEC} ${test_args})
+endfunction()
+
+function(_cet_add_test)
+  if (${NTESTS} EQUAL 1)
+    _cet_add_test_detail(${TEST_TARGET_NAME} ${ARGN})
+    list(APPEND ALL_TEST_TARGETS ${TEST_TARGET_NAME})
+  else()
+    math(EXPR tidmax "${NTESTS} - 1")
+    string(LENGTH "${tidmax}" nd)
+    foreach (tid RANGE ${tidmax})
+      execute_process(COMMAND printf "${TEST_TARGET_NAME}_%0${nd}d" ${tid}
+        OUTPUT_VARIABLE tname
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+      _cet_add_test_detail(${tname} ${ARGN})
+      list(APPEND ALL_TEST_TARGETS ${tname})
+    endforeach()
+  endif()
+  set(ALL_TEST_TARGETS ${ALL_TEST_TARGETS} PARENT_SCOPE)
+endfunction()
+
+function(_cet_add_ref_test_detail TNAME)
+  _cet_test_pargs(test_args ${ARGN})
+  add_test(NAME "${TNAME}"
+    ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
+    COMMAND ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
+    --required-files "${CET_REQUIRED_FILES}"
+    --datafiles "${CET_DATAFILES}"
+    --skip-return-code ${skip_return_code}
+    ${CMAKE_COMMAND}
+    -DTEST_EXEC=${CET_TEST_EXEC}
+    -DTEST_ARGS=${test_args}
+    -DTEST_REF=${OUTPUT_REF}
+    ${DEFINE_ERROR_REF}
+    ${DEFINE_TEST_ERR}
+    -DTEST_OUT=${CET_TARGET}.out
+    ${DEFINE_OUTPUT_FILTER} ${DEFINE_OUTPUT_FILTER_ARGS} ${DEFINE_OUTPUT_FILTERS}
+    ${DEFINE_ART_COMPAT}
+    -P ${CET_RUNANDCOMPARE}
+    )
+endfunction()
+
+function(_cet_add_ref_test)
+  if (${NTESTS} EQUAL 1)
+    _cet_add_ref_test_detail(${TEST_TARGET_NAME} ${ARGN})
+    list(APPEND ALL_TEST_TARGETS ${TEST_TARGET_NAME})
+  else()
+    math(EXPR tidmax "${NTESTS} - 1")
+    string(LENGTH "${tidmax}" nd)
+    foreach (tid RANGE ${tidmax})
+      execute_process(COMMAND printf "${TEST_TARGET_NAME}_%0${nd}d" ${tid}
+        OUTPUT_VARIABLE tname
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+      _cet_add_ref_test_detail(${tname} ${ARGN})
+      list(APPEND ALL_TEST_TARGETS ${tname})
+    endforeach()
+  endif()
+  set(ALL_TEST_TARGETS ${ALL_TEST_TARGETS} PARENT_SCOPE)
+endfunction()
+
 ####################################
 # Main macro definitions.
 MACRO(cet_test_env)
@@ -349,12 +510,34 @@ FUNCTION(cet_test CET_TARGET)
   IF (CET_OUTPUT_FILTERS AND CET_OUTPUT_FILTER_ARGS)
     MESSAGE(FATAL_ERROR "OUTPUT_FILTERS is incompatible with FILTER_ARGS:\nEither use the singular OUTPUT_FILTER or use double-quoted strings in OUTPUT_FILTERS\nE.g. OUTPUT_FILTERS \"filter1 -x -y\" \"filter2 -y -z\"")
   ENDIF()
+
   # If GLOBAL is not set, prepend ${product}: to the target name
   IF (CET_SCOPED)
-    SET(TARGET_NAME "${product}:${CET_TARGET}")
+    SET(TEST_TARGET_NAME "${product}:${CET_TARGET}")
   ELSE()
-    SET(TARGET_NAME "${CET_TARGET}")
+    SET(TEST_TARGET_NAME "${CET_TARGET}")
   ENDIF()
+
+  # Find any arguments related to permuted test arguments.
+  foreach (OPT ${CET_UNPARSED_ARGUMENTS})
+    if (OPT MATCHES "^PARG_([A-Za-z_][A-Za-z0-9_]*)$")
+      if (OPT IN_LIST parg_option_names)
+        message(FATAL_ERROR "For test ${TEST_TARGET_NAME}, permuted argument label ${CMAKE_MATCH_1} specified multiple times.")
+      endif()
+      list(APPEND parg_option_names ${OPT})
+      list(APPEND parg_labels ${CMAKE_MATCH_1})
+    endif()
+  endforeach()
+  cmake_parse_arguments(CETP "" "PERMUTE" "PERMUTE_OPTS;${parg_option_names}" "${CET_UNPARSED_ARGUMENTS}")
+  if (CETP_PERMUTE)
+    message(FATAL_ERROR "PERMUTE is a keyword reserved for future functionality.")
+  elseif(CETP_PERMUTE_OPTS)
+    message(FATAL_ERROR "PERMUTE_OPTS is a keyword reserved for future functionality.")
+  endif()
+  list(LENGTH parg_labels NPARG_LABELS)
+  _cet_process_pargs(NTESTS "${parg_labels}")
+  _cet_print_pargs("${parg_labels}")
+
   # Set up to handle a per-test work directory for parallel testing.
   SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
   file(MAKE_DIRECTORY "${CET_TEST_WORKDIR}")
@@ -366,8 +549,8 @@ FUNCTION(cet_test CET_TARGET)
   ELSE()
     SET(CET_TEST_EXEC ${EXECUTABLE_OUTPUT_PATH}/${CET_TARGET})
   ENDIF()
-  IF(CET_UNPARSED_ARGUMENTS)
-    message(FATAL_ERROR "cet_test: Unparsed (non-option) arguments detected: \"${CET_UNPARSED_ARGUMENTS}\"
+  IF(CETP_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "cet_test: Unparsed (non-option) arguments detected: \"${CETP_UNPARSED_ARGUMENTS}\"
 Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMakeLists.txt.")
   ENDIF()
   if (DEFINED CET_DATAFILES)
@@ -501,55 +684,31 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
         STRING(REPLACE ";" "::" DEFINE_OUTPUT_FILTERS "${CET_OUTPUT_FILTERS}")
         SET(DEFINE_OUTPUT_FILTERS "-DOUTPUT_FILTERS=${DEFINE_OUTPUT_FILTERS}")
       ENDIF()
-      ADD_TEST(NAME "${TARGET_NAME}"
-        ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-        COMMAND ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
-        --required-files "${CET_REQUIRED_FILES}"
-        --datafiles "${CET_DATAFILES}"
-        --skip-return-code ${skip_return_code}
-        ${CMAKE_COMMAND}
-        -DTEST_EXEC=${CET_TEST_EXEC}
-        -DTEST_ARGS=${TEST_ARGS}
-        -DTEST_REF=${OUTPUT_REF}
-        ${DEFINE_ERROR_REF}
-        ${DEFINE_TEST_ERR}
-        -DTEST_OUT=${CET_TARGET}.out
-        ${DEFINE_OUTPUT_FILTER} ${DEFINE_OUTPUT_FILTER_ARGS} ${DEFINE_OUTPUT_FILTERS}
-        ${DEFINE_ART_COMPAT}
-        -P ${CET_RUNANDCOMPARE}
-        )
+      _cet_add_ref_test(${TEST_ARGS})
     ELSE(CET_REF)
-      # Add the test.
-      ADD_TEST(NAME "${TARGET_NAME}"
-        ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-        COMMAND
-        ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
-        --required-files "${CET_REQUIRED_FILES}"
-        --datafiles "${CET_DATAFILES}"
-        --skip-return-code ${skip_return_code}
-        ${CET_TEST_EXEC} ${CET_TEST_ARGS})
+      _cet_add_test(${CET_TEST_ARGS})
     ENDIF(CET_REF)
     IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
-      SET_TESTS_PROPERTIES("${TARGET_NAME}" PROPERTIES WORKING_DIRECTORY ${CET_TEST_WORKDIR})
+      SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES WORKING_DIRECTORY ${CET_TEST_WORKDIR})
     ENDIF()
     IF(CET_TEST_PROPERTIES)
-      SET_TESTS_PROPERTIES("${TARGET_NAME}" PROPERTIES ${CET_TEST_PROPERTIES})
+      SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES ${CET_TEST_PROPERTIES})
     ENDIF()
     IF(CET_TEST_ENV)
       # Set global environment.
-      GET_TEST_PROPERTY("${TARGET_NAME}" ENVIRONMENT CET_TEST_ENV_TMP)
+      GET_TEST_PROPERTY(${ALL_TEST_TARGETS} ENVIRONMENT CET_TEST_ENV_TMP)
       IF(CET_TEST_ENV_TMP)
-        SET_TESTS_PROPERTIES("${TARGET_NAME}" PROPERTIES ENVIRONMENT "${CET_TEST_ENV};${CET_TEST_ENV_TMP}")
+        SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES ENVIRONMENT "${CET_TEST_ENV};${CET_TEST_ENV_TMP}")
       ELSE()
-        SET_TESTS_PROPERTIES("${TARGET_NAME}" PROPERTIES ENVIRONMENT "${CET_TEST_ENV}")
+        SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES ENVIRONMENT "${CET_TEST_ENV}")
       ENDIF()
     ENDIF()
     IF(CET_REF)
-      GET_TEST_PROPERTY("${TARGET_NAME}" REQUIRED_FILES REQUIRED_FILES_TMP)
+      GET_TEST_PROPERTY(${ALL_TEST_TARGETS} REQUIRED_FILES REQUIRED_FILES_TMP)
       IF(REQUIRED_FILES_TMP)
-        SET_TESTS_PROPERTIES("${TARGET_NAME}" PROPERTIES REQUIRED_FILES "${REQUIRED_FILES_TMP};${CET_REF}")
+        SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES REQUIRED_FILES "${REQUIRED_FILES_TMP};${CET_REF}")
       ELSE()
-        SET_TESTS_PROPERTIES("${TARGET_NAME}" PROPERTIES REQUIRED_FILES "${CET_REF}")
+        SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES REQUIRED_FILES "${CET_REF}")
       ENDIF()
     ENDIF()
   ELSE(NOT CET_NO_AUTO AND WANT_TEST)
