@@ -85,11 +85,9 @@
 #
 # OPTIONAL_GROUPS <group>+
 #
-#   Assign this test to one or more named optional groups. If the CMake
-#   list variable CET_TEST_GROUPS is set (e.g. with -D on the CMake
-#   command line) and there is overlap between the two lists, execute
-#   the test. The CET_TEST_GROUPS cache variable may additionally
-#   contain the optional values ALL or NONE.
+#   Assign this test to one or more named optional groups (a.k.a CMake
+#   test labels). If ctest is executed specifying labels, then matching
+#   tests will be executed.
 #
 # PARG_<label> <opt>[=] <args>+
 #
@@ -185,19 +183,6 @@
 #
 ####################################
 # Cached variables.
-#
-# CET_CATCH_CMAKE_PATH
-#   Path by which to find the ParseAndAddCatchTests.cmake file
-#   from the catch system, required if TEST_PER_CATCH_CASE is specified.
-#
-# CET_TEST_GROUPS
-#   Test group names specified using the OPTIONAL_GROUPS list option are
-#   compared against this list to determine whether to configure the
-#   test. Default value is the special value "NONE," meaning no optional
-#   tests are to be configured. Optionally CET_TEST_GROUPS may contain
-#   the special value "ALL." Specify multiple values separated by ";"
-#   (escape or protect with quotes) or "," See explanation of the
-#   OPTIONAL_GROUPS variable above for more details.
 #
 # CET_DEFINED_TEST_GROUPS
 #   Any test group names CMake sees will be added to this list.
@@ -300,12 +285,6 @@ IF((NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY) AND BOOST_VERS)
   find_ups_boost(${BOOST_VERS} unit_test_framework)
 ENDIF() 
 
-SET(CET_TEST_GROUPS "NONE"
-  CACHE STRING "List of optional test groups to be configured."
-  )
-
-STRING(TOUPPER "${CET_TEST_GROUPS}" CET_TEST_GROUPS_UC)
-
 SET(CET_TEST_ENV ""
   CACHE INTERNAL "Environment to add to every test"
   FORCE
@@ -318,40 +297,12 @@ set(CET_RUNANDCOMPARE "${CMAKE_CURRENT_LIST_DIR}/RunAndCompare.cmake")
 set(CET_CET_EXEC_TEST "${cetbuildtools_BINDIR}/cet_exec_test")
 
 FUNCTION(_update_defined_test_groups)
-  IF(ARGC)
-    SET(TMP_LIST ${CET_DEFINED_TEST_GROUPS})
-    LIST(APPEND TMP_LIST ${ARGN})
-    LIST(REMOVE_DUPLICATES TMP_LIST)
-    SET(CET_DEFINED_TEST_GROUPS ${TMP_LIST}
-      CACHE STRING "List of defined test groups."
-      FORCE
-      )
-  ENDIF()
-ENDFUNCTION()
-
-FUNCTION(_check_want_test CET_OPTIONAL_GROUPS CET_WANT_TEST)
-  IF(NOT CET_OPTIONAL_GROUPS)
-    SET(${CET_WANT_TEST} YES PARENT_SCOPE)
-    RETURN() # Short-circuit.
-  ENDIF()
-  SET (${CET_WANT_TEST} NO PARENT_SCOPE)
-  LIST(FIND CET_TEST_GROUPS_UC ALL WANT_ALL)
-  LIST(FIND CET_TEST_GROUPS_UC NONE WANT_NONE)
-  IF(WANT_ALL GREATER -1)
-    SET (${CET_WANT_TEST} YES PARENT_SCOPE)
-    RETURN() # Short-circuit.
-  ELSEIF(WANT_NONE GREATER -1)
-    RETURN() # Short-circuit.
-  ELSE()
-    FOREACH(item IN LISTS CET_OPTIONAL_GROUPS)
-      STRING(TOUPPER "${item}" item_uc)
-      LIST(FIND CET_TEST_GROUPS_UC ${item_uc} FOUND_ITEM)
-      IF(FOUND_ITEM GREATER -1)
-        SET (${CET_WANT_TEST} YES PARENT_SCOPE)
-        RETURN() # Short-circuit.
-      ENDIF()
-    ENDFOREACH()
-  ENDIF()
+  SET(TMP_LIST ${CET_DEFINED_TEST_GROUPS} ${ARGN})
+  LIST(REMOVE_DUPLICATES TMP_LIST)
+  SET(CET_DEFINED_TEST_GROUPS ${TMP_LIST}
+    CACHE STRING "List of defined test groups."
+    FORCE
+    )
 ENDFUNCTION()
 
 function(_cet_process_pargs NTEST_VAR)
@@ -527,7 +478,7 @@ FUNCTION(cet_test CET_TARGET)
       "target name with the HANDBUILT and TEST_EXEC options instead.")
   ENDIF()
   CMAKE_PARSE_ARGUMENTS (CET
-    "HANDBUILT;PREBUILT;USE_CATCH_MAIN;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE;SCOPED"
+    "HANDBUILT;PREBUILT;USE_CATCH_MAIN;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE;NO_OPTIONAL_GROUPS;SCOPED"
     "OUTPUT_FILTER;TEST_EXEC;TEST_WORKDIR"
     "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTERS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
@@ -675,9 +626,11 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
   IF(CET_CONFIGURATIONS)
     SET(CONFIGURATIONS_CMD CONFIGURATIONS)
   ENDIF()
+  IF (NOT (CET_OPTIONAL_GROUPS OR CET_NO_OPTIONAL_GROUPS))
+    SET(CET_OPTIONAL_GROUPS DEFAULT RELEASE)
+  ENDIF()
   _update_defined_test_groups(${CET_OPTIONAL_GROUPS})
-  _check_want_test("${CET_OPTIONAL_GROUPS}" WANT_TEST)
-  IF(NOT CET_NO_AUTO AND WANT_TEST)
+  IF(NOT CET_NO_AUTO)
     LIST(FIND CET_TEST_PROPERTIES SKIP_RETURN_CODE skip_return_code)
     IF (skip_return_code GREATER -1)
       MATH(EXPR skip_return_code "${skip_return_code} + 1")
@@ -715,6 +668,7 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
     ELSE(CET_REF)
       _cet_add_test(${CET_TEST_ARGS})
     ENDIF(CET_REF)
+    SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES LABELS "${CET_OPTIONAL_GROUPS}")
     IF(CET_TEST_PROPERTIES)
       SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES ${CET_TEST_PROPERTIES})
     ENDIF()
@@ -737,11 +691,11 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
         ENDIF()
       ENDIF()
     ENDFOREACH()
-  ELSE(NOT CET_NO_AUTO AND WANT_TEST)
+  ELSE(NOT CET_NO_AUTO)
     IF(CET_OUTPUT_FILTER OR CET_OUTPUT_FILTER_ARGS)
       MESSAGE(FATAL_ERROR "OUTPUT_FILTER and OUTPUT_FILTER_ARGS are not accepted if REF is not specified.")
     ENDIF()
-  ENDIF(NOT CET_NO_AUTO AND WANT_TEST)
+  ENDIF(NOT CET_NO_AUTO)
   IF(CET_INSTALL_BIN)
     IF(CET_HANDBUILT)
       MESSAGE(WARNING "INSTALL_BIN option ignored for HANDBUILT tests.")
