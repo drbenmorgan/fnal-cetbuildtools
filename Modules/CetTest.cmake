@@ -441,7 +441,8 @@ function(_cet_add_test)
 endfunction()
 
 function(_cet_add_ref_test_detail TNAME)
-  _cet_test_pargs(test_args ${ARGN})
+  _cet_test_pargs(tmp_args ${ARGN})
+  separate_arguments(test_args UNIX_COMMAND "${tmp_args}")
   add_test(NAME "${TNAME}"
     ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
     COMMAND ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
@@ -673,7 +674,6 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
         SET(DEFINE_ERROR_REF "-DTEST_REF_ERR=${ERROR_REF}")
         SET(DEFINE_TEST_ERR "-DTEST_ERR=${CET_TARGET}.err")
       ENDIF()
-      SEPARATE_ARGUMENTS(TEST_ARGS UNIX_COMMAND "${CET_TEST_ARGS}")
       IF(CET_OUTPUT_FILTER)
         SET(DEFINE_OUTPUT_FILTER "-DOUTPUT_FILTER=${CET_OUTPUT_FILTER}")
         IF(CET_OUTPUT_FILTER_ARGS)
@@ -684,7 +684,7 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
         STRING(REPLACE ";" "::" DEFINE_OUTPUT_FILTERS "${CET_OUTPUT_FILTERS}")
         SET(DEFINE_OUTPUT_FILTERS "-DOUTPUT_FILTERS=${DEFINE_OUTPUT_FILTERS}")
       ENDIF()
-      _cet_add_ref_test(${TEST_ARGS})
+      _cet_add_ref_test(${CET_TEST_ARGS})
     ELSE(CET_REF)
       _cet_add_test(${CET_TEST_ARGS})
     ENDIF(CET_REF)
