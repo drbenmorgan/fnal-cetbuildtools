@@ -257,8 +257,6 @@
 #   cet_test() or add_test() -- require at least one.
 #
 ########################################################################
-cmake_policy(VERSION 3.9.2) # We've made this work for 3.9.2.
-
 # Need argument parser.
 include(CMakeParseArguments)
 # Copy function.
@@ -271,6 +269,9 @@ include(CetMake)
 include(CetRegexEscape)
 # Compatibility with older packages.
 include(CheckUpsVersion)
+
+cmake_policy(PUSH)
+cmake_policy(VERSION 3.3) # For if(IN_LIST)
 
 find_file(CET_CATCH_MAIN_SOURCE cet_catch_main.cpp PATH_SUFFIXES src)
 
@@ -753,4 +754,5 @@ FUNCTION(cet_test_assertion CONDITION FIRST_TARGET)
       )
   ENDIF()
 ENDFUNCTION()
-########################################################################
+
+cmake_policy(POP)
