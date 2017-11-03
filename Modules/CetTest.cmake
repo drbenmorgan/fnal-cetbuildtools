@@ -493,16 +493,13 @@ FUNCTION(cet_test CET_TARGET)
     UNSET(CET_SOURCES)
   ENDIF()
 
+  IF(CETP_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "cet_test: Unparsed (non-option) arguments detected: \"${CETP_UNPARSED_ARGUMENTS}.\" Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMakeLists.txt.")
+  ENDIF()
+
   # For passage to cet_script, cet_make_exec, etc.
   IF (NOT CET_INSTALL_BIN)
     SET(CET_NO_INSTALL "NO_INSTALL")
-  ENDIF()
-
-  # If GLOBAL is not set, prepend ${product}: to the target name
-  IF (CET_SCOPED)
-    SET(TEST_TARGET_NAME "${product}:${CET_TARGET}")
-  ELSE()
-    SET(TEST_TARGET_NAME "${CET_TARGET}")
   ENDIF()
 
   # Find any arguments related to permuted test arguments.
@@ -523,14 +520,6 @@ FUNCTION(cet_test CET_TARGET)
   endif()
   list(LENGTH parg_labels NPARG_LABELS)
   _cet_process_pargs(NTESTS "${parg_labels}")
-  _cet_print_pargs("${parg_labels}")
-
-  # Set up to handle a per-test work directory for parallel testing.
-  IF (NOT CET_TEST_WORKDIR)
-    SET(CET_TEST_WORKDIR "${CET_TARGET}.d")
-  ENDIF()
-  GET_FILENAME_COMPONENT(CET_TEST_WORKDIR "${CET_TEST_WORKDIR}"
-    ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
   IF(CET_TEST_EXEC)
     IF(NOT CET_HANDBUILT)
@@ -540,23 +529,6 @@ FUNCTION(cet_test CET_TARGET)
   ELSE()
     SET(CET_TEST_EXEC ${CET_TARGET})
   ENDIF()
-  IF(CETP_UNPARSED_ARGUMENTS)
-    message(FATAL_ERROR "cet_test: Unparsed (non-option) arguments detected: \"${CETP_UNPARSED_ARGUMENTS}\"
-Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMakeLists.txt.")
-  ENDIF()
-  if (DEFINED CET_DATAFILES)
-    list(REMOVE_DUPLICATES CET_DATAFILES)
-    set(datafiles_tmp)
-    foreach (df ${CET_DATAFILES})
-      get_filename_component(dfd ${df} DIRECTORY)
-      if (dfd)
-        list(APPEND datafiles_tmp ${df})
-      else(dfd)
-        list(APPEND datafiles_tmp ${CMAKE_CURRENT_SOURCE_DIR}/${df})
-      endif(dfd)
-    endforeach()
-    set(CET_DATAFILES ${datafiles_tmp})
-  endif(DEFINED CET_DATAFILES)
   IF((CET_HANDBUILT AND CET_PREBUILT) OR
       (CET_HANDBUILT AND CET_USE_CATCH_MAIN) OR
       (CET_PREBUILT AND CET_USE_CATCH_MAIN))
@@ -594,7 +566,7 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
       list(APPEND cme_args LIBRARIES ${CET_LIBRARIES})
     endif()
     cet_make_exec(${CET_TARGET} ${CET_NO_INSTALL}
-      ${cme_args} ${CET_UNPARSED_ARGUMENTS})
+      ${cme_args} ${CETP_UNPARSED_ARGUMENTS})
     IF (CET_USE_CATCH_MAIN AND DEFINED ENV{CATCH_INC})
       TARGET_INCLUDE_DIRECTORIES(${CET_TARGET} PUBLIC $ENV{CATCH_INC})
       TARGET_LINK_LIBRARIES(${CET_TARGET} cet_catch_main)
@@ -619,14 +591,50 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
       ENDIF()
     ENDIF()
   ENDIF()
-  IF(CET_CONFIGURATIONS)
-    SET(CONFIGURATIONS_CMD CONFIGURATIONS)
-  ENDIF()
-  IF (NOT (CET_OPTIONAL_GROUPS OR CET_NO_OPTIONAL_GROUPS))
-    SET(CET_OPTIONAL_GROUPS DEFAULT RELEASE)
-  ENDIF()
-  _update_defined_test_groups(${CET_OPTIONAL_GROUPS})
+
   IF(NOT CET_NO_AUTO)
+    # If GLOBAL is not set, prepend ${product}: to the target name
+    IF (CET_SCOPED)
+      SET(TEST_TARGET_NAME "${product}:${CET_TARGET}")
+    ELSE()
+      SET(TEST_TARGET_NAME "${CET_TARGET}")
+    ENDIF()
+
+    # For which configurations should this test (set) be valid?
+    IF(CET_CONFIGURATIONS)
+      SET(CONFIGURATIONS_CMD CONFIGURATIONS)
+    ENDIF()
+
+    # Print configured permuted arguments.
+    _cet_print_pargs("${parg_labels}")
+
+    # Set up to handle a per-test work directory for parallel testing.
+    IF (NOT CET_TEST_WORKDIR)
+      SET(CET_TEST_WORKDIR "${CET_TARGET}.d")
+    ENDIF()
+    GET_FILENAME_COMPONENT(CET_TEST_WORKDIR "${CET_TEST_WORKDIR}"
+      ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    file(MAKE_DIRECTORY "${CET_TEST_WORKDIR}")
+
+    # Deal with specified data files.
+    if (DEFINED CET_DATAFILES)
+      list(REMOVE_DUPLICATES CET_DATAFILES)
+      set(datafiles_tmp)
+      foreach (df ${CET_DATAFILES})
+        get_filename_component(dfd ${df} DIRECTORY)
+        if (dfd)
+          list(APPEND datafiles_tmp ${df})
+        else(dfd)
+          list(APPEND datafiles_tmp ${CMAKE_CURRENT_SOURCE_DIR}/${df})
+        endif(dfd)
+      endforeach()
+      set(CET_DATAFILES ${datafiles_tmp})
+    endif(DEFINED CET_DATAFILES)
+
+    IF(CET_CONFIGURATIONS)
+      SET(CONFIGURATIONS_CMD CONFIGURATIONS)
+    ENDIF()
+
     LIST(FIND CET_TEST_PROPERTIES SKIP_RETURN_CODE skip_return_code)
     IF (skip_return_code GREATER -1)
       MATH(EXPR skip_return_code "${skip_return_code} + 1")
@@ -664,6 +672,13 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
     ELSE(CET_REF)
       _cet_add_test(${CET_TEST_ARGS})
     ENDIF(CET_REF)
+    IF (NOT (CET_OPTIONAL_GROUPS OR CET_NO_OPTIONAL_GROUPS))
+      SET(CET_OPTIONAL_GROUPS DEFAULT RELEASE)
+    ENDIF()
+    IF (NTESTS GREATER 1)
+      LIST(APPEND CET_OPTIONAL_GROUPS ${TEST_TARGET_NAME})
+    ENDIF()
+    _update_defined_test_groups(${CET_OPTIONAL_GROUPS})
     SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES LABELS "${CET_OPTIONAL_GROUPS}")
     IF(CET_TEST_PROPERTIES)
       SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES ${CET_TEST_PROPERTIES})
@@ -685,11 +700,20 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
         ELSE()
           SET_TESTS_PROPERTIES(${target} PROPERTIES REQUIRED_FILES "${CET_REF}")
         ENDIF()
+      ELSE(CET_REF)
+        IF(CET_OUTPUT_FILTER OR CET_OUTPUT_FILTER_ARGS)
+          MESSAGE(FATAL_ERROR "OUTPUT_FILTER and OUTPUT_FILTER_ARGS are not accepted if REF is not specified.")
+        ENDIF()
       ENDIF()
     ENDFOREACH()
   ELSE(NOT CET_NO_AUTO)
-    IF(CET_OUTPUT_FILTER OR CET_OUTPUT_FILTER_ARGS)
-      MESSAGE(FATAL_ERROR "OUTPUT_FILTER and OUTPUT_FILTER_ARGS are not accepted if REF is not specified.")
+    IF(CET_CONFIGURATIONS OR CET_DATAFILES OR CET_NO_OPTIONAL_GROUPS OR
+        CET_OPTIONAL_GROUPS OR CET_OUTPUT_FILTER OR CET_OUTPUT_FILTERS OR
+        CET_OUTPUT_FILTER_ARGS OR CET_REF OR CET_REQUIRED_FILES OR
+        CET_SCOPED OR CET_TEST_ARGS OR CET_TEST_PROPERTIES OR
+        CET_TEST_WORKDIR OR NPARG_LABELS)
+      MESSAGE(FATAL_ERROR "The following arguments are not meaningful in the presence of NO_AUTO:
+CONFIGURATIONS DATAFILES NO_OPTIONAL_GROUPS_OPTIONAL_GROUPS OUTPUT_FILTER OUTPUT_FILTERS OUTPUT_FILTER_ARGS PARG_<label> REF REQUIRED_FILES SCOPED TEST_ARGS TEST_PROPERTIES TEST_WORKDIR")
     ENDIF()
   ENDIF(NOT CET_NO_AUTO)
   IF(CET_INSTALL_BIN AND CET_HANDBUILT)
