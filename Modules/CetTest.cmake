@@ -172,6 +172,13 @@
 #   Properties to be added to the test. See documentation of the cmake
 #   command, "set_tests_properties."
 #
+# TEST_WORKDIR <dir>
+#
+#   Test to execute (and support files to be copied to) <dir>. If not
+#   specified, ${CMAKE_CURRENT_BINARY_DIR}/<target>.d will be created
+#   and used. If relative or not qualified, <dir> is assumed to be
+#   releative to ${CMAKE_CURRENT_BINARY_DIR}.
+#
 # USE_BOOST_UNIT
 #
 #   This test uses the Boost Unit Test Framework.
@@ -521,7 +528,7 @@ FUNCTION(cet_test CET_TARGET)
   ENDIF()
   CMAKE_PARSE_ARGUMENTS (CET
     "HANDBUILT;PREBUILT;USE_CATCH_MAIN;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE;SCOPED"
-    "OUTPUT_FILTER;TEST_EXEC"
+    "OUTPUT_FILTER;TEST_EXEC;TEST_WORKDIR"
     "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTERS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
     )
@@ -557,7 +564,12 @@ FUNCTION(cet_test CET_TARGET)
   _cet_print_pargs("${parg_labels}")
 
   # Set up to handle a per-test work directory for parallel testing.
-  SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
+  IF (NOT CET_TEST_WORKDIR)
+    SET(CET_TEST_WORKDIR "${CET_TARGET}.d")
+  ENDIF()
+  GET_FILENAME_COMPONENT(CET_TEST_WORKDIR "${CET_TEST_WORKDIR}"
+    ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+
   IF(CET_TEST_EXEC)
     IF(NOT CET_HANDBUILT)
       MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot specify "
