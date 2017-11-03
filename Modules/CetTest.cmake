@@ -410,12 +410,12 @@ function(_cet_test_pargs VAR)
   set(${VAR} ${test_args} ${ARGN} PARENT_SCOPE)
 endfunction()
 
-function(_cet_add_test_detail TNAME)
+function(_cet_add_test_detail TNAME TEST_WORKDIR)
   _cet_test_pargs(test_args ${ARGN})
   add_test(NAME "${TNAME}"
     ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
     COMMAND
-    ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
+    ${CET_CET_EXEC_TEST} --wd ${TEST_WORKDIR}
     --required-files "${CET_REQUIRED_FILES}"
     --datafiles "${CET_DATAFILES}"
     --skip-return-code ${skip_return_code}
@@ -424,29 +424,37 @@ endfunction()
 
 function(_cet_add_test)
   if (${NTESTS} EQUAL 1)
-    _cet_add_test_detail(${TEST_TARGET_NAME} ${ARGN})
+    _cet_add_test_detail(${TEST_TARGET_NAME} ${CET_TEST_WORKDIR} ${ARGN})
     list(APPEND ALL_TEST_TARGETS ${TEST_TARGET_NAME})
+    file(MAKE_DIRECTORY "${CET_TEST_WORKDIR}")
+    set_tests_properties(${TEST_TARGET_NAME} PROPERTIES WORKING_DIRECTORY ${CET_TEST_WORKDIR})
+    cet_copy(${CET_DATAFILES} DESTINATION ${CET_TEST_WORKDIR} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   else()
     math(EXPR tidmax "${NTESTS} - 1")
     string(LENGTH "${tidmax}" nd)
     foreach (tid RANGE ${tidmax})
-      execute_process(COMMAND printf "${TEST_TARGET_NAME}_%0${nd}d" ${tid}
-        OUTPUT_VARIABLE tname
+      execute_process(COMMAND printf "_%0${nd}d" ${tid}
+        OUTPUT_VARIABLE tnum
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )
-      _cet_add_test_detail(${tname} ${ARGN})
+      set(tname "${TEST_TARGET_NAME}${tnum}")
+      string(REGEX REPLACE "\\.d\$" "${tnum}.d" test_workdir "${CET_TEST_WORKDIR}")
+      _cet_add_test_detail(${tname} ${test_workdir} ${ARGN})
       list(APPEND ALL_TEST_TARGETS ${tname})
+      file(MAKE_DIRECTORY "${test_workdir}")
+      set_tests_properties(${tname} PROPERTIES WORKING_DIRECTORY ${test_workdir})
+      cet_copy(${CET_DATAFILES} DESTINATION ${test_workdir} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     endforeach()
   endif()
   set(ALL_TEST_TARGETS ${ALL_TEST_TARGETS} PARENT_SCOPE)
 endfunction()
 
-function(_cet_add_ref_test_detail TNAME)
+function(_cet_add_ref_test_detail TNAME TEST_WORKDIR)
   _cet_test_pargs(tmp_args ${ARGN})
   separate_arguments(test_args UNIX_COMMAND "${tmp_args}")
   add_test(NAME "${TNAME}"
     ${CONFIGURATIONS_CMD} ${CET_CONFIGURATIONS}
-    COMMAND ${CET_CET_EXEC_TEST} --wd ${CET_TEST_WORKDIR}
+    COMMAND ${CET_CET_EXEC_TEST} --wd ${TEST_WORKDIR}
     --required-files "${CET_REQUIRED_FILES}"
     --datafiles "${CET_DATAFILES}"
     --skip-return-code ${skip_return_code}
@@ -465,18 +473,26 @@ endfunction()
 
 function(_cet_add_ref_test)
   if (${NTESTS} EQUAL 1)
-    _cet_add_ref_test_detail(${TEST_TARGET_NAME} ${ARGN})
+    _cet_add_ref_test_detail(${TEST_TARGET_NAME} ${CET_TEST_WORKDIR} ${ARGN})
     list(APPEND ALL_TEST_TARGETS ${TEST_TARGET_NAME})
+    file(MAKE_DIRECTORY "${CET_TEST_WORKDIR}")
+    set_tests_properties(${TEST_TARGET_NAME} PROPERTIES WORKING_DIRECTORY ${CET_TEST_WORKDIR})
+    cet_copy(${CET_DATAFILES} DESTINATION ${CET_TEST_WORKDIR} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   else()
     math(EXPR tidmax "${NTESTS} - 1")
     string(LENGTH "${tidmax}" nd)
     foreach (tid RANGE ${tidmax})
-      execute_process(COMMAND printf "${TEST_TARGET_NAME}_%0${nd}d" ${tid}
-        OUTPUT_VARIABLE tname
+      execute_process(COMMAND printf "_%0${nd}d" ${tid}
+        OUTPUT_VARIABLE tnum
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )
-      _cet_add_ref_test_detail(${tname} ${ARGN})
+      set(tname "${TEST_TARGET_NAME}${tnum}")
+      string(REGEX REPLACE "\\.d\$" "${tnum}.d" test_workdir "${CET_TEST_WORKDIR}")
+      _cet_add_ref_test_detail(${tname} ${test_workdir} ${ARGN})
       list(APPEND ALL_TEST_TARGETS ${tname})
+      file(MAKE_DIRECTORY "${test_workdir}")
+      set_tests_properties(${tname} PROPERTIES WORKING_DIRECTORY ${test_workdir})
+      cet_copy(${CET_DATAFILES} DESTINATION ${test_workdir} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     endforeach()
   endif()
   set(ALL_TEST_TARGETS ${ALL_TEST_TARGETS} PARENT_SCOPE)
@@ -542,7 +558,6 @@ FUNCTION(cet_test CET_TARGET)
 
   # Set up to handle a per-test work directory for parallel testing.
   SET(CET_TEST_WORKDIR "${CMAKE_CURRENT_BINARY_DIR}/${CET_TARGET}.d")
-  file(MAKE_DIRECTORY "${CET_TEST_WORKDIR}")
   IF(CET_TEST_EXEC)
     IF(NOT CET_HANDBUILT)
       MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} cannot specify "
@@ -645,7 +660,6 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
       TARGET_LINK_LIBRARIES(${CET_TARGET} ${link_lib_list})
     endif()
   ENDIF()
-  cet_copy(${CET_DATAFILES} DESTINATION ${CET_TEST_WORKDIR} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   IF(CET_CONFIGURATIONS)
     SET(CONFIGURATIONS_CMD CONFIGURATIONS)
   ENDIF()
@@ -689,9 +703,6 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
     ELSE(CET_REF)
       _cet_add_test(${CET_TEST_ARGS})
     ENDIF(CET_REF)
-    IF(${CMAKE_VERSION} VERSION_GREATER "2.8")
-      SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES WORKING_DIRECTORY ${CET_TEST_WORKDIR})
-    ENDIF()
     IF(CET_TEST_PROPERTIES)
       SET_TESTS_PROPERTIES(${ALL_TEST_TARGETS} PROPERTIES ${CET_TEST_PROPERTIES})
     ENDIF()
