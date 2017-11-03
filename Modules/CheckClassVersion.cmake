@@ -55,11 +55,11 @@ function(check_class_version)
     # Add the check to the end of the dictionary building step.
     add_custom_command(OUTPUT ${dictname}_dict_checked
       COMMAND checkClassVersion ${CCV_EXTRA_ARGS}
-      -l ${LIBRARY_OUTPUT_PATH}/lib${dictname}_dict
+      -l $<TARGET_PROPERTY:${dictname}_dict,LIBRARY_OUTPUT_DIRECTORY>/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict
       -x ${CMAKE_CURRENT_SOURCE_DIR}/classes_def.xml
       -t ${dictname}_dict_checked
       COMMENT "Checking class versions for ROOT dictionary ${dictname}"
-      DEPENDS ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict${CMAKE_SHARED_LIBRARY_SUFFIX}
+      DEPENDS $<TARGET_PROPERTY:${dictname}_dict,LIBRARY_OUTPUT_DIRECTORY>/${CMAKE_SHARED_LIBRARY_PREFIX}${dictname}_dict${CMAKE_SHARED_LIBRARY_SUFFIX}
       )
     add_custom_target(checkClassVersion_${dictname} ALL
       DEPENDS ${dictname}_dict_checked)

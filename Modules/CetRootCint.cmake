@@ -71,9 +71,22 @@ function(cet_rootcint rc_output_name)
     list(APPEND inc_dirs .)
     list(APPEND RC_GENERATED_CODE ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.h)
   else() # ROOT6
-    set(RC_RMF ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${rc_output_name}.rootmap)
-    set(RC_PCM ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${rc_output_name}_rdict.pcm)
-    set(RC_OUTPUT_LIBRARY ${LIBRARY_OUTPUT_PATH}/${CMAKE_SHARED_LIBRARY_PREFIX}${rc_output_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
+    if (NOT RC_LIB_TARGET)
+      if (TARGET ${rc_output_name}_dict)
+        set(RC_LIB_TARGET ${rc_output_name}_dict)
+      elseif (TARGET ${rc_output_name})
+        set(RC_LIB_TARGET ${rc_output_name})
+      endif()
+    endif()
+    if (RC_LIB_TARGET)
+      set(lib_path "$<TARGET_PROPERTY:${RC_LIB_TARGET},LIBRARY_OUTPUT_DIRECTORY>")
+    else()
+      set(lib_path ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    endif()
+    set(RC_RMF ${lib_path}/${CMAKE_SHARED_LIBRARY_PREFIX}${rc_output_name}.rootmap)
+    set(RC_PCM ${lib_path}/${CMAKE_SHARED_LIBRARY_PREFIX}${rc_output_name}_rdict.pcm)
+    set(RC_OUTPUT_LIBRARY
+      ${lib_path}/${CMAKE_SHARED_LIBRARY_PREFIX}${rc_output_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
     get_filename_component(RC_RML ${RC_OUTPUT_LIBRARY} NAME)
     list(APPEND RC_FLAGS
       -s ${RC_OUTPUT_LIBRARY}
@@ -92,7 +105,9 @@ function(cet_rootcint rc_output_name)
   endforeach( dir )
   ##message(STATUS "cet_rootcint: include_directories ${CINT_INCS}")
   add_custom_command(
-    OUTPUT ${RC_GENERATED_CODE} ${RC_PCM} ${RC_RMF}
+    # Extra outputs commented out until custom_command OUTPUT supports
+    # generator flags.
+    OUTPUT ${RC_GENERATED_CODE} # ${RC_PCM} ${RC_RMF}
     COMMAND ${RC_PROG} -f ${CMAKE_CURRENT_BINARY_DIR}/${rc_output_name}Cint.cc
     ${RC_FLAGS}
 		-I${CMAKE_SOURCE_DIR} ${CINT_INCS}

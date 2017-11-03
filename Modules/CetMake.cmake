@@ -1,11 +1,16 @@
+########################################################################
 # cet_make
 #
-# Identify the files in the current source directory and deal with them appropriately
-# Users may opt to just include cet_make() in their CMakeLists.txt
-# This implementation is intended to be called NO MORE THAN ONCE per subdirectory.
+# Identify the files in the current source directory and deal with them
+# appropriately.
 #
-# NOTE: cet_make_exec and cet_make_test_exec are no longer part of 
-# cet_make or art_make and must be called explicitly.
+# Users may opt to just include cet_make() in their CMakeLists.txt
+#
+# This implementation is intended to be called NO MORE THAN ONCE per
+# subdirectory.
+#
+# NOTE: cet_make_exec is no longer part of cet_make or art_make and must
+# be called explicitly.
 #
 # cet_make( [LIBRARY_NAME <library name>]
 #           [LIBRARIES <library link list>]
@@ -386,7 +391,7 @@ macro( cet_make_library )
   endif( CML_WITH_STATIC_LIBRARY )
 endmacro( cet_make_library )
 
-file(MAKE_DIRECTORY "${EXECUTABLE_OUTPUT_PATH}/")
+file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/")
 
 macro (cet_script)
   cet_parse_args(CS "DEPENDENCIES" "GENERATED;NO_INSTALL;REMOVE_EXTENSIONS" ${ARGN})
@@ -405,11 +410,11 @@ macro (cet_script)
       PROGRAMS
       NAME ${target}
       NAME_AS_TARGET
-      DESTINATION "${EXECUTABLE_OUTPUT_PATH}"
+      DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
       )
     # Install in product if desired.
     if (NOT CS_NO_INSTALL)
-      install(PROGRAMS "${EXECUTABLE_OUTPUT_PATH}/${target}"
+      install(PROGRAMS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${target}"
         DESTINATION "${${product}_bin_dir}")
     endif()
   endforeach()
@@ -420,9 +425,8 @@ function(cet_lib_alias LIB_TARGET)
     add_custom_command(TARGET ${LIB_TARGET}
       POST_BUILD
       COMMAND ln -sf $<TARGET_LINKER_FILE_NAME:${LIB_TARGET}>
-      ${CMAKE_SHARED_LIBRARY_PREFIX}${alias}${CMAKE_SHARED_LIBRARY_SUFFIX}
+      $<TARGET_PROPERTY:${LIB_TARGET},LIBRARY_OUTPUT_DIRECTORY>/${CMAKE_SHARED_LIBRARY_PREFIX}${alias}${CMAKE_SHARED_LIBRARY_SUFFIX}
       COMMENT "Generate / refresh courtesy link ${CMAKE_SHARED_LIBRARY_PREFIX}${alias}${CMAKE_SHARED_LIBRARY_SUFFIX} -> $<TARGET_LINKER_FILE_NAME:${LIB_TARGET}>"
-      VERBATIM
-      WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH})
+      VERBATIM)
   endforeach()
 endfunction()

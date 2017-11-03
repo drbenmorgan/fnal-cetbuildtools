@@ -292,9 +292,10 @@ macro(cet_cmake_env)
   include_directories ("${PROJECT_BINARY_DIR}")
   include_directories("${PROJECT_SOURCE_DIR}" )
   # make sure all libraries are in one directory
-  set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/lib)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
   # make sure all executables are in one directory
-  set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
   # install license and readme if found
   install_license()
   

@@ -152,7 +152,7 @@
 #   Test (but not script or compiled executable) target names will be
 #   scoped by product name (<prod>:...).
 #
-# SOURCES <source>+
+# SOURCE[S] <source>+
 #
 #   Sources to use to build the target (default is ${target}.cc).
 #
@@ -191,8 +191,8 @@
 # Notes:
 #
 # * cet_make_exec() and art_make_exec() are more flexible than building
-#   the test exec with cet_test(), and are to be preferred (use the
-#   NO_INSTALL option to same as appropriate). Use
+#   the test exec with cet_test(), and are generally to be preferred
+#   (use the NO_INSTALL option to same as appropriate). Use
 #   cet_test(... HANDBUILT TEST_EXEC ...) to use test execs built this
 #   way.
 #
@@ -480,11 +480,22 @@ FUNCTION(cet_test CET_TARGET)
   CMAKE_PARSE_ARGUMENTS (CET
     "HANDBUILT;PREBUILT;USE_CATCH_MAIN;NO_AUTO;USE_BOOST_UNIT;INSTALL_BIN;INSTALL_EXAMPLE;INSTALL_SOURCE;NO_OPTIONAL_GROUPS;SCOPED"
     "OUTPUT_FILTER;TEST_EXEC;TEST_WORKDIR"
-    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTERS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
+    "CONFIGURATIONS;DATAFILES;DEPENDENCIES;LIBRARIES;OPTIONAL_GROUPS;OUTPUT_FILTERS;OUTPUT_FILTER_ARGS;REQUIRED_FILES;SOURCE;SOURCES;TEST_ARGS;TEST_PROPERTIES;REF"
     ${ARGN}
     )
   IF (CET_OUTPUT_FILTERS AND CET_OUTPUT_FILTER_ARGS)
     MESSAGE(FATAL_ERROR "OUTPUT_FILTERS is incompatible with FILTER_ARGS:\nEither use the singular OUTPUT_FILTER or use double-quoted strings in OUTPUT_FILTERS\nE.g. OUTPUT_FILTERS \"filter1 -x -y\" \"filter2 -y -z\"")
+  ENDIF()
+
+  # CET_SOURCES is obsolete.
+  IF (CET_SOURCES)
+    LIST(APPEND CET_SOURCE ${CET_SOURCES})
+    UNSET(CET_SOURCES)
+  ENDIF()
+
+  # For passage to cet_script, cet_make_exec, etc.
+  IF (NOT CET_INSTALL_BIN)
+    SET(CET_NO_INSTALL "NO_INSTALL")
   ENDIF()
 
   # If GLOBAL is not set, prepend ${product}: to the target name
@@ -527,7 +538,7 @@ FUNCTION(cet_test CET_TARGET)
         "TEST_EXEC without HANDBUILT")
     ENDIF()
   ELSE()
-    SET(CET_TEST_EXEC ${EXECUTABLE_OUTPUT_PATH}/${CET_TARGET})
+    SET(CET_TEST_EXEC ${CET_TARGET})
   ENDIF()
   IF(CETP_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR "cet_test: Unparsed (non-option) arguments detected: \"${CETP_UNPARSED_ARGUMENTS}\"
@@ -553,14 +564,11 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
     MESSAGE(FATAL_ERROR "cet_test: target ${CET_TARGET} must have only one of the"
       " CET_HANDBUILT, CET_PREBUILT, or CET_USE_CATCH_MAIN options set.")
   ELSEIF(CET_PREBUILT) # eg scripts.
-    IF (NOT CET_INSTALL_BIN)
-      SET(CET_NO_INSTALL "NO_INSTALL")
-    ENDIF()
     cet_script(${CET_TARGET} ${CET_NO_INSTALL} DEPENDENCIES ${CET_DEPENDENCIES})
   ELSEIF(NOT CET_HANDBUILT) # Normal build, possibly with CET_USE_CATCH_MAIN set.
     # Build the executable.
-    IF(NOT CET_SOURCES) # Useful default.
-      SET(CET_SOURCES ${CET_TARGET}.cc)
+    IF(NOT CET_SOURCE) # Useful default.
+      SET(CET_SOURCE ${CET_TARGET}.cc)
     ENDIF()
     IF(CET_USE_CATCH_MAIN)
       IF(NOT TARGET cet_catch_main) # Make sure we only build one!
@@ -579,7 +587,14 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
           )
       ENDIF()
     ENDIF()
-    ADD_EXECUTABLE(${CET_TARGET} ${CET_SOURCES})
+    if (CET_SOURCE)
+      list(APPEND cme_args SOURCE ${CET_SOURCE})
+    endif()
+    if (CET_LIBRARIES)
+      list(APPEND cme_args LIBRARIES ${CET_LIBRARIES})
+    endif()
+    cet_make_exec(${CET_TARGET} ${CET_NO_INSTALL}
+      ${cme_args} ${CET_UNPARSED_ARGUMENTS})
     IF (CET_USE_CATCH_MAIN AND DEFINED ENV{CATCH_INC})
       TARGET_INCLUDE_DIRECTORIES(${CET_TARGET} PUBLIC $ENV{CATCH_INC})
       TARGET_LINK_LIBRARIES(${CET_TARGET} cet_catch_main)
@@ -598,30 +613,11 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
       TARGET_LINK_LIBRARIES(${CET_TARGET} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
     ENDIF()
     IF(COMMAND find_tbb_offloads)
-      find_tbb_offloads(FOUND_VAR have_tbb_offload ${CET_SOURCES})
+      find_tbb_offloads(FOUND_VAR have_tbb_offload ${CET_SOURCE})
       IF(have_tbb_offload)
         SET_TARGET_PROPERTIES(${CET_TARGET} PROPERTIES LINK_FLAGS ${TBB_OFFLOAD_FLAG})
       ENDIF()
     ENDIF()
-    if(CET_LIBRARIES)
-      set(link_lib_list "")
-      foreach (lib ${CET_LIBRARIES})
-	      string(REGEX MATCH [/] has_path "${lib}")
-	      if( has_path )
-	        list(APPEND link_lib_list ${lib})
-	      else()
-	        string(TOUPPER  ${lib} ${lib}_UC )
-	        #_cet_debug_message( "simple_plugin: check ${lib}" )
-	        if( ${${lib}_UC} )
-            _cet_debug_message( "changing ${lib} to ${${${lib}_UC}}")
-            list(APPEND link_lib_list ${${${lib}_UC}})
-	        else()
-            list(APPEND link_lib_list ${lib})
-	        endif()
-	      endif( has_path )
-      endforeach()
-      TARGET_LINK_LIBRARIES(${CET_TARGET} ${link_lib_list})
-    endif()
   ENDIF()
   IF(CET_CONFIGURATIONS)
     SET(CONFIGURATIONS_CMD CONFIGURATIONS)
@@ -696,23 +692,19 @@ Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMa
       MESSAGE(FATAL_ERROR "OUTPUT_FILTER and OUTPUT_FILTER_ARGS are not accepted if REF is not specified.")
     ENDIF()
   ENDIF(NOT CET_NO_AUTO)
-  IF(CET_INSTALL_BIN)
-    IF(CET_HANDBUILT)
-      MESSAGE(WARNING "INSTALL_BIN option ignored for HANDBUILT tests.")
-    ELSEIF(NOT CET_PREBUILT)
-      INSTALL(TARGETS ${CET_TARGET} DESTINATION ${flavorqual_dir}/bin)
-    ENDIF()
+  IF(CET_INSTALL_BIN AND CET_HANDBUILT)
+    MESSAGE(WARNING "INSTALL_BIN option ignored for HANDBUILT tests.")
   ENDIF()
   IF(CET_INSTALL_EXAMPLE)
     # Install to examples directory of product.
-    INSTALL(FILES ${CET_SOURCES} ${CET_DATAFILES}
+    INSTALL(FILES ${CET_SOURCE} ${CET_DATAFILES}
       DESTINATION ${product}/${version}/example
       )
   ENDIF()
   IF(CET_INSTALL_SOURCE)
     # Install to sources/test (will need to be amended for eg ART's
     # multiple test directories.
-    INSTALL(FILES ${CET_SOURCES}
+    INSTALL(FILES ${CET_SOURCE}
       DESTINATION ${product}/${version}/source/test
       )
   ENDIF()
