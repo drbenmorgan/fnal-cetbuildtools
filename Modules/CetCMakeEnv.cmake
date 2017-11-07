@@ -188,8 +188,8 @@ macro(cet_cmake_env)
   # silently ignore non-existent dependencies
   cmake_policy(SET CMP0046 OLD)
 
-  # Silently ignore the lack of an RPATH setting on OS X.
-  cmake_policy(SET CMP0042 OLD)
+  # Acknowledge new RPATH behavior on OS X.
+  cmake_policy(SET CMP0042 NEW)
 
   if( ${product}_full_qualifier )
     # extract base qualifier
