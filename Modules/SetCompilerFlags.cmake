@@ -412,7 +412,7 @@ macro( cet_set_compiler_flags )
     set( DFLAGS_VIGILANT "${DFLAGS_VIGILANT} -Wno-unused-local-typedefs" )
   endif()
   # C++-only
-  set( DXXFLAGS_VIGILANT "${DXXFLAGS_CAUTIOUS} -Woverloaded-virtual" )
+  set( DXXFLAGS_VIGILANT "${DXXFLAGS_CAUTIOUS} -Woverloaded-virtual -Wnon-virtual-dtor -Wdelete-non-virtual-dtor" )
   ####################################
   # Paranoid
   ####################################
