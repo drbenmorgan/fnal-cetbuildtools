@@ -389,16 +389,36 @@ macro( cet_set_compiler_flags )
   STRING( REGEX REPLACE ";" " " CSCF_EXTRA_C_FLAGS "${CSCF_EXTRA_C_FLAGS}")
   STRING( REGEX REPLACE ";" " " CSCF_EXTRA_FLAGS "${CSCF_EXTRA_FLAGS}")
 
+  ####################################
+  # Cavalier
+  ####################################
+  # C/C++
   set( DFLAGS_CAVALIER "" )
+  # C++-only
   set( DXXFLAGS_CAVALIER "" )
+  ####################################
+  # Cautious
+  ####################################
+  # C/C++
   set( DFLAGS_CAUTIOUS "${DFLAGS_CAVALIER} -Wall -Werror=return-type" )
+  # C++-only
   set( DXXFLAGS_CAUTIOUS "${DXXFLAGS_CAVALIER}" )
+  ####################################
+  # Vigilant
+  ####################################
+  # C/C++
   set( DFLAGS_VIGILANT "${DFLAGS_CAUTIOUS} -Wextra -Wno-long-long -Winit-self" )
   if (NOT CMAKE_C_COMPILER MATCHES "/?icc$") # Not understood by ICC
     set( DFLAGS_VIGILANT "${DFLAGS_VIGILANT} -Wno-unused-local-typedefs" )
   endif()
+  # C++-only
   set( DXXFLAGS_VIGILANT "${DXXFLAGS_CAUTIOUS} -Woverloaded-virtual" )
+  ####################################
+  # Paranoid
+  ####################################
+  # C/C++
   set( DFLAGS_PARANOID "${DFLAGS_VIGILANT} -pedantic -Wformat-y2k -Wswitch-default -Wsync-nand -Wtrampolines -Wlogical-op -Wshadow -Wcast-qual" )
+  # C++-only
   set( DXXFLAGS_PARANOID "${DXXFLAGS_VIGILANT}" )
 
   if (NOT CSCF_DIAGS)

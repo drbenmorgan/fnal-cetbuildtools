@@ -190,6 +190,8 @@ macro(cet_cmake_env)
 
   # Acknowledge new RPATH behavior on OS X.
   cmake_policy(SET CMP0042 NEW)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+
 
   if( ${product}_full_qualifier )
     # extract base qualifier
@@ -202,10 +204,6 @@ macro(cet_cmake_env)
     endif()
     message( STATUS "full qual ${${product}_full_qualifier} reduced to ${qualifier}")
   endif()
-
-  # do not embed full path in shared libraries or executables
-  # because the binaries might be relocated
-  set(CMAKE_SKIP_RPATH)
 
   message(STATUS "Product is ${product} ${version} ${${product}_full_qualifier}")
   message(STATUS "Module path is ${CMAKE_MODULE_PATH}")
