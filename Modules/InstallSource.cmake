@@ -145,14 +145,20 @@ macro( _cet_install_without_list   )
 	    [^.]*.cc [^.]*.c [^.]*.cpp [^.]*.C [^.]*.cxx
 	    [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc [^.]*.tcc
 	    [^.]*.xml [^.]*.sh [^.]*.py [^.]*.pl [^.]*.rb
-	    [^.]README* [^.]*.md [^.]*.dox
+	    *README* [^.]*.md [^.]*.dox
 	    )
+  #message( STATUS "debug: src_files ${src_files}" )
   if( ISRC_EXCLUDES )
     _cet_exclude_from_list( src_files EXCLUDES ${ISRC_EXCLUDES} LIST ${src_files} )
   endif()
   if( src_files )
-    INSTALL( FILES ${src_files}
-             DESTINATION ${source_install_dir} )
+    foreach( f ${src_files} )
+      if( NOT f MATCHES ".bak" AND NOT f MATCHES "~" )
+	#message( STATUS "debug: installing ${f}" )
+	INSTALL( FILES ${f}
+        	 DESTINATION ${source_install_dir} )
+       endif()
+     endforeach()
   endif( src_files )
   # check for generated files
   _cet_check_build_directory()
@@ -164,13 +170,18 @@ macro( _cet_install_without_list   )
         	 ${sub}/[^.]*.cc ${sub}/[^.]*.c ${sub}/[^.]*.cpp ${sub}/[^.]*.C ${sub}/[^.]*.cxx
         	 ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc ${sub}/[^.]*.tcc
         	 ${sub}/[^.]*.xml ${sub}/[^.]*.sh ${sub}/[^.]*.py ${sub}/[^.]*.pl ${sub}/[^.]*.rb
-		 ${sub}/[^.]README* ${sub}/[^.]*.md ${sub}/[^.]*.dox )
+		 ${sub}/*README* ${sub}/[^.]*.md ${sub}/[^.]*.dox )
 	if( ISRC_EXCLUDES )
           _cet_exclude_from_list( subdir_src_files EXCLUDES ${ISRC_EXCLUDES} LIST ${subdir_src_files} )
 	endif()
 	if( subdir_src_files )
-          INSTALL( FILES ${subdir_src_files}
-                   DESTINATION ${source_install_dir}/${sub} )
+	  foreach( f ${subdir_src_files} )
+	    if( NOT f MATCHES ".bak" AND NOT f MATCHES "~" )
+	      #message( STATUS "debug: installing ${f}" )
+	      INSTALL( FILES ${f}
+        	       DESTINATION ${source_install_dir}/${sub} )
+	     endif()
+	   endforeach()
 	endif( subdir_src_files )
      endforeach(sub)
      #message( STATUS "also installing in subdirectories: ${ISRC_SUBDIRS}")
