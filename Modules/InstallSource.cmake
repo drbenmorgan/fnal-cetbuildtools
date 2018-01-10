@@ -145,6 +145,7 @@ macro( _cet_install_without_list   )
 	    [^.]*.cc [^.]*.c [^.]*.cpp [^.]*.C [^.]*.cxx
 	    [^.]*.h [^.]*.hh [^.]*.H [^.]*.hpp [^.]*.icc [^.]*.tcc
 	    [^.]*.xml [^.]*.sh [^.]*.py [^.]*.pl [^.]*.rb
+	    [^.]README* [^.]*.md
 	    )
   if( ISRC_EXCLUDES )
     _cet_exclude_from_list( src_files EXCLUDES ${ISRC_EXCLUDES} LIST ${src_files} )
@@ -162,7 +163,8 @@ macro( _cet_install_without_list   )
 	FILE(GLOB subdir_src_files
         	 ${sub}/[^.]*.cc ${sub}/[^.]*.c ${sub}/[^.]*.cpp ${sub}/[^.]*.C ${sub}/[^.]*.cxx
         	 ${sub}/[^.]*.h ${sub}/[^.]*.hh ${sub}/[^.]*.H ${sub}/[^.]*.hpp ${sub}/[^.]*.icc ${sub}/[^.]*.tcc
-        	 ${sub}/[^.]*.xml ${sub}/[^.]*.sh ${sub}/[^.]*.py ${sub}/[^.]*.pl ${sub}/[^.]*.rb )
+        	 ${sub}/[^.]*.xml ${sub}/[^.]*.sh ${sub}/[^.]*.py ${sub}/[^.]*.pl ${sub}/[^.]*.rb
+		 ${sub}/[^.]README* ${sub}/[^.]*.md )
 	if( ISRC_EXCLUDES )
           _cet_exclude_from_list( subdir_src_files EXCLUDES ${ISRC_EXCLUDES} LIST ${subdir_src_files} )
 	endif()
