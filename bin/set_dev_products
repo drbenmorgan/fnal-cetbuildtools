@@ -257,7 +257,7 @@ if (( $qhash{"compiler"}->{$qual} ) && ( $qhash{"compiler"}->{$qual} ne '-')) {
 } else {
   ##print DIAG "set_dev_products debug info: use default compiler\n";
   my @quals = split /:/, $qual;
-  if (grep /^e13$/, @quals) {
+  if (grep /^(e13|c\d+)$/, @quals) {
     $compiler = "clang";
   } elsif (grep /^(e|gcc)\d+$/, @quals) {
     $compiler = "gcc";
