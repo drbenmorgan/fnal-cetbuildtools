@@ -10,12 +10,9 @@
 # RELWITHDEBINFO  -O2 -g
 #
 # CET flags
-# (debug)   DEBUG           -g -O0
-# (prof)    PROF            -O3 -g -DNDEBUG -fno-omit-frame-pointer
-# (opt)     OPT             -O3 -g -DNDEBUG
-# (prof)    MINSIZEREL      -O3 -g -DNDEBUG -fno-omit-frame-pointer
-# (opt)     RELEASE         -O3 -g -DNDEBUG
-# (default) RELWITHDEBINFO  unchanged
+# (debug)   DEBUG      -g -O0
+# (prof)    PROF       -O3 -g -DNDEBUG -fno-omit-frame-pointer
+# (opt)     OPT        -O3 -g -DNDEBUG
 #
 # Plus the diagnostic option set indicated by the DIAG option.
 #
@@ -23,26 +20,60 @@
 #    DIAGS <diag-level>
 #      This option may be CAVALIER, CAUTIOUS, VIGILANT or PARANOID.
 #      Default is CAUTIOUS.
+#
 #    DWARF_STRICT
 #      Instruct the compiler not to emit any debugging information more
 #      advanced than that selected. This will prevent possible errors in
 #      older debuggers, but may prevent certain C++11 constructs from
 #      being debuggable in modern debuggers.
+#
 #    DWARF_VER <#>
 #      Version of the DWARF standard to use for generating debugging
 #      information. Default depends upon the compiler: GCC v4.8.0 and
 #      above emit DWARF4 by default; earlier compilers emit DWARF2.
+#
 #    ENABLE_ASSERTS
 #      Enable asserts regardless of debug level (default is to disable
 #      asserts for PROF and OPT levels).
+#
 #    EXTRA_FLAGS (applied to both C and CXX) <flags>
 #    EXTRA_C_FLAGS <flags>
 #    EXTRA_CXX_FLAGS <flags>
 #    EXTRA_DEFINITIONS <flags>
 #      This list parameters will append tbe appropriate items.
+#
 #    NO_UNDEFINED
 #      Unresolved symbols will cause an error when making a shared
 #      library.
+#
+#    SANITIZE_[THREADS|ADDRESSES|LEAKS|UNDEFINED]
+#      Activate options for the use of the X sanitizer. Notes:
+#
+#      * The thread sanitizer is mutually exclusive with both the
+#      address sanitizer and the leak sanitizer, while the undefined
+#      behavior sanitizer may be used with either.
+#
+#      * Santize behavior may be controlled at the CMake command line
+#      with -DCETB_SANITIZE_X=ON|OFF, which overrides these options.
+#
+#      * This covers only the most basic control of the sanitizer
+#      options; if finer control is required, insert the appropriate
+#      -fXX options in CXXFLAGS.
+#
+#      * If CetTest.cmake is used for tests, then ASAN_OPTIONS,
+#      TSAN_OPTIONS, LSAN_OPTIONS and UBSAN_OPTIONS will be propagated
+#      to the test environment if found in the environment when CMake is
+#      executed. Alternatively see CetTest.cmake for per-test options.
+#
+#      * Due to (a) shortcomings in Root, and (b) an apparent deficiency
+#      in some versions of the address sanitizer, it is advised that
+#      ASAN_OPTIONS be set to include the options,
+#      "detect_leaks=0:new_delete_type_mismatch=0"
+#
+#      * When executing some applications (such as interactive Root or
+#      Gallery) it may be necessary to set the LD_PRELOAD environment
+#      variable to include the relevant sanitizer library.
+#
 #    WERROR
 #      All warnings are flagged as errors.
 #
@@ -120,7 +151,7 @@ include(CetGetProductInfo)
 include(CetHaveQual)
 include(CetRegexEscape)
 
-macro( cet_report_compiler_flags )
+function( cet_report_compiler_flags )
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   message( STATUS "compiler flags for directory " ${CURRENT_SUBDIR} " and below")
   message( STATUS "   C++     FLAGS: ${CMAKE_CXX_FLAGS_${BTYPE_UC}}")
@@ -128,7 +159,7 @@ macro( cet_report_compiler_flags )
   if (CMAKE_Fortran_COMPILER)
     message( STATUS "   Fortran FLAGS: ${CMAKE_Fortran_FLAGS_${BTYPE_UC}}")
   endif()
-endmacro( cet_report_compiler_flags )
+endfunction( cet_report_compiler_flags )
 
 macro( _cet_process_flags PTYPE_UC )
    # turn a space separated string into a colon separated list
@@ -180,55 +211,6 @@ macro( cet_base_flags )
   ##message( STATUS "CET_BASE_CXX_FLAG_OPT:   ${CET_BASE_CXX_FLAG_OPT}")
   ##message( STATUS "CET_BASE_CXX_FLAG_PROF:  ${CET_BASE_CXX_FLAG_PROF}")
 endmacro( cet_base_flags )
-
-macro( _cet_add_build_types )
-  SET( CMAKE_CXX_FLAGS_OPT "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING
-    "Flags used by the C++ compiler for optimized builds."
-    FORCE )
-  SET( CMAKE_C_FLAGS_OPT "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING
-    "Flags used by the C compiler for optimized builds."
-    FORCE )
-  SET( CMAKE_EXE_LINKER_FLAGS_OPT "${CMAKE_EXE_LINKER_FLAGS_RELEASE}"
-    CACHE STRING
-    "Flags used for linking binaries for optimized builds."
-    FORCE )
-  SET( CMAKE_SHARED_LINKER_FLAGS_OPT "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}"
-    CACHE STRING
-    "Flags used by the shared libraries linker for optimized builds."
-    FORCE )
-  MARK_AS_ADVANCED(
-    CMAKE_CXX_FLAGS_OPT
-    CMAKE_C_FLAGS_OPT
-    CMAKE_EXE_LINKER_FLAGS_OPT
-    CMAKE_SHARED_LINKER_FLAGS_OPT )
-
-  SET( CMAKE_CXX_FLAGS_PROF "${CMAKE_CXX_FLAGS_MINSIZEREL}" CACHE STRING
-    "Flags used by the C++ compiler for optimized builds."
-    FORCE )
-  SET( CMAKE_C_FLAGS_PROF "${CMAKE_C_FLAGS_MINSIZEREL}" CACHE STRING
-    "Flags used by the C compiler for optimized builds."
-    FORCE )
-  SET( CMAKE_EXE_LINKER_FLAGS_PROF "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}"
-    CACHE STRING
-    "Flags used for linking binaries for optimized builds."
-    FORCE )
-  SET( CMAKE_SHARED_LINKER_FLAGS_PROF "${CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL}"
-    CACHE STRING
-    "Flags used by the shared libraries linker for optimized builds."
-    FORCE )
-
-  MARK_AS_ADVANCED(
-    CMAKE_CXX_FLAGS_PROF
-    CMAKE_C_FLAGS_PROF
-    CMAKE_EXE_LINKER_FLAGS_PROF
-    CMAKE_SHARED_LINKER_FLAGS_PROF )
-
-  # Update the documentation string of CMAKE_BUILD_TYPE for GUIs
-  SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
-    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel Opt Prof."
-    FORCE )
-
-endmacro( _cet_add_build_types )
 
 function(_verify_cxx_std_flag FLAGS FLAG_VAR)
   _find_std_flag(FLAGS FOUND_STD_FLAG)
@@ -371,10 +353,11 @@ macro(_remove_extra_std_flags VAR)
   endif()
 endmacro()
 
-macro( cet_set_compiler_flags )
-  CET_PARSE_ARGS(CSCF
+macro(cet_set_compiler_flags)
+  cmake_parse_arguments(CSCF
+    "ALLOW_DEPRECATIONS;DWARF_STRICT;ENABLE_ASSERTS;NO_UNDEFINED;SANITIZE_ADDRESSES;SANITIZE_LEAKS;SANITIZE_THREADS;SANITIZE_UNDEFINED;WERROR"
+    ""
     "DIAGS;DWARF_VER;EXTRA_FLAGS;EXTRA_C_FLAGS;EXTRA_CXX_FLAGS;EXTRA_DEFINITIONS"
-    "ALLOW_DEPRECATIONS;DWARF_STRICT;ENABLE_ASSERTS;NO_UNDEFINED;WERROR"
     ${ARGN}
     )
 
@@ -428,12 +411,63 @@ macro( cet_set_compiler_flags )
   if (CSCF_NO_UNDEFINED)
     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
+      set(CMAKE_MODULELINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
     else()
-      set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+      set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
     endif()
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # Make OS X match default SLF6 behavior.
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
+  endif()
+
+  if (CSCF_SANITIZE_THREADS AND CSCF_SANITIZE_LEAKS)
+    message(FATAL_ERROR "SANITIZE_THREADS and SANITIZE_LEAKS are mutually exclusive.")
+  elseif(CSCF_SANITIZE_THREADS AND CSCF_SANITIZE_ADDRESSES)
+    message(FATAL_ERROR "SANITIZE_THREADS and SANITIZE_ADDRESSES are mutually exclusive.")
+  endif()
+
+  set(CETB_SANITIZE_ADDRESSES ${CSCF_SANITIZE_ADDRESSES} CACHE BOOL "Select compiler address sanitization.")
+  set(CETB_SANITIZE_LEAKS ${CSCF_SANITIZE_LEAKS} CACHE BOOL "Select compiler leak sanitization.")
+  set(CETB_SANITIZE_THREADS ${CSCF_SANITIZE_THREADS} CACHE BOOL "Select compiler thread sanitization.")
+  set(CETB_SANITIZE_UNDEFINED ${CSCF_SANITIZE_UNDEFINED} CACHE BOOL "Select compiler undefined behavior sanitization.")
+
+  if (CETB_SANITIZE_THREADS AND CETB_SANITIZE_LEAKS)
+    message(FATAL_ERROR "After reconciliation between cet_set_compiler_flags() and CMake option settings, SANITIZE_THREADS and SANITIZE_LEAKS are mutually exclusive.")
+  elseif(CETB_SANITIZE_THREADS AND CETB_SANITIZE_ADDRESSES)
+    message(FATAL_ERROR "After reconciliation between cet_set_compiler_flags() and CMake option settings, SANITIZE_THREADS and SANITIZE_ADDRESSES are mutually exclusive.")
+  endif()
+
+  if (CETB_SANITIZE_THREADS)
+    set(SANITIZE_OPTIONS "${SANITIZE_OPTIONS} -fsanitize=thread")
+#    if (CMAKE_C_COMPILER_ID STREQUAL GNU)
+#      set(SANITIZE_OPTIONS "${SANITIZE_OPTIONS} -static-libtsan")
+#    endif()
+  endif()
+
+  if (CETB_SANITIZE_ADDRESSES)
+    set(SANITIZE_OPTIONS "${SANITIZE_OPTIONS} -fsanitize=address")
+#    if (CMAKE_C_COMPILER_ID STREQUAL GNU)
+#      set(SANITIZE_OPTIONS "${SANITIZE_OPTIONS} -static-libasan")
+#    endif()
+  endif()
+
+  if (CETB_SANITIZE_LEAKS)
+    set(SANITIZE_OPTIONS "${SANITIZE_OPTIONS} -fsanitize=leak")
+#    if (CMAKE_C_COMPILER_ID STREQUAL GNU)
+#      set(SANITIZE_OPTIONS "${SANITIZE_OPTIONS} -static-liblsan")
+#    endif()
+  endif()
+
+  if (CETB_SANITIZE_UNDEFINED)
+    set(SANITIZE_OPTIONS "${SANITIZE_OPTIONS} -fsanitize=undefined")
+#    if (CMAKE_C_COMPILER_ID STREQUAL GNU)
+#      set(SANITIZE_OPTIONS "${SANITIZE_OPTIONS} -static-libubsan")
+#    endif()
+  endif()
+
+  _set_sanitizer_preloads(TMP_PRELOADS)
+  if (TMP_PRELOADS)
+    set(CETB_SANITIZER_PRELOADS "${TMP_PRELOADS}" CACHE STRING "Sanitizer pre-load libraries." FORCE)
   endif()
 
   if (CSCF_WERROR)
@@ -479,34 +513,56 @@ macro( cet_set_compiler_flags )
     set(GDWARF "${GDWARF} -gstrict-dwarf")
   endif()
 
-  set( CMAKE_C_FLAGS_DEBUG "-g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_DEBUG "-std=c++98 -g ${GDWARF} -O0 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_C_FLAGS_MINSIZEREL "-O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_MINSIZEREL "-std=c++98 -O3 -g ${GDWARF} -fno-omit-frame-pointer ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_C_FLAGS_RELEASE "-O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}}" )
-  set( CMAKE_CXX_FLAGS_RELEASE "-std=c++98 -O3 -g ${GDWARF} ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}}" )
+  set(C_FLAGS_OMNIBUS "${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${CSCF_EXTRA_C_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${SANITIZE_OPTIONS}")
+  set(CXX_FLAGS_OMNIBUS "-std=c++98 ${CSCF_WERROR} ${CSCF_EXTRA_FLAGS} ${QUAL_STD_FLAG} ${CSCF_EXTRA_CXX_FLAGS} ${DFLAGS_${CSCF_DIAGS}} ${DXXFLAGS_${CSCF_DIAGS}} ${SANITIZE_OPTIONS}")
 
- _cet_add_build_types() 
+  # DEBUG
+  set( CMAKE_C_FLAGS_DEBUG "-g ${GDWARF} -O0 ${C_FLAGS_OMNIBUS}" )
+  set( CMAKE_CXX_FLAGS_DEBUG "-g ${GDWARF} -O0 ${CXX_FLAGS_OMNIBUS}"  )
+  # MINSIZEREL
+  set( CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} ${C_FLAGS_OMNIBUS}" )
+  set( CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${CXX_FLAGS_OMNIBUS}" )
+  # RELEASE
+  set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${C_FLAGS_OMNIBUS}" )
+  set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_FLAGS_OMNIBUS}" )
+  # RELWITHDEBINFO
+  set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${C_FLAGS_OMNIBUS}" )
+  set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${CXX_FLAGS_OMNIBUS}" )
+  # OPT
+  set( CMAKE_C_FLAGS_OPT "-g ${GDWARF} -O3 ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for optimized builds." )
+  set( CMAKE_CXX_FLAGS_OPT "-g ${GDWARF} -O3 ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for optimized builds." )
+  # PROF
+  set( CMAKE_C_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for profile builds." )
+  set( CMAKE_CXX_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for profile builds." )
+  MARK_AS_ADVANCED(
+    CMAKE_CXX_FLAGS_OPT
+    CMAKE_C_FLAGS_OPT
+    CMAKE_EXE_LINKER_FLAGS_OPT
+    CMAKE_STATIC_LINKER_FLAGS_OPT
+    CMAKE_SHARED_LINKER_FLAGS_OPT
+    CMAKE_CXX_FLAGS_PROF
+    CMAKE_C_FLAGS_PROF
+    CMAKE_EXE_LINKER_FLAGS_PROF
+    CMAKE_SHARED_LINKER_FLAGS_PROF
+    CMAKE_STATIC_LINKER_FLAGS_PROF
+    )
+
+  # Linker Flags
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZE_OPTIONS}" )
+  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULELINKER_FLAGS} ${SANITIZE_OPTIONS}" )
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZE_OPTIONS}" )
+
+  # Update the documentation string of CMAKE_BUILD_TYPE for GUIs
+  SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
+    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel Opt Prof."
+    FORCE )
 
   if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "" FORCE)
+    set(CMAKE_BUILD_TYPE Prof CACHE STRING "" FORCE)
   endif()
 
-  if( PACKAGE_TOP_DIRECTORY )
-     STRING( REGEX REPLACE "^${PACKAGE_TOP_DIRECTORY}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-     if( CURRENT_SUBDIR STREQUAL PACKAGE_TOP_DIRECTORY)
-       SET ( CURRENT_SUBDIR "<top>" )
-     endif()
-  else()
-     STRING( REGEX REPLACE "^${CMAKE_SOURCE_DIR}/(.*)" "\\1" CURRENT_SUBDIR "${CMAKE_CURRENT_SOURCE_DIR}" )
-     if( CURRENT_SUBDIR STREQUAL CMAKE_SOURCE_DIR )
-       SET ( CURRENT_SUBDIR "<top>" )
-     endif()
-  endif()
-
-  if( NOT ${CURRENT_SUBDIR} MATCHES "<top>" )
-    message(STATUS "cmake build type set to ${CMAKE_BUILD_TYPE} in directory " ${CURRENT_SUBDIR} " and below")
-  endif()
+  # Leave this in definitions.
+  cet_remove_compiler_flags(-DNDEBUG)
 
   string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
   remove_definitions(-DNDEBUG)
@@ -530,40 +586,124 @@ macro( cet_set_compiler_flags )
 
 endmacro( cet_set_compiler_flags )
 
-macro( cet_query_system )
-  ### This macro is useful if you need to check a variable
-  ## http://cmake.org/Wiki/CMake_Useful_Variables#Compilers_and_Tools
-  ## also see http://cmake.org/Wiki/CMake_Useful_Variables/Logging_Useful_Variables
+function(_report_var VAR)
+  message(STATUS "${VAR} is ${${VAR}}")
+endfunction()
+
+# This macro is useful if you need to check a variable
+# http://cmake.org/Wiki/CMake_Useful_Variables#Compilers_and_Tools also
+# see
+# http://cmake.org/Wiki/CMake_Useful_Variables/Logging_Useful_Variables
+function( cet_query_system )
   message( STATUS "cet_query_system: begin compiler report")
-  message( STATUS "CMAKE_SYSTEM_NAME is ${CMAKE_SYSTEM_NAME}" )
-  message( STATUS "CMAKE_BASE_NAME is ${CMAKE_BASE_NAME}" )
-  message( STATUS "CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
-  message( STATUS "CMAKE_CONFIGURATION_TYPES is ${CMAKE_CONFIGURATION_TYPES}" )
-  message( STATUS "BUILD_SHARED_LIBS  is ${BUILD_SHARED_LIBS}")
-  message( STATUS "CMAKE_CXX_COMPILER_ID is ${CMAKE_CXX_COMPILER_ID}" )
-  message( STATUS "CMAKE_COMPILER_IS_GNUCXX is ${CMAKE_COMPILER_IS_GNUCXX}" )
-  message( STATUS "CMAKE_COMPILER_IS_MINGW is ${CMAKE_COMPILER_IS_MINGW}" )
-  message( STATUS "CMAKE_COMPILER_IS_CYGWIN is ${CMAKE_COMPILER_IS_CYGWIN}" )
-  message( STATUS "CMAKE_AR is ${CMAKE_AR}" )
-  message( STATUS "CMAKE_RANLIB is ${CMAKE_RANLIB}" )
-  message( STATUS "CMAKE_CXX_COMPILER is ${CMAKE_CXX_COMPILER}")
-  message( STATUS "CMAKE_CXX_OUTPUT_EXTENSION is ${CMAKE_CXX_OUTPUT_EXTENSION}" )
-  message( STATUS "CMAKE_CXX_FLAGS_DEBUG is ${CMAKE_CXX_FLAGS_DEBUG}" )
-  message( STATUS "CMAKE_CXX_FLAGS_RELEASE is ${CMAKE_CXX_FLAGS_RELEASE}" )
-  message( STATUS "CMAKE_CXX_FLAGS_MINSIZEREL is ${CMAKE_CXX_FLAGS_MINSIZEREL}" )
-  message( STATUS "CMAKE_CXX_FLAGS_RELWITHDEBINFO is ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" )
-  message( STATUS "CMAKE_CXX_STANDARD_LIBRARIES is ${CMAKE_CXX_STANDARD_LIBRARIES}" )
-  message( STATUS "CMAKE_CXX_LINK_FLAGS is ${CMAKE_CXX_LINK_FLAGS}" )
-  message( STATUS "CMAKE_C_COMPILER is ${CMAKE_C_COMPILER}")
-  message( STATUS "CMAKE_C_FLAGS is ${CMAKE_C_FLAGS}")
-  message( STATUS "CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}" )
-  message( STATUS "CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}" )
-  message( STATUS "CMAKE_C_FLAGS_MINSIZEREL is ${CMAKE_C_FLAGS_MINSIZEREL}" )
-  message( STATUS "CMAKE_C_FLAGS_RELWITHDEBINFO is ${CMAKE_C_FLAGS_RELWITHDEBINFO}" )
-  message( STATUS "CMAKE_C_OUTPUT_EXTENSION is ${CMAKE_C_OUTPUT_EXTENSION}")
-  message( STATUS "CMAKE_SHARED_LIBRARY_CXX_FLAGS is ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}" )
-  message( STATUS "CMAKE_SHARED_MODULE_CXX_FLAGS is ${CMAKE_SHARED_MODULE_CXX_FLAGS}" )
-  message( STATUS "CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS is ${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS}" )
-  message( STATUS "CMAKE_SHARED_LINKER_FLAGS  is ${CMAKE_SHARED_LINKER_FLAGS}")
+  _report_var(CMAKE_SYSTEM_NAME)
+  _report_var(CMAKE_BASE_NAME)
+  _report_var(CMAKE_BUILD_TYPE)
+  _report_var(CMAKE_CONFIGURATION_TYPES)
+  _report_var(BUILD_SHARED_LIBS)
+  _report_var(CMAKE_C_COMPILER_ID)
+  _report_var(CMAKE_CXX_COMPILER_ID)
+  _report_var(CMAKE_Fortran_COMPILER_ID)
+  _report_var(CMAKE_COMPILER_IS_GNUCXX)
+  _report_var(CMAKE_COMPILER_IS_MINGW)
+  _report_var(CMAKE_COMPILER_IS_CYGWIN)
+  _report_var(CMAKE_AR)
+  _report_var(CMAKE_RANLIB)
+  _report_var(CMAKE_CXX_COMPILER)
+  _report_var(CMAKE_CXX_OUTPUT_EXTENSION)
+  _report_var(CMAKE_CXX_FLAGS_DEBUG)
+  _report_var(CMAKE_CXX_FLAGS_RELEASE)
+  _report_var(CMAKE_CXX_FLAGS_MINSIZEREL)
+  _report_var(CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+  _report_var(CMAKE_CXX_FLAGS_OPT)
+  _report_var(CMAKE_CXX_FLAGS_PROF)
+  _report_var(CMAKE_CXX_STANDARD_LIBRARIES)
+  _report_var(CMAKE_CXX_LINK_FLAGS)
+  _report_var(CMAKE_C_COMPILER)
+  _report_var(CMAKE_C_FLAGS)
+  _report_var(CMAKE_C_FLAGS_DEBUG)
+  _report_var(CMAKE_C_FLAGS_RELEASE)
+  _report_var(CMAKE_C_FLAGS_MINSIZEREL)
+  _report_var(CMAKE_C_FLAGS_RELWITHDEBINFO)
+  _report_var(CMAKE_C_FLAGS_OPT)
+  _report_var(CMAKE_C_FLAGS_PROF)
+  _report_var(CMAKE_C_OUTPUT_EXTENSION)
+  _report_var(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+  _report_var(CMAKE_SHARED_MODULE_CXX_FLAGS)
+  _report_var(CMAKE_STATIC_LIBRARY_CXX_FLAGS)
+  _report_var(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
+  _report_var(CMAKE_SHARED_LINKER_FLAGS)
+  _report_var(CMAKE_SHARED_LINKER_FLAGS_DEBUG)
+  _report_var(CMAKE_SHARED_LINKER_FLAGS_RELEASE)
+  _report_var(CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL)
+  _report_var(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO)
+  _report_var(CMAKE_SHARED_LINKER_FLAGS_OPT)
+  _report_var(CMAKE_SHARED_LINKER_FLAGS_PROF)
+  _report_var(CMAKE_STATIC_LINKER_FLAGS)
+  _report_var(CMAKE_STATIC_LINKER_FLAGS_DEBUG)
+  _report_var(CMAKE_STATIC_LINKER_FLAGS_RELEASE)
+  _report_var(CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL)
+  _report_var(CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO)
+  _report_var(CMAKE_STATIC_LINKER_FLAGS_OPT)
+  _report_var(CMAKE_STATIC_LINKER_FLAGS_PROF)
+  _report_var(CMAKE_MODULE_LINKER_FLAGS)
+  _report_var(CMAKE_MODULE_LINKER_FLAGS_DEBUG)
+  _report_var(CMAKE_MODULE_LINKER_FLAGS_RELEASE)
+  _report_var(CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL)
+  _report_var(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO)
+  _report_var(CMAKE_MODULE_LINKER_FLAGS_OPT)
+  _report_var(CMAKE_MODULE_LINKER_FLAGS_PROF)
+  _report_var(CMAKE_EXE_LINKER_FLAGS)
+  _report_var(CMAKE_EXE_LINKER_FLAGS_DEBUG)
+  _report_var(CMAKE_EXE_LINKER_FLAGS_RELEASE)
+  _report_var(CMAKE_EXE_LINKER_FLAGS_MINSIZEREL)
+  _report_var(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO)
+  _report_var(CMAKE_EXE_LINKER_FLAGS_OPT)
+  _report_var(CMAKE_EXE_LINKER_FLAGS_PROF)
   message( STATUS "cet_query_system: end compiler report")
-endmacro( cet_query_system )
+endfunction( cet_query_system )
+
+function(_set_sanitizer_preloads VAR)
+  if (CMAKE_C_COMPILER_ID STREQUAL GNU)
+    set(hints HINTS $ENV{GCC_FQ_DIR}/lib64 NO_DEFAULT_PATH)
+  elseif(CMAKE_C_COMPILER_ID STREQUAL Clang)
+    set(hints HINTS $ENV{CLANG_FQ_DIR} NO_DEFAULT_PATH)
+  endif()
+  if (CETB_SANITIZE_ADDRESSES)
+    find_library (ASAN_PRELOAD NAMES libasan.so
+      ${hints}
+      DOC "Found location for the address sanitizer preload library."
+      )
+    if (ASAN_PRELOAD)
+      string(APPEND TMP_PRELOADS "${ASAN_PRELOAD}")
+    endif()
+  endif()
+  if (CETB_SANITIZE_LEAKS)
+    find_library (LSAN_PRELOAD NAMES liblsan.so
+      ${hints}
+      DOC "Found location for the leak sanitizer preload library."
+      )
+    if (LSAN_PRELOAD)
+      string(APPEND TMP_PRELOADS " ${LSAN_PRELOAD}")
+    endif()
+  endif()
+  if (CETB_SANITIZE_THREADS)
+    find_library (TSAN_PRELOAD NAMES libtsan.so
+      ${hints}
+      DOC "Found location for the thread sanitizer preload library."
+      )
+    if (TSAN_PRELOAD)
+      string(APPEND TMP_PRELOADS " ${TSAN_PRELOAD}")
+    endif()
+  endif()
+  if (CETB_SANITIZE_UNDEFINED)
+    find_library (UBSAN_PRELOAD NAMES libubsan.so
+      ${hints}
+      DOC "Found location for the undefined behavior sanitizer preload library."
+      )
+    if (UBSAN_PRELOAD)
+      string(APPEND TMP_PRELOADS " ${UBSAN_PRELOAD}")
+    endif()
+  endif()
+  set(${VAR} ${TMP_PRELOADS} PARENT_SCOPE)
+endfunction()

@@ -147,6 +147,11 @@
 #   executed. If any are missing, ctest will record NOT RUN for this
 #   test.
 #
+# *SAN_OPTIONS
+#
+#   Option representing the desired value of the corresponding sanitizer
+#   control environment variable for the test.
+#
 # SCOPED
 #
 #   Test (but not script or compiled executable) target names will be
@@ -493,10 +498,6 @@ function(cet_test CET_TARGET)
     unset(CET_SOURCES)
   endif()
 
-  if (CETP_UNPARSED_ARGUMENTS)
-    message(FATAL_ERROR "cet_test: Unparsed (non-option) arguments detected: \"${CETP_UNPARSED_ARGUMENTS}.\" Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMakeLists.txt.")
-  endif()
-
   # For passage to cet_script, cet_make_exec, etc.
   if (NOT CET_INSTALL_BIN)
     set(CET_NO_INSTALL "NO_INSTALL")
@@ -510,9 +511,19 @@ function(cet_test CET_TARGET)
       endif()
       list(APPEND parg_option_names ${OPT})
       list(APPEND parg_labels ${CMAKE_MATCH_1})
+    elseif (OPT MATCHES "SAN_OPTIONS$")
+      if (OPT IN_LIST san_option_names)
+        message(FATAL_ERROR "For test ${TEST_TARGET_NAME}, ${OPT} specified multiple times")
+      endif()
+      list(APPEND san_option_names ${OPT})
     endif()
   endforeach()
-  cmake_parse_arguments(CETP "" "PERMUTE" "PERMUTE_OPTS;${parg_option_names}" "${CET_UNPARSED_ARGUMENTS}")
+  set(cetp_list_options PERMUTE_OPTS ${parg_option_names})
+  set(cetp_onearg_options PERMUTE ${san_option_names})
+  cmake_parse_arguments(CETP ""
+    "${cetp_onearg_options}"
+    "${cetp_list_options}"
+    "${CET_UNPARSED_ARGUMENTS}")
   if (CETP_PERMUTE)
     message(FATAL_ERROR "PERMUTE is a keyword reserved for future functionality.")
   elseif (CETP_PERMUTE_OPTS)
@@ -520,6 +531,9 @@ function(cet_test CET_TARGET)
   endif()
   list(LENGTH parg_labels NPARG_LABELS)
   _cet_process_pargs(NTESTS "${parg_labels}")
+  if (CETP_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "cet_test: Unparsed (non-option) arguments detected: \"${CETP_UNPARSED_ARGUMENTS}.\" Check for missing keyword(s) in the definition of test ${CET_TARGET} in your CMakeLists.txt.")
+  endif()
 
   if (CET_TEST_EXEC)
     if (NOT CET_HANDBUILT)
@@ -683,14 +697,30 @@ function(cet_test CET_TARGET)
     if (CET_TEST_PROPERTIES)
       set_tests_properties(${ALL_TEST_TARGETS} PROPERTIES ${CET_TEST_PROPERTIES})
     endif()
+    if (CETB_SANITIZER_PRELOADS)
+      set_property(TEST ${ALL_TEST_TARGETS} APPEND PROPERTY
+        ENVIRONMENT "LD_PRELOAD=$ENV{LD_PRELOAD} ${CETB_SANITIZER_PRELOADS}")
+    endif()
+    foreach (san_env
+        ASAN_OPTIONS MSAN_OPTIONS LSAN_OPTIONS TSAN_OPTIONS UBSAN_OPTIONS)
+      if (CETP_${san_env})
+        set_property(TEST ${ALL_TEST_TARGETS} APPEND PROPERTY
+          ENVIRONMENT "${san_env}=${CETP_${san_env}}")
+      elseif (DEFINED ENV{${san_env}})
+        set_property(TEST ${ALL_TEST_TARGETS} APPEND PROPERTY
+          ENVIRONMENT "${san_env}=$ENV{${san_env}}")
+      endif()
+    endforeach()
     foreach (target ${ALL_TEST_TARGETS})
       if (CET_TEST_ENV)
         # Set global environment.
         get_test_property(${target} ENVIRONMENT CET_TEST_ENV_TMP)
         if (CET_TEST_ENV_TMP)
-          set_tests_properties(${target} PROPERTIES ENVIRONMENT "${CET_TEST_ENV};${CET_TEST_ENV_TMP}")
+          set_tests_properties(${target} PROPERTIES
+            ENVIRONMENT "${CET_TEST_ENV};${CET_TEST_ENV_TMP}")
         else()
-          set_tests_properties(${target} PROPERTIES ENVIRONMENT "${CET_TEST_ENV}")
+          set_tests_properties(${target} PROPERTIES
+            ENVIRONMENT "${CET_TEST_ENV}")
         endif()
       endif()
       if (CET_REF)
