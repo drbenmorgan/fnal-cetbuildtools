@@ -16,6 +16,7 @@ INSTALL(FILES
   CetExclude.cmake
   CetHaveQual.cmake
   CetMake.cmake
+  CetMakeCompletions.cmake
   CetPackagePath.cmake
   CetParseArgs.cmake
   CetPrepend.cmake
