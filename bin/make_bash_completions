@@ -7,6 +7,7 @@
 #   --opt1             Non-argument option
 #   --opt2 arg         Option with argument
 #   -O [ --opt3 ] arg  Long and short options with argument
+#
 # =========================================================================
 
 output=$1
@@ -26,6 +27,9 @@ long_and_short_options=$($exec -h 2>&1 | grep -E "$regex_line_with_both_opts" | 
 fcn=${exec//-/_}
 
 cat >$output <<EOF
+# Bash completions not supported by csh--bail out early.
+test \$?shell = 1 && exit
+
 _$fcn()
 {
     local cur prev opts
