@@ -411,13 +411,15 @@ macro(cet_set_compiler_flags)
   if (CSCF_NO_UNDEFINED)
     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
-      set(CMAKE_MODULELINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
+      set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-undefined,error")
     else()
-      set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+      set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+      set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--no-undefined")
     endif()
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # Make OS X match default SLF6 behavior.
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
   endif()
 
   if (CSCF_SANITIZE_THREADS AND CSCF_SANITIZE_LEAKS)
@@ -529,11 +531,11 @@ macro(cet_set_compiler_flags)
   set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${C_FLAGS_OMNIBUS}" )
   set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${CXX_FLAGS_OMNIBUS}" )
   # OPT
-  set( CMAKE_C_FLAGS_OPT "-g ${GDWARF} -O3 ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for optimized builds." )
-  set( CMAKE_CXX_FLAGS_OPT "-g ${GDWARF} -O3 ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for optimized builds." )
+  set( CMAKE_C_FLAGS_OPT "-g ${GDWARF} -O3 ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for optimized builds." FORCE)
+  set( CMAKE_CXX_FLAGS_OPT "-g ${GDWARF} -O3 ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for optimized builds." FORCE)
   # PROF
-  set( CMAKE_C_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for profile builds." )
-  set( CMAKE_CXX_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for profile builds." )
+  set( CMAKE_C_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${C_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C compiler for profile builds." FORCE)
+  set( CMAKE_CXX_FLAGS_PROF "-g ${GDWARF} -O3 -fno-omit-frame-pointer ${CXX_FLAGS_OMNIBUS}" CACHE STRING "Flags used by the C++ compiler for profile builds." FORCE)
   MARK_AS_ADVANCED(
     CMAKE_CXX_FLAGS_OPT
     CMAKE_C_FLAGS_OPT
