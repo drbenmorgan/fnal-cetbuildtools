@@ -12,6 +12,7 @@
 
 output=$1
 exec=$2
+user=${3:-""}
 
 regex_allowed_opt_char="[-[:alnum:]]"
 regex_long_opt="--$regex_allowed_opt_char+"
@@ -40,6 +41,10 @@ _$fcn()
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
     opts="$only_long_options $long_and_short_options"
 
+    # User-provided completions
+    $(cat ${user})
+
+    # Standard completions
     if [[ \${cur} == -* ]] ; then
         COMPREPLY=( \$(compgen -W "\${opts}" -- \${cur}) )
         return 0
