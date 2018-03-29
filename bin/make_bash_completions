@@ -42,7 +42,7 @@ _$fcn()
     opts="$only_long_options $long_and_short_options"
 
     # User-provided completions
-    $(cat ${user})
+    $([ "$user" == "" ] && echo "# (none provided)" || cat $user)
 
     # Standard completions
     if [[ \${cur} == -* ]] ; then
