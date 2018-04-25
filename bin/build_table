@@ -230,10 +230,6 @@ sub create_quals {
 EOF
     }
     print TBL "  Action = GetProducts\n";
-    if ( $have_flagfile ) {
-      print TBL "    envSet( \${UPS_PROD_NAME_UC}_CXXFLAGS, \"$create_quals::cxxflag\" )\n";
-      print TBL "    envSet( \${UPS_PROD_NAME_UC}_CFLAGS, \"$create_quals::cflag\" )\n";
-    }
     foreach $create_quals::j ( 1 .. $ndeps ) {
       next if $qlist[0][$create_quals::j] eq "compiler";
       if ( $qlist[$create_quals::i][$create_quals::j] eq "-" ) {
