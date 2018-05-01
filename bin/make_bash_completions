@@ -15,13 +15,13 @@ exec=$2
 user=${3:-""}
 
 regex_allowed_opt_char="[-[:alnum:]]"
-regex_long_opt="--$regex_allowed_opt_char+"
+regex_long_opt="--$regex_allowed_opt_char\+"
 regex_short_opt="-[[:alnum:]]"
-regex_line_with_long_opt="^[[:space:]]*($regex_long_opt)[[:space:]]+.*$"
-regex_line_with_both_opts="^[[:space:]]*($regex_short_opt)[[:space:]]+\[[[:space:]]*($regex_long_opt)[[:space:]]*\][[:space:]]+.*$"
+regex_line_with_long_opt="^[[:space:]]*\\($regex_long_opt\\)[[:space:]]\+.*$"
+regex_line_with_both_opts="^[[:space:]]*\\($regex_short_opt\\)[[:space:]]\+\[[[:space:]]*\\($regex_long_opt\\)[[:space:]]*\][[:space:]]\+.*$"
 
-only_long_options=$($exec -h 2>&1 | grep -E "$regex_line_with_long_opt" | sed -r "s/$regex_line_with_long_opt/\1/")
-long_and_short_options=$($exec -h 2>&1 | grep -E "$regex_line_with_both_opts" | sed -r "s/$regex_line_with_both_opts/\1 \2/")
+only_long_options=$($exec -h 2>&1 | grep "$regex_line_with_long_opt" | sed -e "s/$regex_line_with_long_opt/\\1/")
+long_and_short_options=$($exec -h 2>&1 | grep "$regex_line_with_both_opts" | sed -e "s/$regex_line_with_both_opts/\\1 \\2/")
 
 # Sometimes it's necessary to rename the bash function since the exec
 # my have a hyphen in it.
