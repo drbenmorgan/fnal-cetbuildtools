@@ -64,7 +64,7 @@ macro( cet_cmake_config  )
   endif()
 
   #message(STATUS "cet_cmake_config debug: will install cmake configure files in ${distdir}")
-  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_UPS_COMMANDS}")
+  #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_UPS_COMMAND_LIST}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_FIND_LIBRARY_COMMAND_LIST}")
   #message(STATUS "cet_cmake_config debug: ${CONFIG_LIBRARY_LIST}")
 

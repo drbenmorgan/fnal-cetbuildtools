@@ -14,9 +14,10 @@
 
 macro(_cet_init_config_var)
   # initialize cmake config file fragments
-  set(CONFIG_FIND_UPS_COMMANDS "
+##  set(CONFIG_FIND_UPS_COMMANDS "
 ## find_ups_product directives
 ## remember that these are minimum required versions" 
+  set(CONFIG_FIND_UPS_COMMAND_LIST "## find_ups_product directives"
       CACHE STRING "UPS product directives for config" FORCE)
 ###  set(CONFIG_FIND_LIBRARY_COMMANDS "
 ##### find_library directives" 
