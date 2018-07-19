@@ -186,7 +186,8 @@ macro(cet_cmake_env)
   
   # temporarily set this policy
   # silently ignore non-existent dependencies
-  cmake_policy(SET CMP0046 OLD)
+  # deprecated with predudice as of cmake 3.11.xx
+  #cmake_policy(SET CMP0046 OLD)
 
   # Acknowledge new RPATH behavior on OS X.
   cmake_policy(SET CMP0042 NEW)
