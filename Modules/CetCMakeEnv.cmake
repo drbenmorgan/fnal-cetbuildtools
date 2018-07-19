@@ -187,7 +187,9 @@ macro(cet_cmake_env)
   # temporarily set this policy
   # silently ignore non-existent dependencies
   # deprecated with predudice as of cmake 3.11.xx
-  #cmake_policy(SET CMP0046 OLD)
+  # new behavior is to report an error if non-existent dependencies are 
+  # listed in the ``add_dependencies()`` command.
+  cmake_policy(SET CMP0046 NEW)
 
   # Acknowledge new RPATH behavior on OS X.
   cmake_policy(SET CMP0042 NEW)
