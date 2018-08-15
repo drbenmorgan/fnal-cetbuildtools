@@ -31,10 +31,15 @@ INSTALL(FILES
   FindUpsGeant4.cmake
   FindUpsPackage.cmake
   FindUpsRoot.cmake
+  InstallFhicl.cmake
   InstallFiles.cmake
+  InstallFW.cmake
+  InstallGdml.cmake
+  InstallHeaders.cmake
   InstallLicense.cmake
   InstallPerllib.cmake
   InstallPython.cmake
+  InstallScripts.cmake
   InstallSource.cmake
   ParseUpsVersion.cmake
   ProcessSmc.cmake
