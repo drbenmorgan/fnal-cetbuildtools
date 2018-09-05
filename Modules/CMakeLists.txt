@@ -41,6 +41,7 @@ INSTALL(FILES
   InstallPython.cmake
   InstallScripts.cmake
   InstallSource.cmake
+  InstallWP.cmake
   ParseUpsVersion.cmake
   ProcessSmc.cmake
   RunAndCompare.cmake
