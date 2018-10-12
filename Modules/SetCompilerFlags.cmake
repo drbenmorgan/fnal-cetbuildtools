@@ -554,6 +554,16 @@ macro(cet_set_compiler_flags)
   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULELINKER_FLAGS} ${SANITIZE_OPTIONS}" )
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZE_OPTIONS}" )
 
+  if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND
+      (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"))
+    # Need to make sure we make sure we link against the bundled libc++ rather than system.
+    if (DEFINED ENV{CLANG_FQ_DIR})
+      set(CMAKE_SHARED_LINKER_FLAGS "-L$ENV{CLANG_FQ_DIR}/lib -Wl,-rpath,$ENV{CLANG_FQ_DIR}/lib ${CMAKE_SHARED_LINKER_FLAGS}")
+      set(CMAKE_MODULE_LINKER_FLAGS "-L$ENV{CLANG_FQ_DIR}/lib -Wl,-rpath,$ENV{CLANG_FQ_DIR}/lib ${CMAKE_MODULE_LINKER_FLAGS}")
+      set(CMAKE_EXE_LINKER_FLAGS "-L$ENV{CLANG_FQ_DIR}/lib -Wl,-rpath,$ENV{CLANG_FQ_DIR}/lib ${CMAKE_EXE_LINKER_FLAGS}")
+    endif()
+  endif()
+
   # Update the documentation string of CMAKE_BUILD_TYPE for GUIs
   SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel Opt Prof."
