@@ -287,6 +287,7 @@ macro(cet_cmake_env)
   cet_set_fw_directory()
   cet_set_gdml_directory()
   cet_set_perllib_directory()
+  cet_set_wp_directory()
   cet_set_test_directory()
 
   if (ENV{CETPKB_BUILD})

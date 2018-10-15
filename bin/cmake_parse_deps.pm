@@ -261,6 +261,86 @@ sub get_cmake_setfw_list {
   return ($fwiter, \@fwlist);
 }
 
+sub get_cmake_wp_directory {
+  my @params = @_;
+  my $wpdir = "NONE";
+  my $line;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      my @words = split(/\s+/,$line);
+      if( $words[0] eq "wpdir" ) {
+         if( $words[1] eq "-" ) {
+	     $wpdir = "NONE";
+	 } else { 
+            if( ! $words[2] ) { 
+	       $wpdir = "ERROR";
+	    } else {
+	       my $wpsubdir = $words[2];
+               if( $words[1] eq "product_dir" ) {
+		  $wpdir = "product_dir/$wpsubdir";
+               } elsif( $words[1] eq "fq_dir" ) {
+		  $wpdir = "flavorqual_dir/$wpsubdir";
+	       } else {
+		  $wpdir = "ERROR";
+	       }
+	    }
+	 }
+      }
+    }
+  }
+  close(PIN);
+  return ($wpdir);
+}
+
+sub get_cmake_setwp_list {
+  my @params = @_;
+  my $setwpdir = "NONE";
+  my @wplist;
+  my $wpiter=-1;
+  my $line;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      my @words = split(/\s+/,$line);
+      if( $words[0] eq "set_wpdir" ) {
+         ++$wpiter;
+         if( $words[1] eq "-" ) {
+	     $setwpdir = "NONE";
+	 } else { 
+            if( ! $words[2] ) { 
+               if( $words[1] eq "product_dir" ) {
+		  $setwpdir = "product_dir";
+               } elsif( $words[1] eq "fq_dir" ) {
+		  $setwpdir = "flavorqual_dir";
+	       } else {
+		  $setwpdir = "ERROR";
+	       }
+	    } else {
+	       my $wpsubdir = $words[2];
+               if( $words[1] eq "product_dir" ) {
+		  $setwpdir = "product_dir/$wpsubdir";
+               } elsif( $words[1] eq "fq_dir" ) {
+		  $setwpdir = "flavorqual_dir/$wpsubdir";
+	       } else {
+		  $setwpdir = "ERROR";
+	       }
+	    }
+	 }
+	 $wplist[$wpiter]=$setwpdir;
+      }
+    }
+  }
+  close(PIN);
+  return ($wpiter, \@wplist);
+}
+
 sub get_cmake_gdml_directory {
   my @params = @_;
   my $gdmldir = "NONE";

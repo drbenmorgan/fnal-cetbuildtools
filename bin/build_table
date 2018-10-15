@@ -261,6 +261,7 @@ sub create_table_bottom {
   my $bin_directory = get_bin_directory( $pfile );
   my $def_python_path = get_python_path( $pfile );
   my $fw_directory = get_fw_directory( $pfile );
+  my $wp_directory = get_wp_directory( $pfile );
   my $gdml_directory = get_gdml_directory( $pfile );
   my $prl_directory = get_perllib( $pfile );
   my ($fwlen, $fwlist_ref, $fwdir_ref) = get_setfw_list( $pfile );
@@ -336,6 +337,11 @@ sub create_table_bottom {
   } else {
   print TBL "    # add $fw_directory to FW_SEARCH_PATH\n";
   print TBL "    pathPrepend(FW_SEARCH_PATH, $fw_directory )\n";
+  }
+  if ( $wp_directory eq "none" )   {
+  } else {
+  print TBL "    # add $wp_directory to WIRECELL_PATH\n";
+  print TBL "    pathPrepend(WIRECELL_PATH, $wp_directory )\n";
   }
   if( $gdml_directory eq "default" ) {
   print TBL "    # add the gdml directory to FW_SEARCH_PATH\n";

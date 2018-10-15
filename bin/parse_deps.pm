@@ -57,6 +57,7 @@ our (@EXPORT, @setup_list);
 	       get_lib_directory 
 	       get_fcl_directory 
 	       get_fw_directory 
+	       get_wp_directory 
 	       get_setfw_list
 	       get_gdml_directory 
 	       get_perllib 
@@ -324,6 +325,43 @@ sub get_fw_directory {
   close(PIN);
   ##print "defining executable directory $fwdir\n";
   return ($fwdir);
+}
+
+sub get_wp_directory {
+  my @params = @_;
+  my $wpdir = "none";
+  my $line;
+  my @words;
+  open(PIN, "< $params[0]") or die "Couldn't open $params[0]";
+  while ( $line=<PIN> ) {
+    chop $line;
+    if ( index($line,"#") == 0 ) {
+    } elsif ( $line !~ /\w+/ ) {
+    } else {
+      @words = split(/\s+/,$line);
+      if( $words[0] eq "wpdir" ) {
+         if( $words[1] eq "-" ) {
+	    $wpdir = "none";
+	 } else { 
+            if( ! $words[2] ) { 
+		  print "ERROR: the wpdir subdirectory must be specified, there is no default\n";
+	    } else {
+               if( $words[1] eq "product_dir" ) {
+		  $wpdir = "\${UPS_PROD_DIR}/".$words[2];
+               } elsif( $words[1] eq "fq_dir" ) {
+		  $wpdir = "\${\${UPS_PROD_NAME_UC}_FQ_DIR}/".$words[2];
+	       } else {
+		  print "ERROR: $words[1] is an invalid directory path\n";
+		  print "ERROR: directory path must be specified as either \"product_dir\" or \"fq_dir\"\n";
+	       }
+	    }
+	 }
+      }
+    }
+  }
+  close(PIN);
+  ##print "defining executable directory $wpdir\n";
+  return ($wpdir);
 }
 
 sub get_gdml_directory {
